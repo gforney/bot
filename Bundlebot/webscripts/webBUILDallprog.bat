@@ -56,7 +56,7 @@ if NOT "%platform%" == "Linux" goto endif2
 
 if NOT "%platform%" == "OSX" goto endif3
   for %%x in ( %progs% ) do (
-    start "building osx %%x" plink %plink_options% %osx_logon% %linux_git_root%/smv/scripts/run_command.sh smv/Build/%%x/gnu_osx_64 make_%%x.sh
+    start "building osx %%x" plink %plink_options% %osx_logon% %linux_git_root%/smv/scripts/run_command.sh smv/Build/%%x/clang_osx_64 make_%%x.sh
   )
   start "building osx fds2ascii" plink %plink_options% %osx_logon% %linux_git_root%/smv/scripts/run_command.sh fds/Utilities/fds2ascii/gnu_osx make_fds2ascii.sh
   pause
