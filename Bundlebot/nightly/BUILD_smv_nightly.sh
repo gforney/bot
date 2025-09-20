@@ -1,6 +1,7 @@
 #!/bin/bash
 curdir=`pwd`
 BUILDING_nightly=$1
+CURRENT=$2
 
 #*** determine platform script is running on
 
@@ -19,9 +20,11 @@ cd ../../..
 reporoot=`pwd`
 basereporoot=`basename $reporoot`
 
-cd $reporoot/bot/Scripts
-echo updating repos
-./update_repos.sh -m
+if [ "$CURRENT" == "" ]; then
+  cd $reporoot/bot/Scripts
+  echo updating repos
+  ./update_repos.sh -m
+fi
 
 if [ "$BUILDING_release" != "" ]; then
   ERROR=
@@ -43,7 +46,7 @@ if [ "$BUILDING_release" == "" ]; then
   cd $reporoot/bot/Bundlebot/nightly/output
   outdir=`pwd`
   cd $reporoot/bot/Bundlebot/nightly
-  ./get_hash_revisions.sh $outdir >& $outdir/stage1_hash
+  ./get_hash_revisions.sh $outdir $CURRENT  >& $outdir/stage1_hash
   smv_hash=`head -1 $outdir/SMV_HASH`
 else
   cd $reporoot/bot/Bundlebot/release/output
@@ -97,16 +100,19 @@ echo "*** bundling smokeview"
 $reporoot/bot/Bundlebot/nightly/assemble_smvbundle.sh $BUILDTYPE2 $smv_revision $basereporoot >& $outdir/stage6_bundle
 
 
-echo "*** uploading smokeview bundle"
+if [ "$CURRENT" == "" ]; then
+  echo "*** uploading smokeview bundle"
 
-FILELIST=`gh release view SMOKEVIEW_TEST  -R github.com/$GHOWNER/test_bundles | grep SMV | grep -v FDS | grep $platform2 | awk '{print $2}'`
-for file in $FILELIST ; do
-  gh release delete-asset SMOKEVIEW_TEST $file -R github.com/$GHOWNER/test_bundles -y
-done
+  FILELIST=`gh release view SMOKEVIEW_TEST  -R github.com/$GHOWNER/test_bundles | grep SMV | grep -v FDS | grep $platform2 | awk '{print $2}'`
+  for file in $FILELIST ; do
+    gh release delete-asset SMOKEVIEW_TEST $file -R github.com/$GHOWNER/test_bundles -y
+  done
 
-uploaddir=.bundle/uploads
-$reporoot/bot/Bundlebot/nightly/upload_smvbundle.sh $uploaddir ${smv_revision}_${platform2}.sh     $basereporoot/bot/Bundlebot/nightly --clobber
-$reporoot/bot/Bundlebot/nightly/upload_smvbundle.sh $uploaddir ${smv_revision}_${platform2}.sha1   $basereporoot/bot/Bundlebot/nightly -clobber
+  uploaddir=.bundle/uploads
+  $reporoot/bot/Bundlebot/nightly/upload_smvbundle.sh $uploaddir ${smv_revision}_${platform2}.sh     $basereporoot/bot/Bundlebot/nightly --clobber
+  $reporoot/bot/Bundlebot/nightly/upload_smvbundle.sh $uploaddir ${smv_revision}_${platform2}.sha1   $basereporoot/bot/Bundlebot/nightly -clobber
 
-echo "*** upload complete"
-
+  echo "*** upload complete"
+else
+  echo bundle: $uploaddir/${smv_revision}_${platform2}.sh
+fi
