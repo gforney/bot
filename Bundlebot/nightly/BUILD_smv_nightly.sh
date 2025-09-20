@@ -10,7 +10,7 @@ comp=intel
 if [ "`uname`" == "Darwin" ] ; then
   platform="osx"
   platform2="osx"
-  comp=gnu
+  comp=clang
 fi
 BUILDTYPE=-t
 BUILDTYPE2=test

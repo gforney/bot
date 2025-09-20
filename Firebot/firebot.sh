@@ -2190,7 +2190,7 @@ SMVCOMPILER=intel
 if [ "`uname`" == "Darwin" ] ; then
   platform="osx"
   platform2="OSX"
-  SMVCOMPILER=gnu
+  SMVCOMPILER=clang
 fi
 export platform
 

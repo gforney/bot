@@ -26,7 +26,7 @@ then
   platform="osx"
   platform2="OSX"
   platform3="osx"
-  COMPILER=gnu
+  COMPILER=clang
 fi
 
 CP ()
