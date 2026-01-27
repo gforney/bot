@@ -99,7 +99,7 @@ mpitype=impi
 export FDS_BUILD_TARGET=intel
 if [ "`uname`" == "Darwin" ] ; then
   platform="osx"
-  fdscompiler=intel
+  fdscompiler=gnu
   smvcompiler=gnu
   mpitype=ompi
   export FDS_BUILD_TARGET=osx
@@ -164,15 +164,20 @@ echo building fds
 BUILDFDS                                                      &
 pid_fds=$!
 
-echo building fds openmp
-BUILDFDSOPENMP                                                &
-pid_fdsopenmp=$!
+if [ "$platform" == "linux" ]; then
+  echo building fds openmp
+  BUILDFDSOPENMP                                                &
+  pid_fdsopenmp=$!
+fi
 
 wait $pid_fds
 CHECK_BUILDFDS
 
-wait $pid_fdsopenmp
-CHECK_BUILDFDSOPENMP
+
+if [ "$platform" == "linux" ]; then
+  wait $pid_fdsopenmp
+  CHECK_BUILDFDSOPENMP
+fi
 
 wait $pid_fds2ascii
 CHECK_BUILDFDSUTIL    fds2ascii ${fdscompiler}_$platform

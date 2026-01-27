@@ -319,7 +319,9 @@ echo "--- fds apps/scripts ---"
 echo ""
 cd $fdsbindir
 CP $APPS_DIR    fds        $fdsbindir fds
-CP $APPS_DIR    fds_openmp $fdsbindir fds_openmp
+if [ "$platform" == "linux" ]; then
+  CP $APPS_DIR    fds_openmp $fdsbindir fds_openmp
+fi
 CP $APPS_DIR    fds2ascii  $fdsbindir fds2ascii
 CP $APPS_DIR    test_mpi   $fdsbindir test_mpi
 
