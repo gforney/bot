@@ -58,10 +58,17 @@ SMV_BRANCH=master
 UPLOADBUNDLE=
 if [ "`uname`" == "Darwin" ] ; then
   platform=osx
-  export FDS_OPENMPIDIR=/opt/openmpi415_oneapi22u3
-  export intel_mpi_version=oneapi22u3
-  export mpi_version=4.1.5
-  export openmpi_dir=/opt/openmpi415_oneapi22u3
+  if [ "`uname -m`" == "arm64" ]; then
+    export FDS_OPENMPIDIR=/opt/homebrew/Cellar/open-mpi/5.0.8
+    export intel_mpi_version=none
+    export mpi_version=5.0.8
+    export openmpi_dir=/opt/homebrew/Cellar/open-mpi/5.0.8
+  else
+    export FDS_OPENMPIDIR=/opt/openmpi415_oneapi22u3
+    export intel_mpi_version=oneapi22u3
+    export mpi_version=4.1.5
+    export openmpi_dir=/opt/openmpi415_oneapi22u3
+  fi
 else
   platform=lnx
   export intel_mpi_version=2025.0
@@ -79,6 +86,9 @@ fi
 
 cd $DIR/output
 outputdir=`pwd`
+if [ -d $outputdir ]; then
+  rm -f *
+fi
 cd $DIR
 
 LOCKFILE=$HOME/.bundle/lock
@@ -291,7 +301,6 @@ if [ "$OPENMPI_DIR" != "" ]; then
 fi
 
 bundle_dir=$HOME/.bundle/bundles
-OUTPUT_DIR=$SCRIPTDIR/output
 
 if [ "$FDS_TAG" != "" ]; then
   FDS_REVISION=$FDS_TAG
@@ -312,11 +321,6 @@ if [ "$FORCE" == "" ]; then
   fi
 fi
 touch $LOCK_FILE
-
-if [ ! -d $OUTPUT_DIR ]; then
-  mkdir $OUTPUT_DIR
-fi
-rm -f $OUTPUT_DIR/*
 
 # determine platform script is running on
 
@@ -386,8 +390,8 @@ echo " - complete"
   
 echo
 echo ***Virus scan summary
-if [ -e $OUTPUT_DIR/$csvlog ]; then
-  grep -v OK$ $OUTPUT_DIR/$csvlog | grep -v ^$ | grep -v SUMMARY
+if [ -e $outputdir/$csvlog ]; then
+  grep -v OK$ $outputdir/$csvlog | grep -v ^$ | grep -v SUMMARY
 else
   echo virus scanner not available, bundle was not scanned
 fi
@@ -404,9 +408,9 @@ if [[ "$UPLOADBUNDLE" == "1" ]]; then
 
     echo gh release upload FDS_TEST $bundle_dir/${installer_base_platform}.sh -R github.com/$GHOWNER/test_bundles  --clobber
          gh release upload FDS_TEST $bundle_dir/${installer_base_platform}.sh -R github.com/$GHOWNER/test_bundles  --clobber
-    if [ -e $OUTPUT_DIR/$htmllog ]; then
-      echo gh release upload FDS_TEST $OUTPUT_DIR/$htmllog                       -R github.com/$GHOWNER/test_bundles  --clobber
-           gh release upload FDS_TEST $OUTPUT_DIR/$htmllog                       -R github.com/$GHOWNER/test_bundles  --clobber
+    if [ -e $outputdir/$htmllog ]; then
+      echo gh release upload FDS_TEST $outputdir/$htmllog                       -R github.com/$GHOWNER/test_bundles  --clobber
+           gh release upload FDS_TEST $outputdir/$htmllog                       -R github.com/$GHOWNER/test_bundles  --clobber
     fi
     if [ "$platform" == "lnx" ]; then
       cd $REPO_ROOT/fds
