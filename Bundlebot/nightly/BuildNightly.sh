@@ -86,9 +86,8 @@ fi
 
 cd $DIR/output
 outputdir=`pwd`
-if [ -d $outputdir ]; then
-  rm -f *
-fi
+git clean -dxf
+
 cd $DIR
 
 LOCKFILE=$HOME/.bundle/lock

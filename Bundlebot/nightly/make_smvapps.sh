@@ -83,10 +83,6 @@ echo building smokeview libraries
 BUILDSMVLIBS &
 pid_smvlibs=$!
 
-echo building background
-BUILD background &
-pid_background=$!
-
 echo building flush
 BUILD flush &
 pid_flush=$!
@@ -105,6 +101,10 @@ pid_wind2fds=$!
 
 #wait for smokeview libraries to be built before continuing
 wait $pid_smvlibs
+
+echo building background
+BUILD background &
+pid_background=$!
 
 echo building pnginfo
 BUILD pnginfo &
