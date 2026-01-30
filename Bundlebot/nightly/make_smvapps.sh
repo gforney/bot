@@ -83,60 +83,61 @@ echo building smokeview libraries
 BUILDSMVLIBS &
 pid_smvlibs=$!
 
-echo building flush
-BUILD flush &
-pid_flush=$!
-
-echo building fds2fed
-BUILD fds2fed &
-pid_fds2fed=$!
-
-echo building smokediff
-BUILD smokediff &
-pid_smokediff=$!
-
-echo building wind2fds
-BUILD wind2fds &
-pid_wind2fds=$!
-
 #wait for smokeview libraries to be built before continuing
 wait $pid_smvlibs
-
-echo building background
-BUILD background &
-pid_background=$!
-
-echo building pnginfo
-BUILD pnginfo &
-pid_pnginfo=$!
 
 echo building smokeview
 BUILD smokeview &
 pid_smokeview=$!
 
+echo building background
+BUILD background &
+pid_background=$!
+
+echo building fds2fed
+BUILD fds2fed &
+pid_fds2fed=$!
+
+echo building flush
+BUILD flush &
+pid_flush=$!
+
+echo building pnginfo
+BUILD pnginfo &
+pid_pnginfo=$!
+
+echo building smokediff
+BUILD smokediff &
+pid_smokediff=$!
+
 echo building smokezip
 BUILD smokezip &
 pid_smokezip=$!
 
+echo building wind2fds
+BUILD wind2fds &
+pid_wind2fds=$!
+
+
 # verify smokeview apps were built
+
+wait $pid_smokeview
+CHECK_BUILD smokeview
 
 wait $pid_background
 CHECK_BUILD background
 
-wait $pid_flush
-CHECK_BUILD flush
-
 wait $pid_fds2fed
 CHECK_BUILD fds2fed
+
+wait $pid_flush
+CHECK_BUILD flush
 
 wait $pid_pnginfo
 CHECK_BUILD pnginfo
 
 wait $pid_smokediff
 CHECK_BUILD smokediff
-
-wait $pid_smokeview
-CHECK_BUILD smokeview
 
 wait $pid_smokezip
 CHECK_BUILD smokezip
