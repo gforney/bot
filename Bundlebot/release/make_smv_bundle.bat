@@ -19,6 +19,7 @@ set smvscripts=%reporoot%\smv\scripts
 set sh2bat=%reporoot%\smv\Build\sh2bat\intel_win
 set gettime=%reporoot%\smv\Build\get_time\intel_win
 set repoexes=%userprofile%\.bundle\BUNDLE\WINDOWS\repoexes
+set gawk=%reporoot%\bot\scripts\bin\gawk.exe
 
 set smvdir=%zipbase%\%SMVEDITION%
 
@@ -123,7 +124,7 @@ if %ERRORLEVEL% == 1 goto elsescan
   call %CSV2HTML% %vscanlog%
   if NOT exist %htmllog% echo ***error: %htmllog% does not exist
   if NOT exist %htmllog% goto skiphtml
-  CALL :COPY %htmllog% %out_doc%\SmvManifest.html
+  CALL :COPY %htmllog% %logdir%\SmvManifest.html
   CALL :COPY %htmllog% %bundles%\%zipbase%_manifest.html
   :skiphtml
   
