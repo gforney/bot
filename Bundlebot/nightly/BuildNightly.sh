@@ -195,7 +195,7 @@ touch $LOCKFILE
 
 curdir=`pwd`
 
-if [ "$PROCEED" == "" ]; then
+if [[ "$PROCEED" == "" ]] && [[ "$USE_CURRENT" ]]; then
   echo ""
   echo "------------------------------------------------------------"
   echo "------------------------------------------------------------"
@@ -230,14 +230,16 @@ pid_clonefds=
 pid_clonesmv=
 pid_cloneall=
 if [ "$BRANCH" == "nightly" ]; then
+  if [ "$USE_CURRENT" == "" ]; then
 # a nightly bundle - clone fds and smv repos
-  echo cloning fds
-  ./clone_repo.sh -F -N -r $FDS_HASH > $outputdir/clone_fds 2&>1 &
-  pid_clonefds=$!
+    echo cloning fds
+    ./clone_repo.sh -F -N -r $FDS_HASH > $outputdir/clone_fds 2&>1 &
+    pid_clonefds=$!
 
-  echo cloning smv
-  ./clone_repo.sh -S -N -r $SMV_HASH > $outputdir/clone_smv 2&>1 &
-  pid_clonesmv=$!
+    echo cloning smv
+    ./clone_repo.sh -S -N -r $SMV_HASH > $outputdir/clone_smv 2&>1 &
+    pid_clonesmv=$!
+  fi
 else
 #a release bundle - clone all repos except for bot
   echo cloning all repos 
