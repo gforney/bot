@@ -106,8 +106,9 @@ SMV_TAG=
 LATEST=
 INSTALL=
 export TEST_VIRUS=
+USE_CURRENT=
 
-while getopts 'BcfhLm:o:r:R:TU' OPTION
+while getopts 'BcCfhLm:o:r:R:TU' OPTION
 do
 case $OPTION  in
   B)
@@ -115,6 +116,9 @@ case $OPTION  in
    ;;
   c)
    PROCEED=1
+   ;;
+  C)
+   USE_CURRENT=1
    ;;
   f)
    FORCE="-f"
@@ -150,7 +154,11 @@ shift $(($OPTIND-1))
 if [ "$BRANCH" == "nightly" ]; then
   FDS_TAG=
   SMV_TAG=
-  $GITROOT/bot/Firebot/getGHfile.sh     FDS_INFO.txt
+  if [ "$USE_CURRENT" == "" ]; then
+    $GITROOT/bot/Firebot/getGHfile.sh FDS_INFO.txt
+  else
+    $SCRIPTDIR/make_fdsinfo.sh        FDS_INFO.txt
+  fi
   FDS_HASH=`grep FDS_HASH  FDS_INFO.txt | awk '{print $2}'`
   SMV_HASH=`grep SMV_HASH  FDS_INFO.txt | awk '{print $2}'`
   FDS_REVISION=`grep FDS_REVISION  FDS_INFO.txt | awk '{print $2}'`
