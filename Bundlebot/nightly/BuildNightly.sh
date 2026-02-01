@@ -58,17 +58,12 @@ SMV_BRANCH=master
 UPLOADBUNDLE=
 if [ "`uname`" == "Darwin" ] ; then
   platform=osx
-  ABORT=
   if [ "$OPENMPI_BIN" == "" ]; then
-    ABORT=1
     echo "***error: OPENMPI_BIN environment variable not defined"
-  else
-    if [ ! -d $OPENMPI_BIN ]; then
-      ABORT=1
-      echo "***error: directory $OPENMPI_BIN does not exit"
-    fi
+    exit
   fi
-  if [ "$ABORT" != "" ]; then
+  if [ ! -d $OPENMPI_BIN ]; then
+    echo "***error: directory $OPENMPI_BIN does not exist"
     exit
   fi
   export intel_mpi_version=
