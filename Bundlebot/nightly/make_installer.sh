@@ -11,7 +11,6 @@ then
   echo "  -d installdir - default install directory"
   echo "   INSTALLER.sh - bash shell script containing self-extracting Installer"
   echo "  -m MPI_VERSION- mpi version (INTEL or tar'd openmpi distribution)"
-  echo "  -M OPENMPIFILE- openmpi file name"
   echo
   exit
 fi
@@ -25,7 +24,6 @@ CUSTOMBASE=
 FDSVARS=${FDSEDITION}VARS.sh
 SMVVARS=${SMVEDITION}VARS.sh
 
-openmpifile=
 INSTALLDIR=
 FDS_TAR=
 INSTALLER=
@@ -38,7 +36,7 @@ fi
 
 FDS_VERSION=FDS
 SMV_VERSION=Smokeview
-while getopts 'b:d:f:i:m:M:s:' OPTION
+while getopts 'b:d:f:i:m:s:' OPTION
 do
 case $OPTION in
   b)
@@ -57,9 +55,6 @@ case $OPTION in
   ;;
   m)
   MPI_VERSION="$OPTARG"
-  ;;
-  M)
-  openmpifile="$OPTARG"
   ;;
   s)
   SMV_VERSION="$OPTARG"
@@ -95,13 +90,6 @@ if [ "$ostype" == "OSX" ]; then
   LDLIBPATH=DYLD_LIBRARY_PATH
   BASHRC2=.bash_profile
   PLATFORM=osx
-fi
-if [ "$MPI_VERSION" != "INTEL" ]; then
-  if [ "$openmpifile" == "" ]; then
-    OPENMPIFILE=openmpi_${MPI_VERSION}_${PLATFORM}.tar.gz
-  else
-    OPENMPIFILE=$openmpifile
-  fi
 fi
 
 cat << EOF > $INSTALLER

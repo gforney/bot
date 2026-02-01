@@ -321,39 +321,27 @@ fi
 CP $APPS_DIR    fds2ascii  $fdsbindir fds2ascii
 CP $APPS_DIR    test_mpi   $fdsbindir test_mpi
 
-echo ""
+echo SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+""
 echo "--- copying mpi ---"
 echo ""
-openmpifile=
 if [ "$MPI_VERSION" == "INTEL" ]; then
   intelmpifile=$MPI_DIR/INTEL${INTEL_COMP_VERSION}linux.tar.gz
   if [ "$INTELMPI_TARFILE" != "" ]; then
     intelmpifile=$INTELMPI_TARFILE
   fi
   UNTAR $intelmpifile $fdsbindir INTEL
-  MPIEXEC=$fdsbindir/INTEL/bin/mpiexec
 else
-  if [ "$PLATFORM" == "LINUX64" ]; then
-    openmpifile=$MPI_DIR/openmpi_${MPI_VERSION}_linux_${INTEL_COMP_VERSION}.tar.gz
-  fi
-  if [[ "$PLATFORM" == "OSX64" ]] && [[ -d ${FDS_OPENMPIDIR} ]]; then
-    if [ ! -d $fdsbindir/openmpi ]; then
-      mkdir $fdsbindir/openmpi
+  if [[ "$PLATFORM" == "OSX64" ]] && [[ -d ${OPENMPI_BIN} ]]; then
+    if [ -d $fdsbindir/openmpi ]; then
+      rm -r $fdsbindir/openmpi
     fi
-    if [ ! -d $fdsbindir/openmpi/bin ]; then
-      mkdir $fdsbindir/openmpi/bin
-    fi
-    CP ${FDS_OPENMPIDIR}/bin mpirun   $fdsbindir/openmpi/bin mpirun
-    CP ${FDS_OPENMPIDIR}/bin prterun  $fdsbindir/openmpi/bin prterun
-    $SCRIPTDIR/copy_shared.sh         $fdsbindir/openmpi/bin
+    mkdir $fdsbindir/openmpi
+    mkdir $fdsbindir/openmpi/bin
+    CP ${OPENMPI_BIN}         mpirun   $fdsbindir/openmpi/bin mpirun
+    CP ${OPENMPI_BIN}         prterun  $fdsbindir/openmpi/bin prterun
+    $SCRIPTDIR/copy_shared.sh          $fdsbindir/openmpi/bin
   fi
-  if [ "$OPENMPI_TARFILE" != "" ]; then
-    openmpifile=$OPENMPI_TARFILE
-  fi
-  if [ "$openmpifile" != "" ]; then
-    UNTAR $openmpifile $fdsbindir openmpi
-  fi
-  MPIEXEC=$fdsbindir/openmpi/bin/mpiexec
 fi
 
 CURDIR=`pwd`
@@ -465,11 +453,7 @@ cd ..
 bundlepathdir=`pwd`
 bundlepath=`pwd`/$bundlebase.sh
 
-OPENMPIFILE=
-if [ "$openmpifile" != "" ]; then
-  OPENMPIFILE="-M $openmpifile"
-fi
-$MAKEINSTALLER -i $bundlebase.tar.gz -b $custombase -d $INSTALLDIR -f $fds_version -s $smv_version -m $MPI_VERSION $OPENMPIFILE $bundlebase.sh
+$MAKEINSTALLER -i $bundlebase.tar.gz -b $custombase -d $INSTALLDIR -f $fds_version -s $smv_version -m $MPI_VERSION $bundlebase.sh
 
 if [ -e $errlog ]; then
   numerrs=`cat $errlog | wc -l `

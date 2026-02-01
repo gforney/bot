@@ -58,24 +58,21 @@ SMV_BRANCH=master
 UPLOADBUNDLE=
 if [ "`uname`" == "Darwin" ] ; then
   platform=osx
-  if [ "`uname -m`" == "arm64" ]; then
-    export FDS_OPENMPIDIR=/opt/homebrew/Cellar/open-mpi/5.0.8
-    export intel_mpi_version=none
-    export mpi_version=5.0.8
-    export openmpi_dir=/opt/homebrew/Cellar/open-mpi/5.0.8
+  ABORT=
+  if [ "$OPENMPI_BIN" == "" ]; then
+    ABORT=1
+    echo "***error: OPENMPI_BIN environment variable not defined"
   else
-    if [ "`hostname -s`" == "wildfire" ]; then
-      export FDS_OPENMPIDIR=/usr/local/opt/open-mpi
-      export intel_mpi_version=oneapi22u3
-      export mpi_version=4.1.5
-      export openmpi_dir=/usr/local/opt/open-mpi
-    else
-      export FDS_OPENMPIDIR=/opt/openmpi415_oneapi22u3
-      export intel_mpi_version=oneapi22u3
-      export mpi_version=4.1.5
-      export openmpi_dir=/opt/openmpi415_oneapi22u3
+    if [ ! -d $OPENMPI_BIN ]; then
+      ABORT=1
+      echo "***error: directory $OPENMPI_BIN does not exit"
     fi
   fi
+  if [ "$ABORT" != "" ]; then
+    exit
+  fi
+  export intel_mpi_version=
+  export mpi_version=
 else
   platform=lnx
   export intel_mpi_version=2025.0
@@ -88,8 +85,6 @@ fi
 if [ "$BUNDLE_MAILTO" != "" ]; then
   MAILTO=$BUNDLE_MAILTO
 fi
-#export INTEL_MPI_VERSION=2025.0
-#export MPI_VERSION=INTEL
 
 cd $DIR/output
 outputdir=`pwd`
@@ -182,9 +177,14 @@ echo ""
 echo "------------------------------------------------------------"
 echo "          Firebot branch: $BRANCH"
 if [ "$INTEL_MPI_VERSION" != "" ]; then
-echo "       Intel mpi version: $INTEL_MPI_VERSION"
+  echo "       Intel mpi version: $INTEL_MPI_VERSION"
 fi
-echo "             MPI version: $MPI_VERSION"
+if [ "$MPI_VERSION" != "" ]; then
+  echo "             MPI version: $MPI_VERSION"
+fi
+if [ "$OPENMPI_BIN" != "" ]; then
+  echo "   Openmpi bin directory: $OPENMPI_BIN"
+fi
 if [ "$MAILTO" != "" ]; then
 echo "                   EMAIL: $MAILTO_ARG"
 fi
@@ -312,9 +312,6 @@ fi
 if [ "$MPI_VERSION" != "" ]; then
   mpi_version=$MPI_VERSION
 fi
-if [ "$OPENMPI_DIR" != "" ]; then
-  openmpi_dir=$OPENMPI_DIR
-fi
 
 bundle_dir=$HOME/.bundle/bundles
 
@@ -339,10 +336,6 @@ fi
 touch $LOCK_FILE
 
 # determine platform script is running on
-
-if [ "`uname`" == "Darwin" ]; then
-  export FDS_OPENMPIDIR=$openmpi_dir
-fi
 
 if [ "$BRANCH" == "release" ]; then
   BUNDLE_PREFIX=
@@ -446,8 +439,6 @@ if [ -e ${BUNDLEBASE}.sh ]; then
 fi
 cp $REPO_ROOT/bot/Bundlebot/nightly/autoinstall.txt $bundle_dir/.
 #don't remove bundle directory
-#  rm -f  ${BUNDLEBASE}.tar.gz
-#  rm -rf $BUNDLEBASE
 if [ "$INSTALL" != "" ]; then
   cd $bundle_dir
   cat autoinstall.txt | bash $LATEST >& $HOME/.bundle/bundle_lnx_nightly_install.log
