@@ -36,16 +36,12 @@ cd $SCRIPTDIR/../../..
 REPO_ROOT=`pwd`
 cd $curdir
 
-FDSREPODATE=`$REPO_ROOT/bot/Scripts/get_repo_info.sh $REPO_ROOT/fds 1`
-FDSREPODATE=${FDSREPODATE}_
-FDSREPODATE=
-
-if [ "`uname`" == "Darwin" ] ; then
+if [ "`uname`" == "Darwin" ]; then
   platform=osx
-  bundlebase=${fds_version}_${smv_version}_${FDSREPODATE}${NIGHTLY}osx
+  bundlebase=${fds_version}_${smv_version}_${NIGHTLY}osx
 else
   platform=linux
-  bundlebase=${fds_version}_${smv_version}_${FDSREPODATE}${NIGHTLY}lnx
+  bundlebase=${fds_version}_${smv_version}_${NIGHTLY}lnx
 fi
 custombase=${fds_version}_${smv_version}
 
@@ -349,6 +345,7 @@ else
     fi
     CP ${FDS_OPENMPIDIR}/bin mpirun   $fdsbindir/openmpi/bin mpirun
     CP ${FDS_OPENMPIDIR}/bin prterun  $fdsbindir/openmpi/bin prterun
+    $SCRIPTDIR/copy_shared.sh $fdsbindir/openmpi/bin
   fi
   if [ "$OPENMPI_TARFILE" != "" ]; then
     openmpifile=$OPENMPI_TARFILE
