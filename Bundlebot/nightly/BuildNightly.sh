@@ -64,10 +64,17 @@ if [ "`uname`" == "Darwin" ] ; then
     export mpi_version=5.0.8
     export openmpi_dir=/opt/homebrew/Cellar/open-mpi/5.0.8
   else
-    export FDS_OPENMPIDIR=/opt/openmpi415_oneapi22u3
-    export intel_mpi_version=oneapi22u3
-    export mpi_version=4.1.5
-    export openmpi_dir=/opt/openmpi415_oneapi22u3
+    if [ "`hostname -s`" == "wildfire" ]; then
+      export FDS_OPENMPIDIR=/usr/local/opt/open-mpi
+      export intel_mpi_version=oneapi22u3
+      export mpi_version=4.1.5
+      export openmpi_dir=/usr/local/opt/open-mpi
+    else
+      export FDS_OPENMPIDIR=/opt/openmpi415_oneapi22u3
+      export intel_mpi_version=oneapi22u3
+      export mpi_version=4.1.5
+      export openmpi_dir=/opt/openmpi415_oneapi22u3
+    fi
   fi
 else
   platform=lnx

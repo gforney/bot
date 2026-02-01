@@ -4,7 +4,7 @@ FDS=$2
 
 ABORT=
 CURDIR=`pwd`
-SCRIPTDIR=$(dirname "${args}")
+SCRIPTDIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 FDSBUILDDIR=$SCRIPTDIR/../../../fds/Build
 if [ -d $FDSBUILDDIR ]; then
   cd $FDSBUILDDIR

@@ -345,7 +345,7 @@ else
     fi
     CP ${FDS_OPENMPIDIR}/bin mpirun   $fdsbindir/openmpi/bin mpirun
     CP ${FDS_OPENMPIDIR}/bin prterun  $fdsbindir/openmpi/bin prterun
-    $SCRIPTDIR/copy_shared.sh $fdsbindir/openmpi/bin
+    $SCRIPTDIR/copy_shared.sh         $fdsbindir/openmpi/bin
   fi
   if [ "$OPENMPI_TARFILE" != "" ]; then
     openmpifile=$OPENMPI_TARFILE
