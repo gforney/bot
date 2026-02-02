@@ -170,11 +170,17 @@ fi
 echo ""
 echo "------------------------------------------------------------"
 echo "          Firebot branch: $BRANCH"
+if [ "$INTELMPI_BIN" != "" ]; then
+  echo "   Intel mpi bin directory: $INTELMPI_BIN"
+  if [ -e $INTELMPI_BIN/mpirun ]; then
+    echo "         Intel mpi version: `$INTELMPI_BIN/mpirun -version | head -1`"
+  fi
+fi
 if [ "$OPENMPI_BIN" != "" ]; then
   echo "   Openmpi bin directory: $OPENMPI_BIN"
 fi
 if [ "$MAILTO" != "" ]; then
-echo "                   EMAIL: $MAILTO_ARG"
+  echo "                     EMAIL: $MAILTO_ARG"
 fi
 echo "------------------------------------------------------------"
 echo ""
