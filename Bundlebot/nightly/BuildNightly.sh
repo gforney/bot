@@ -6,7 +6,7 @@
 
 function usage {
 echo ""
-echo "BUILDnightly.sh usage"
+echo "BuildNightly.sh usage"
 echo ""
 echo "This script builds FDS and Smokeview apps and generates a bundle using either the"
 echo "specified fds and smv repo revisions or revisions from the latest firebot pass."
@@ -67,14 +67,8 @@ if [ "`uname`" == "Darwin" ] ; then
     echo "***error: directory $OPENMPI_BIN does not exist"
     exit
   fi
-  export intel_mpi_version=
-  export mpi_version=
 else
   platform=lnx
-  export intel_mpi_version=2025.0
-  export mpi_version_linux=INTEL
-  export INTEL_MPI_VERSION=2025.0
-  export MPI_VERSION=INTEL
 fi
 
 #define BUNDLE_MAILTO in .bashrc
@@ -176,12 +170,6 @@ fi
 echo ""
 echo "------------------------------------------------------------"
 echo "          Firebot branch: $BRANCH"
-if [ "$INTEL_MPI_VERSION" != "" ]; then
-  echo "       Intel mpi version: $INTEL_MPI_VERSION"
-fi
-if [ "$MPI_VERSION" != "" ]; then
-  echo "             MPI version: $MPI_VERSION"
-fi
 if [ "$OPENMPI_BIN" != "" ]; then
   echo "   Openmpi bin directory: $OPENMPI_BIN"
 fi
@@ -311,13 +299,6 @@ fi
 
 #run time libraries are located in
 #  $HOME/.bundle/BUNDLE/MPI
-
-if [ "$INTEL_MPI_VERSION" != "" ]; then
-  intel_mpi_version=$INTEL_MPI_VERSION
-fi
-if [ "$MPI_VERSION" != "" ]; then
-  mpi_version=$MPI_VERSION
-fi
 
 bundle_dir=$HOME/.bundle/bundles
 
