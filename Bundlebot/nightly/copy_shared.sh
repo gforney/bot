@@ -16,7 +16,7 @@ else
 fi
 
 FDSOSX=$FDSBUILDDIR/ompi_gnu_osx/fds_ompi_gnu_osx
-FDSLINUX=$FDSBUILDDIR/ompi_gnu_linux/fds_ompi_gnu_linux
+FDSLINUX=$FDSBUILDDIR/impi_intel_linux/fds_impi_intel_linux
 if [ "`uname`" == "Darwin" ]; then
   if [ "$FDS" == "" ]; then
     FDS=$FDSOSX
@@ -41,7 +41,7 @@ fi
 if [ "`uname`" == "Darwin" ]; then
   FILES=`otool -L $FDS  | awk '{print $1 }' | grep mpi | grep -v fds`
 else
-  FILES=`ldd $FDS  | awk '{print $3 }' | grep mpi | grep -v fds`
+  FILES=`ldd $FDS  | awk '{print $3 }' | grep oneapi | grep -v fds`
 fi
 for file in $FILES; do
   if [ -e $file ]; then

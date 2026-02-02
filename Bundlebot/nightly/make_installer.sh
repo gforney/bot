@@ -10,7 +10,6 @@ then
   echo "  -b custombase - custom directory base"
   echo "  -d installdir - default install directory"
   echo "   INSTALLER.sh - bash shell script containing self-extracting Installer"
-  echo "  -m MPI_VERSION- mpi version (INTEL or tar'd openmpi distribution)"
   echo
   exit
 fi
@@ -36,7 +35,7 @@ fi
 
 FDS_VERSION=FDS
 SMV_VERSION=Smokeview
-while getopts 'b:d:f:i:m:s:' OPTION
+while getopts 'b:d:f:i:s:' OPTION
 do
 case $OPTION in
   b)
@@ -52,9 +51,6 @@ case $OPTION in
   ;;
   i)
   FDS_TAR="$OPTARG"
-  ;;
-  m)
-  MPI_VERSION="$OPTARG"
   ;;
   s)
   SMV_VERSION="$OPTARG"
@@ -401,7 +397,7 @@ if [ "$ostype" == "LINUX" ] ; then
 cat << MODULE >> \$FDSMODULEtmp
 prepend-path    LD_LIBRARY_PATH /usr/lib64
 MODULE
-if [ "$MPI_VERSION" == "INTEL" ] ; then
+if [ "$MPI_TYPE" == "INTEL" ] ; then
 cat << MODULE >> \$FDSMODULEtmp
 
 # Intel runtime environment
@@ -413,7 +409,7 @@ prepend-path PATH \\\$impihome/bin
 MODULE
 fi
 fi
-if [ "$MPI_VERSION" != "INTEL" ] ; then
+if [ "$MPI_TYPE" != "INTEL" ] ; then
 cat << MODULE >> \$FDSMODULEtmp
 prepend-path    PATH            \$FDS_root/bin/openmpi/bin
 setenv          OPAL_PREFIX     \$FDS_root/bin/openmpi
@@ -459,7 +455,7 @@ FDSBINDIR=\$FDS_root/bin
 export PATH=\\\$FDSBINDIR:\\\$PATH
 BASH
 
-if [ "$MPI_VERSION" != "INTEL" ] ; then
+if [ "$MPI_TYPE" != "INTEL" ] ; then
 cat << BASH >> \$BASHRCFDS
 export PATH=\\\$FDSBINDIR/openmpi/bin:\\\$PATH
 export OPAL_PREFIX=\\\$FDSBINDIR/openmpi  # used when running the bundled fds
@@ -490,8 +486,7 @@ cat << BASH >> \$BASHRCFDS
 export OMP_NUM_THREADS=4
 BASH
 
-if [ "$ostype" == "LINUX" ] ; then
-if [ "$MPI_VERSION" == "INTEL" ] ; then
+if [[ "$ostype" == "LINUX" ]] &&  [[ "$MPI_TYPE" == "INTEL" ]] ; then
 cat << BASH >> \$BASHRCFDS
 
 # Intel runtime environment
@@ -501,7 +496,6 @@ export FI_PROVIDER_PATH=\\\$impihome/prov
 export LD_LIBRARY_PATH=\\\$impihome/lib:\\\$LD_LIBRARY_PATH
 export PATH=\\\$impihome/bin:\\\$PATH
 BASH
-fi
 fi
 
 #--- create startup and readme files

@@ -16,6 +16,7 @@ echo "-B - install bundle after it is built"
 echo "-c - bundle without warning about cloning/erasing fds and smv repos"
 echo "-f - force this script to run"
 echo "-h - display this message"
+echo "-I - only build installer, assume repos are already cloned and apps are already built"
 echo "-L - build apps using latest revision"
 if [ "$MAILTO" != "" ]; then
   echo "-m mailto - email address [default: $MAILTO]"
@@ -104,8 +105,9 @@ LATEST=
 INSTALL=
 export TEST_VIRUS=
 USE_CURRENT=
+ONLY_INSTALLER=
 
-while getopts 'BcCfhLm:o:r:R:TU' OPTION
+while getopts 'BcCfhILm:o:r:R:TU' OPTION
 do
 case $OPTION  in
   B)
@@ -122,6 +124,9 @@ case $OPTION  in
    ;;
   h)
    usage
+   ;;
+  I)
+   ONLY_INSTALLER=1
    ;;
   L)
    LATEST=1
@@ -210,75 +215,81 @@ if [[ "$PROCEED" == "" ]] && [[ "$USE_CURRENT" ]]; then
 fi
 
 #*** update webpages repos
-if [ -d $GITROOT/webpages ]; then
+if [[ -d $GITROOT/webpages ]] && [[ "$ONLY_INSTALLER" == "" ]]; then
   echo updating webpages repo
   cd $GITROOT/webpages
   get fetch origin              > $outputdir/update_webpages 2&>1
   git merge origin/nist-pages  >> $outputdir/update_webpages 2&>1
 fi
 
+
+if [ "$ONLY_INSTALLER" == "" ]; then
 # clone 3rd party repos
-cd $curdir/../../Scripts
-echo cloning hypre
-./setup_repos.sh -K hypre > $outputdir/clone_hypre 2&>1 &
-pid_clonehypre=$!
+  cd $curdir/../../Scripts
+  echo cloning hypre
+  ./setup_repos.sh -K hypre > $outputdir/clone_hypre 2&>1 &
+  pid_clonehypre=$!
 
-echo cloning sundials
-./setup_repos.sh -K sundials > $outputdir/clone_sundials 2&>1 &
-pid_clonesundials=$!
+  echo cloning sundials
+  ./setup_repos.sh -K sundials > $outputdir/clone_sundials 2&>1 &
+  pid_clonesundials=$!
 
-cd $curdir
-pid_clonefds=
-pid_clonesmv=
-pid_cloneall=
-if [ "$BRANCH" == "nightly" ]; then
-  if [ "$USE_CURRENT" == "" ]; then
+  cd $curdir
+  pid_clonefds=
+  pid_clonesmv=
+  pid_cloneall=
+  if [ "$BRANCH" == "nightly" ]; then
+    if [ "$USE_CURRENT" == "" ]; then
 # a nightly bundle - clone fds and smv repos
-    echo cloning fds
-    ./clone_repo.sh -F -N -r $FDS_HASH > $outputdir/clone_fds 2&>1 &
-    pid_clonefds=$!
+      echo cloning fds
+      ./clone_repo.sh -F -N -r $FDS_HASH > $outputdir/clone_fds 2&>1 &
+      pid_clonefds=$!
 
-    echo cloning smv
-    ./clone_repo.sh -S -N -r $SMV_HASH > $outputdir/clone_smv 2&>1 &
-    pid_clonesmv=$!
-  fi
-else
+      echo cloning smv
+      ./clone_repo.sh -S -N -r $SMV_HASH > $outputdir/clone_smv 2&>1 &
+      pid_clonesmv=$!
+    fi
+  else
 #a release bundle - clone all repos except for bot
-  echo cloning all repos 
-  ./clone_all_repos.sh  $outputdir > $outputdir/clone_all 2&>1 &
-  pid_cloneall=$!
+    echo cloning all repos 
+    ./clone_all_repos.sh  $outputdir > $outputdir/clone_all 2&>1 &
+    pid_cloneall=$!
+  fi
+
+  wait $pid_clonehypre
+  echo hypre cloned
+
+  wait $pid_clonesundials
+  echo sundials cloned
+
+  if [ "$pid_clonefds" != "" ]; then
+    wait $pid_clonefds
+    echo fds cloned
+
+  fi
+  if [ "$pid_clonesmv" != "" ]; then
+    wait $pid_clonesmv
+    echo sundials cloned
+  fi
+  if [ "$pid_cloneall" != "" ]; then
+    wait $pid_cloneall
+    echo all repos clone complete
+  fi
+
+  ./make_fdsapps.sh &
+  pid_fdsapps=$1
+
+  ./make_smvapps.sh &
+  pid_smvapps=$!
+
+  wait $pid_fdsapps
+  wait $pid_smvapps
+fi
+
+if [ "$BRANCH" != "nightly" ]; then
   FDS_TAG="-X $BUNDLE_FDS_TAG"
   SMV_TAG="-Y $BUNDLE_SMV_TAG"
 fi
-
-wait $pid_clonehypre
-echo hypre cloned
-
-wait $pid_clonesundials
-echo sundials cloned
-
-if [ "$pid_clonefds" != "" ]; then
-  wait $pid_clonefds
-  echo fds cloned
-
-fi
-if [ "$pid_clonesmv" != "" ]; then
-  wait $pid_clonesmv
-  echo sundials cloned
-fi
-if [ "$pid_cloneall" != "" ]; then
-  wait $pid_cloneall
-  echo all repos clone complete
-fi
-
-./make_fdsapps.sh &
-pid_fdsapps=$1
-
-./make_smvapps.sh &
-pid_smvapps=$!
-
-wait $pid_fdsapps
-wait $pid_smvapps
 
 echo $FDS_HASH     > $GITROOT/bot/Bundlebot/nightly/apps/FDS_HASH
 echo $SMV_HASH     > $GITROOT/bot/Bundlebot/nightly/apps/SMV_HASH
@@ -388,7 +399,7 @@ htmllog=${installer_base_platform}_manifest.html
 cd $SCRIPTDIR
 echo ""
 echo -n  "***Building installer"
-./assemble_bundle.sh $FDSREV $SMVREV $mpi_version $intel_mpi_version $BUNDLE_PREFIX
+./assemble_bundle.sh $FDSREV $SMVREV $BUNDLE_PREFIX
 assemble_bundle_status=$?
 echo " - complete"
   
