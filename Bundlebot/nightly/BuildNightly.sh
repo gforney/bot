@@ -42,20 +42,6 @@ SCRIPTDIR=$DIR
 cd ../../..
 GITROOT=`pwd`
 
-FDS_HASH=
-SMV_HASH=
-FDS_BRANCH=master
-SMV_BRANCH=master
-
-# uncomment following lines to build using specified hash and revisions
-
-#FDS_HASH=ca0430f09b
-#SMV_HASH=2f257722a
-#FDS_BRANCH=master
-#SMV_BRANCH=size64
-
-# parameters for bundle
-
 UPLOADBUNDLE=
 if [ "`uname`" == "Darwin" ] ; then
   platform=osx

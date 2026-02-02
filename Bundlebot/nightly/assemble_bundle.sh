@@ -19,9 +19,6 @@ fi
 GUIDE_DIR=$SCRIPTDIR/pubs
 APPS_DIR=$SCRIPTDIR/apps
 
-# mpi files located into MPI_DIR
-MPI_DIR=$HOME/.bundle/BUNDLE/MPI
-
 UPLOAD_DIR=$HOME/.bundle/bundles
 
 INSTALLDIR=FDS/FDS6
@@ -243,15 +240,13 @@ SMVExamplesDirectory=$REPO_ROOT/smv/Verification
 cd $UPLOAD_DIR
 rm -rf $bundlebase
 
-mkdir $bundledir
-mkdir $bundledir/Documentation
-mkdir $bundledir/Examples
+mkdir /p $bundledir/Documentation
+mkdir /p $bundledir/Examples
 
 mkdir $fdsbindir
 
-mkdir -p $smvbindir
-mkdir $smvbindir/colorbars
-mkdir $smvbindir/textures
+mkdir -p $smvbindir/colorbars
+mkdir -p $smvbindir/textures
 
 echo ""
 echo "--- smv apps ---"

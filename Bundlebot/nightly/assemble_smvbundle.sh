@@ -30,6 +30,10 @@ CP ()
   FROMFILE=$2
   TODIR=$3
   TOFILE=$4
+  if [ "$TOFILE" == "" ]; then
+    TOFILE=$FROMFILE
+  fi
+
   if [ ! -e $FROMDIR/$FROMFILE ]; then
     echo "***error: the file $FROMFILE does not exist"
   else
@@ -93,17 +97,13 @@ MAKEINSTALLER=$GITROOT/bot/Bundlebot/nightly/make_smv_installer.sh
 UPLOADDIR=$HOME/.bundle/bundles
 flushfile=$GITROOT/smv/Build/flush/${COMPILER}_${platform}/flush_${platform}
 
-if [ ! -e $HOME/.bundle ]; then
-  mkdir $HOME/.bundle
-fi
 if [ ! -d $UPLOADDIR ]; then
-  mkdir $UPLOADDIR
+  mkdir -p $UPLOADDIR
 fi
 
 cd $UPLOADDIR
 
 rm -rf $PLATFORMDIR
-mkdir -p $PLATFORMDIR
 mkdir -p $PLATFORMDIR/$smvbin
 
 echo ""
@@ -115,12 +115,12 @@ CPDIR $FORBUNDLE/colorbars $PLATFORMDIR/smvbin/colorbars
 cp $FORBUNDLE/*.png $PLATFORMDIR/$smvbin/.
 #cp $FORBUNDLE/*.po $PLATFORMDIR/$smvbin/.
 
-CP $FORBUNDLE       objects.svo       $PLATFORMDIR/$smvbin objects.svo
-CP $FORBUNDLE       smokeview.ini     $PLATFORMDIR/$smvbin smokeview.ini
-CP $FORBUNDLE       volrender.ssf     $PLATFORMDIR/$smvbin volrender.ssf
-CP $UTILSCRIPTDIR   slice2html.sh     $PLATFORMDIR/$smvbin slice2html.sh
-CP $UTILSCRIPTDIR   slice2mp4.sh      $PLATFORMDIR/$smvbin slice2mp4.sh
-CP $FORBUNDLE       .smokeview_bin    $PLATFORMDIR/$smvbin .smokeview_bin
+CP $FORBUNDLE       objects.svo       $PLATFORMDIR/$smvbin
+CP $FORBUNDLE       smokeview.ini     $PLATFORMDIR/$smvbin
+CP $FORBUNDLE       volrender.ssf     $PLATFORMDIR/$smvbin
+CP $UTILSCRIPTDIR   slice2html.sh     $PLATFORMDIR/$smvbin
+CP $UTILSCRIPTDIR   slice2mp4.sh      $PLATFORMDIR/$smvbin
+CP $FORBUNDLE       .smokeview_bin    $PLATFORMDIR/$smvbin
 
 CP  $BACKGROUNDDIR background_${platform} $PLATFORMDIR/$smvbin background
 if [ "$platform" == "osx" ]; then
