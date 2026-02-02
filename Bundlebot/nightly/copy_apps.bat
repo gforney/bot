@@ -1,4 +1,5 @@
 @echo off
+setlocal
 set error=0
 set type=%1
 set bot=%2
@@ -6,9 +7,9 @@ set bot=%2
 set scriptdir=%~dp0
 set curdir=%CD%
 cd %scriptdir%\..\..\..
-set repo_root=%CD%
-set fdsrepo=%repo_root%\fds
-set smvrepo=%repo_root%\smv
+set GITROOT=%CD%
+set fdsrepo=%GITROOT%\fds
+set smvrepo=%GITROOT%\smv
 cd %scriptdir%
 
 set BUNDLE_DIR=%userprofile%\.bundle

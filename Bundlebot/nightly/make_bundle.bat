@@ -18,9 +18,8 @@ set scriptdir=%~dp0
 set curdir=%CD%
 set logdir=%curdir%\output
 cd %scriptdir%\..\..\..
-set repo_root=%CD%
+set GITROOT=%CD%
 cd %scriptdir%
-set GITROOT=%repo_root%
 set returncode=0
 set gawk=%GITROOT%\bot\scripts\bin\gawk.exe
 
@@ -34,24 +33,6 @@ if NOT exist %upload_dir% mkdir %upload_dir%
 
 set bundles_dir=%userprofile%\.bundle\bundles
 if NOT exist %bundles_dir% mkdir %bundles_dir%
-
-if "%env_defined%" == "1" goto endif_env_defined
-set envfile="%userprofile%"\fds_smv_env.bat
-IF EXIST %envfile% GOTO endif_envexist2
-echo ***Fatal error.  The environment setup file %envfile% does not exist. 
-echo Create a file named %envfile% and use smv/scripts/fds_smv_env_template.bat
-echo as an example.
-echo.
-echo Aborting now...
-if "x%bot%" == "xbot" goto skip1
-  pause>Nul
-:skip1
-goto:eof
-
-:endif_envexist2
-
-call %envfile%
-:endif_env_defined
 
 if "x%FDS_REVISION_ARG%" == "x" goto skip_fds_version
   set fds_version=%FDS_REVISION_ARG%
@@ -73,11 +54,9 @@ if "x%nightly%" == "x" goto skip_nightly
   set nightly=_%nightly%
 :skip_nightly
 
-set      in_impi=%userprofile%\.bundle\BUNDLE\WINDOWS\%INTELVERSION%
-set in_intel_dll=%userprofile%\.bundle\BUNDLE\WINDOWS\%INTELVERSION%
 set  in_shortcut=%userprofile%\.bundle\BUNDLE\WINDOWS\repoexes
 
-call %repo_root%\bot\Scripts\get_repo_info %repo_root%\fds 1 > FDSREPODATE.out
+call %GITROOT%\bot\Scripts\get_repo_info %GITROOT%\fds 1 > FDSREPODATE.out
 set /p FDSREPODATE=<FDSREPODATE.out
 erase FDSREPODATE.out
 
@@ -86,10 +65,10 @@ set FDSREPODATE=
 
 set basename=%fds_version%_%smv_version%%FDSREPODATE%%nightly%_win
 echo %basename%> %TEMP%\fds_smv_basename.txt
-set getrepoinfo=%repo_root%\bot\Scripts\get_repo_info.bat
+set getrepoinfo=%GITROOT%\bot\Scripts\get_repo_info.bat
 
 set in_pdf=%userprofile%\.bundle\pubs
-set smv_forbundle=%repo_root%\smv\Build\for_bundle
+set smv_forbundle=%GITROOT%\smv\Build\for_bundle
 
 set basedir=%upload_dir%\%basename%
 
@@ -100,24 +79,24 @@ set out_doc=%out_bundle%\%fdsversion%\Documentation
 set out_guides="%out_doc%\Guides_and_Release_Notes"
 set out_web="%out_doc%\FDS_on_the_Web"
 set out_examples=%out_bundle%\%fdsversion%\Examples
-set fds_examples=%repo_root%\fds\Verification
-set smv_examples=%repo_root%\smv\Verification
+set fds_examples=%GITROOT%\fds\Verification
+set smv_examples=%GITROOT%\smv\Verification
 
 set out_smv=%out_bundle%\%smvversion%
 set out_textures=%out_smv%\textures
 set out_colorbars=%out_smv%\colorbars
 
-set fds_casessh=%repo_root%\fds\Verification\FDS_Cases.sh
-set fds_casesbat=%repo_root%\fds\Verification\FDS_Cases.bat
-set smv_casessh=%repo_root%\smv\Verification\scripts\SMV_Cases.sh
-set smv_casesbat=%repo_root%\smv\Verification\scripts\SMV_Cases.bat
-set wui_casessh=%repo_root%\smv\Verification\scripts\WUI_Cases.sh
-set wui_casesbat=%repo_root%\smv\Verification\scripts\WUI_Cases.bat
+set fds_casessh=%GITROOT%\fds\Verification\FDS_Cases.sh
+set fds_casesbat=%GITROOT%\fds\Verification\FDS_Cases.bat
+set smv_casessh=%GITROOT%\smv\Verification\scripts\SMV_Cases.sh
+set smv_casesbat=%GITROOT%\smv\Verification\scripts\SMV_Cases.bat
+set wui_casessh=%GITROOT%\smv\Verification\scripts\WUI_Cases.sh
+set wui_casesbat=%GITROOT%\smv\Verification\scripts\WUI_Cases.bat
 
-set copyFDScases=%repo_root%\bot\Bundlebot\fds\scripts\copyFDScases.bat
-set copyCFASTcases=%repo_root%\bot\Bundlebot\fds\scripts\copyCFASTcases.bat
+set copyFDScases=%GITROOT%\bot\Bundlebot\fds\scripts\copyFDScases.bat
+set copyCFASTcases=%GITROOT%\bot\Bundlebot\fds\scripts\copyCFASTcases.bat
 
-set fds_forbundle=%repo_root%\fds\Build\for_bundle
+set fds_forbundle=%GITROOT%\fds\Build\for_bundle
 
 :: erase the temporary bundle directory if it already exists
 
@@ -155,28 +134,11 @@ CALL :COPY  %bundle_dir%\fds\test_mpi.exe   %out_bin%\test_mpi.exe
 
 CALL :COPY  %bundle_dir%\smv\smokeview.exe  %out_smv%\smokeview.exe
 
-IF  X%SETVARS_COMPLETED% == X1 GOTO intel_envexist
-
-  IF NOT DEFINED ONEAPI_ROOT goto intel_notexist
-
-  call "%ONEAPI_ROOT%\setvars" intel64 > Nul
-  set INTEL_IFORT=ifort
-
-  IF  X%SETVARS_COMPLETED% == X1 GOTO intel_envexist
-
-:intel_notexist
-  echo ***error: Intel compiler environment is not setup
-  goto :eof
-
-:intel_envexist
-:eof
-
 set curdir=%CD%
-cd %out_bin%
 
 :: copy run-time mpi files
-mkdir mpi
-CALL :COPYDIR %in_impi%\mpi mpi
+cd %scriptdir%
+call copy_oneapi_libs.bat %out_bin%
 cd %CURDIR%
 
 CALL :COPY  %bundle_dir%\smv\background.exe %out_bin%\background.exe
@@ -186,16 +148,15 @@ CALL :COPY  %bundle_dir%\smv\fds2fed.exe    %out_smv%\fds2fed.exe
 CALL :COPY  %bundle_dir%\smv\smokezip.exe   %out_smv%\smokezip.exe 
 CALL :COPY  %bundle_dir%\smv\wind2fds.exe   %out_smv%\wind2fds.exe 
 
-CALL :COPY  %repo_root%\smv\scripts\jp2conv.bat                                %out_smv%\jp2conv.bat
+CALL :COPY  %GITROOT%\smv\scripts\jp2conv.bat                %out_smv%\jp2conv.bat
 
 set curdir=%CD%
 
-CALL :COPY %in_intel_dll%\libiomp5md.dll                        %out_bin%\libiomp5md.dll
 CALL :COPY "%fds_forbundle%\fdsinit.bat"                        %out_bin%\fdsinit.bat
 CALL :COPY "%fds_forbundle%\fdspath.bat"                        %out_bin%\fdspath.bat
 CALL :COPY "%fds_forbundle%\helpfds.bat"                        %out_bin%\helpfds.bat
 CALL :COPY "%fds_forbundle%\fds_local.bat"                      %out_bin%\fds_local.bat
-CALL :COPY  %repo_root%\smv\Build\sh2bat\intel_win\sh2bat_win.exe %out_bin%\sh2bat.exe
+CALL :COPY  %GITROOT%\smv\Build\sh2bat\intel_win\sh2bat_win.exe %out_bin%\sh2bat.exe
 
 :: setup program for new installer
 CALL :COPY "%fds_forbundle%\setup.bat"                          %out_bundle%\setup.bat
@@ -232,13 +193,13 @@ CALL :COPY  "%fds_forbundle%\uninstall_fds2.bat" "%out_uninstall%\uninstall_base
 CALL :COPY  "%fds_forbundle%\uninstall.bat"      "%out_uninstall%\uninstall.bat"
 echo @echo off > "%out_uninstall%\uninstall.vbs"
 
-CALL :COPY  "%repo_root%\smv\Build\set_path\intel_win\set_path_win.exe" "%out_uninstall%\set_path.exe"
+CALL :COPY  "%GITROOT%\smv\Build\set_path\intel_win\set_path_win.exe" "%out_uninstall%\set_path.exe"
 
 echo.
 echo --- copying FDS documentation ---
 echo.
 
-CALL :COPY  "%repo_root%\webpages\FDS_Release_Notes.htm" %out_guides%\FDS_Release_Notes.htm
+CALL :COPY  "%GITROOT%\webpages\FDS_Release_Notes.htm"   %out_guides%\FDS_Release_Notes.htm
 CALL :COPY  %in_pdf%\FDS_Config_Management_Plan.pdf      %out_guides%\.
 CALL :COPY  %in_pdf%\FDS_User_Guide.pdf                  %out_guides%\.
 CALL :COPY  %in_pdf%\FDS_Technical_Reference_Guide.pdf   %out_guides%\.
@@ -257,7 +218,7 @@ echo.
 echo --- copying startup shortcuts ---
 echo.
  
-CALL :COPY "%repo_root%\webpages\SMV_Release_Notes.htm" "%out_guides%\Smokeview_release_notes.html"
+CALL :COPY "%GITROOT%\webpages\SMV_Release_Notes.htm"   "%out_guides%\Smokeview_release_notes.html"
 CALL :COPY "%fds_forbundle%\Overview.html"              "%out_doc%\Overview.html"
 CALL :COPY "%fds_forbundle%\FDS_Web_Site.url"           "%out_web%\Official_Web_Site.url"
 
@@ -269,13 +230,13 @@ set RUNCFAST=call %copyCFASTcases%
 echo.
 echo --- copying example files ---
 cd %fds_examples%
-%repo_root%\smv\Build\sh2bat\intel_win\sh2bat_win %fds_casessh% %fds_casesbat%
+%GITROOT%\smv\Build\sh2bat\intel_win\sh2bat_win %fds_casessh% %fds_casesbat%
 call %fds_casesbat%>Nul
 
 cd %smv_examples%
-%repo_root%\smv\Build\sh2bat\intel_win\sh2bat_win %smv_casessh% %smv_casesbat%
+%GITROOT%\smv\Build\sh2bat\intel_win\sh2bat_win %smv_casessh% %smv_casesbat%
 call %smv_casesbat%>Nul
-%repo_root%\smv\Build\sh2bat\intel_win\sh2bat_win %wui_casessh% %wui_casesbat%
+%GITROOT%\smv\Build\sh2bat\intel_win\sh2bat_win %wui_casessh% %wui_casesbat%
 call %wui_casesbat%>Nul
 
 echo.

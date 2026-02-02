@@ -12,6 +12,7 @@ set FDS_TAG=
 set SMV_TAG=
 set logfile=%userprofile%\.bundle\logfile.txt
 set emailto=
+set ONLY_INSTALLER=0
 
 ::*** parse command line arguments
 call :getopts %*
@@ -52,6 +53,7 @@ set webpagesrepo=%CD%
 cd ..
 set basedir=%CD%
 
+if %ONLY_INSTALLER% == 1 goto skip1
 :: bring the webpages and wiki repos up to date
 echo.
 echo ------------------------------------------------------
@@ -60,6 +62,7 @@ echo updating web and wiki repos
 echo.
 cd %REPOROOT%\bot\Scripts
 call update_repos -w > Nul
+:skip1
 
 cd %BUNDLESCRIPTDIR%
 
@@ -123,6 +126,7 @@ echo.                                                        >> %logfile%
 
 type %logfile%
 
+if %ONLY_INSTALLER% == 1 goto skip2
 :: clone fds and smv repos 
 call clone_repos %FDS_HASH_BUNDLER% %SMV_HASH_BUNDLER%  || exit /b 1
 
@@ -134,6 +138,7 @@ echo.
 
 cd %BUNDLESCRIPTDIR%
 call make_apps         || exit /b 1
+:skip2
 
 echo.
 echo ------------------------------------------------------
@@ -246,6 +251,10 @@ exit /b 0
    call :usage
    set stopscript=1
    exit /b
+ )
+ if "%1" EQU "-I" (
+   set ONLY_INSTALLER=1
+   set valid=1
  )
  if "%1" EQU "-m" (
    set emailto=%2
