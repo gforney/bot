@@ -156,14 +156,20 @@ fi
 echo ""
 echo "------------------------------------------------------------"
 echo "          Firebot branch: $BRANCH"
-if [ "$INTELMPI_BIN" != "" ]; then
-  echo "   Intel mpi bin directory: $INTELMPI_BIN"
-  if [ -e $INTELMPI_BIN/mpirun ]; then
-    echo "         Intel mpi version: `$INTELMPI_BIN/mpirun -version | head -1`"
+if [ "$MPI_TYPE" == "INTEL" ]; then
+  if [ "$INTELMPI_BIN" != "" ]; then
+    echo "   Intel mpi bin directory: $INTELMPI_BIN"
+    if [ -e $INTELMPI_BIN/mpirun ]; then
+      echo "         Intel mpi version: `$INTELMPI_BIN/mpirun -version | head -1`"
+    fi
   fi
-fi
-if [ "$OPENMPI_BIN" != "" ]; then
-  echo "   Openmpi bin directory: $OPENMPI_BIN"
+else
+  if [ "$OPENMPI_BIN" != "" ]; then
+    echo "   Openmpi bin directory: $OPENMPI_BIN"
+    if [ -e $OPENMPI_BIN/mpirun ]; then
+      echo "         Openmpi version: `$OPENMPI_BIN/mpirun -V | head -1`"
+    fi
+  fi
 fi
 if [ "$MAILTO" != "" ]; then
   echo "                     EMAIL: $MAILTO_ARG"
