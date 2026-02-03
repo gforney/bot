@@ -211,7 +211,6 @@ if [ "$MAILTO" != "" ]; then
 fi
 echo "------------------------------------------------------------"
 echo ""
-exit
 
 if [ -e $LOCKFILE ]; then
   if [ "$FORCE" == "" ]; then
