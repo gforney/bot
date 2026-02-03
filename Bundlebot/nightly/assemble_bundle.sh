@@ -280,7 +280,6 @@ for file in $FILELIST ; do
   CP $APPS_DIR $file $fdsbindir
 done
 
-echo SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 echo ""
 echo "--- copying mpi ---"
 echo ""
