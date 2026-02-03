@@ -240,8 +240,8 @@ SMVExamplesDirectory=$REPO_ROOT/smv/Verification
 cd $UPLOAD_DIR
 rm -rf $bundlebase
 
-mkdir /p $bundledir/Documentation
-mkdir /p $bundledir/Examples
+mkdir -p $bundledir/Documentation
+mkdir -p $bundledir/Examples
 
 mkdir $fdsbindir
 
