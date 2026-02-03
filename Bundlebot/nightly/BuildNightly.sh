@@ -72,10 +72,11 @@ if [ $mpirun_status -eq 0 ]; then
 fi
 
 IS_INTEL=`mpirun --version | head -1 | grep Intel| wc -l`
+echo IS_INTEL=$IS_INTEL
 if [[ $IS_INTEL -eq 0 ]] && [[ "$platform" == "osx" ]]; then
-    MPI_TYPE="OPENMPI"
+    export MPI_TYPE="OPENMPI"
 elif [[ $IS_INTEL -ne 0 ]] && [[ "$platform" == "lnx" ]]; then
-    MPI_TYPE="INTELMPI"
+    export MPI_TYPE="INTELMPI"
 else
   if [ "$platform" == "osx"  ]; then
     echo "***error: Intel mpi not supported on a Mac"
@@ -93,7 +94,6 @@ fi
 if [ "$MPI_TYPE" == "OPENMPI" ]; then
   export OPENMPI_BIN=`dirname "$(which mpirun)"`
 fi
-export MPI_TYPE OPENMPI_BIN INTELMPI_BIN
 
 #define BUNDLE_MAILTO in .bashrc
 if [ "$BUNDLE_MAILTO" != "" ]; then
@@ -194,19 +194,16 @@ fi
 echo ""
 echo "------------------------------------------------------------"
 echo "          Firebot branch: $BRANCH"
-if [ "$MPI_TYPE" == "INTEL" ]; then
-  if [ "$INTELMPI_BIN" != "" ]; then
-    echo "   Intel mpi bin directory: $INTELMPI_BIN"
-    if [ -e $INTELMPI_BIN/mpirun ]; then
-      echo "         Intel mpi version: `$INTELMPI_BIN/mpirun -version | head -1`"
-    fi
+if [ "$INTELMPI_BIN" != "" ]; then
+  echo "   Intel mpi bin directory: $INTELMPI_BIN"
+  if [ -e $INTELMPI_BIN/mpirun ]; then
+    echo "         Intel mpi version: `$INTELMPI_BIN/mpirun -version | head -1`"
   fi
-else
-  if [ "$OPENMPI_BIN" != "" ]; then
-    echo "   Openmpi bin directory: $OPENMPI_BIN"
-    if [ -e $OPENMPI_BIN/mpirun ]; then
-      echo "         Openmpi version: `$OPENMPI_BIN/mpirun -V | head -1`"
-    fi
+fi
+if [ "$OPENMPI_BIN" != "" ]; then
+  echo "   Openmpi bin directory: $OPENMPI_BIN"
+  if [ -e $OPENMPI_BIN/mpirun ]; then
+    echo "         Openmpi version: `$OPENMPI_BIN/mpirun -V | head -1`"
   fi
 fi
 if [ "$MAILTO" != "" ]; then
@@ -214,6 +211,7 @@ if [ "$MAILTO" != "" ]; then
 fi
 echo "------------------------------------------------------------"
 echo ""
+exit
 
 if [ -e $LOCKFILE ]; then
   if [ "$FORCE" == "" ]; then
