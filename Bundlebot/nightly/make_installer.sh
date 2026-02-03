@@ -586,4 +586,3 @@ __TARFILE_FOLLOWS__
 EOF
 chmod +x $INSTALLER
 cat $FDS_TAR >> $INSTALLER
-echo "Installer created."

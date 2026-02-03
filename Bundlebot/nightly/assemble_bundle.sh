@@ -286,9 +286,9 @@ if [ "$MPI_TYPE" == "INTEL" ]; then
     mkdir -p $fdsbindir/INTEL/bin
     mkdir -p $fdsbindir/INTEL/lib
     mkdir -p $fdsbindir/INTEL/prov
-
     echo ""
     echo "***copying mpi bin files"
+    echo ""
     FILELIST="cpuinfo hydra_bstrap_proxy hydra_nameserver hydra_pmi_proxy impi_info mpiexec mpiexec.hydra mpirun"
     for file in $FILELIST ; do
       CP ${INTELMPI_BIN} $file $fdsbindir/INTEL/bin
@@ -318,6 +318,7 @@ else
     fi
     echo ""
     echo "***copying mpi bin files"
+    echo ""
     mkdir -p $fdsbindir/openmpi/bin
     mkdir -p $fdsbindir/openmpi/lib
     CP ${OPENMPI_BIN}         mpirun   $fdsbindir/openmpi/bin
@@ -430,7 +431,9 @@ echo
 echo ***compressing bundle
 echo 
 gzip    ../$bundlebase.tar
-echo Creating installer
+echo
+echo ***creating installer
+echo
 cd ..
 bundlepathdir=`pwd`
 bundlepath=`pwd`/$bundlebase.sh
