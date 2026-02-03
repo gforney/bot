@@ -31,6 +31,20 @@ echo "-U - upload bundle file to GitHub."
 exit 0
 }
 
+# -------------------- is_file_installed -------------------
+
+IS_PROGRAM_INSTALLED()
+{
+  program=$1
+  notfound=`$program -help 2>&1 | tail -1 | grep "not found" | wc -l`
+  if [ $notfound -eq 0 ] ; then
+    echo 1
+  else
+    echo 0
+  fi
+  exit
+}
+
 #-------------------- start of script ---------------------------------
 
 commands=$0
@@ -42,20 +56,47 @@ SCRIPTDIR=$DIR
 cd ../../..
 GITROOT=`pwd`
 
-UPLOADBUNDLE=
 if [ "`uname`" == "Darwin" ] ; then
   platform=osx
-  if [ "$OPENMPI_BIN" == "" ]; then
-    echo "***error: OPENMPI_BIN environment variable not defined"
-    exit
-  fi
-  if [ ! -d $OPENMPI_BIN ]; then
-    echo "***error: directory $OPENMPI_BIN does not exist"
-    exit
-  fi
 else
   platform=lnx
 fi
+
+UPLOADBUNDLE=
+
+mpirun_status=`IS_PROGRAM_INSTALLED mpirun`
+if [ $mpirun_status -eq 0 ]; then
+  echo ***error: mpi environment not defined
+  exit
+fi
+
+IS_INTEL=`mpirun --version | head -1 | grep Intel| wc -l`
+if [[ $IS_INTEL -eq 0 ]] && [[ "$platform" == "osx" ]]; then
+    MPI_TYPE="OPENMPI"
+elif [[ $IS_INTEL -ne 0 ]] && [[ "$platform" == "lnx" ]]; then
+    MPI_TYPE="INTELMPI"
+else
+  if [ "$platform" == "osx"  ]; then
+    echo "***error: Intel mpi not supported on a Mac"
+  else
+    echo "***error: OpenMPI not supported on Linux"
+  fi
+  exit
+fi
+
+OPENMPI_BIN=
+INTELMPI_BIN=
+if [ "$MPI_TYPE" == "INTELMPI" ]; then
+  export INTELMPI_BIN=`dirname "$(which mpirun)"`  
+fi
+if [ "$MPI_TYPE" == "OPENMPI" ]; then
+  export OPENMPI_BIN=`dirname "$(which mpirun)"`
+fi
+export MPI_TYPE OPENMPI_BIN INTELMPI_BIN
+#echo MPI_TYPE=$MPI_TYPE
+#echo OPENMPI_BIN=$OPENMPI_BIN
+#echo INTELMPI_BIN=$INTELMPI_BIN
+#exit
 
 #define BUNDLE_MAILTO in .bashrc
 if [ "$BUNDLE_MAILTO" != "" ]; then
