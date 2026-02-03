@@ -64,6 +64,7 @@ fi
 
 UPLOADBUNDLE=
 
+#define mpi environment used to build bundle
 mpirun_status=`IS_PROGRAM_INSTALLED mpirun`
 if [ $mpirun_status -eq 0 ]; then
   echo ***error: mpi environment not defined
@@ -93,10 +94,6 @@ if [ "$MPI_TYPE" == "OPENMPI" ]; then
   export OPENMPI_BIN=`dirname "$(which mpirun)"`
 fi
 export MPI_TYPE OPENMPI_BIN INTELMPI_BIN
-#echo MPI_TYPE=$MPI_TYPE
-#echo OPENMPI_BIN=$OPENMPI_BIN
-#echo INTELMPI_BIN=$INTELMPI_BIN
-#exit
 
 #define BUNDLE_MAILTO in .bashrc
 if [ "$BUNDLE_MAILTO" != "" ]; then
