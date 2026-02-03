@@ -148,9 +148,10 @@ CPDIR ()
       read val
     fi
   else
-    echo "*******************************"
-    echo copying directory from $FROMDIR to $TODIR
-    echo "*******************************"
+    echo ""
+    echo "***copying directory"
+    echo "  from:$FROMDIR"
+    echo "    to:$TODIR"
     cp -r $FROMDIR $TODIR
   fi
   if [ -e $TODIR ]; then
@@ -181,9 +182,9 @@ CPDIRFILES ()
       read val
     fi
   else
-    echo "*******************************"
-    echo copying files from directory $FROMDIR to $TODIR
-    echo "*******************************"
+    echo "***copying files"
+    echo "   from: $FROMDIR to $TODIR"
+    echo "     to: $TODIR"
     cp $FROMDIR/* $TODIR/.
   fi
   if [ -e $TODIR ]; then
@@ -248,14 +249,11 @@ mkdir $fdsbindir
 mkdir -p $smvbindir/colorbars
 mkdir -p $smvbindir/textures
 
-echo ""
-echo "--- smv apps ---"
-echo ""
-
 # smokeview apps
 
 echo ""
 echo "***copying smv app files"
+echo ""
 FILELIST="background smokeview  smokediff  pnginfo fds2fed smokezip wind2fds"
 for file in $FILELIST ; do
   CP $APPS_DIR $file $smvbindir
@@ -271,6 +269,7 @@ CPDIR $texturedir $smvbindir
 
 echo ""
 echo "***copying fds app files"
+echo ""
 cd $fdsbindir
 FILELIST="fds fds2ascii test_mpi"
 if [ "$platform" == "linux" ]; then
@@ -280,9 +279,9 @@ for file in $FILELIST ; do
   CP $APPS_DIR $file $fdsbindir
 done
 
-echo ""
-echo "--- copying mpi ---"
-echo ""
+echo 
+echo "*** copying mpi files"
+echo 
 if [ "$MPI_TYPE" == "INTEL" ]; then
     mkdir -p $fdsbindir/INTEL/bin
     mkdir -p $fdsbindir/INTEL/lib
@@ -307,7 +306,7 @@ if [ "$MPI_TYPE" == "INTEL" ]; then
         CP $PROVDIR $file $fdsbindir/INTEL/prov
       done
     else
-      echo ***error: providence directory, $PROVDIR, does not exist
+      echo "***error: providence directory, $PROVDIR, does not exist"
     fi
     echo ""
     echo "***copying mpi shared files"
@@ -325,15 +324,15 @@ else
     CP ${OPENMPI_BIN}         prterun  $fdsbindir/openmpi/bin
     echo ""
     echo "***copying mpi shared files"
-    $SCRIPTDIR/copy_shared.sh          $fdsbindir/openmpi/lib
+    $SCRIPTDIR/copy_shared.sh          $fdsbindir/openmpi/lib $fdsbindir/openmpi/bin
   fi
 fi
 
 CURDIR=`pwd`
 
-echo ""
-echo "--- copying configuration files ---"
-echo ""
+echo 
+echo "***copying configuration files"
+echo 
 
 FILELIST="smokeview.ini volrender.ssf objects.svo .smokeview_bin"
 for file in $FILELIST ; do
@@ -345,16 +344,16 @@ if [ "$PLATFORM" == "LINUX64" ]; then
   CP $utilscriptdir slice2mp4.sh    $smvbindir
 fi
 
-echo ""
-echo "--- copying documentation ---"
-echo ""
+echo 
+echo ***copying documentation
+echo 
 FILELIST="FDS_Config_Management_Plan.pdf FDS_Technical_Reference_Guide.pdf FDS_User_Guide.pdf FDS_Validation_Guide.pdf FDS_Verification_Guide.pdf SMV_User_Guide.pdf SMV_Technical_Reference_Guide.pdf SMV_Verification_Guide.pdf"
 for file in $FILELIST ; do
   CPPUB $GUIDE_DIR $file $bundledir/Documentation
 done
 
-echo ""
-echo "--- copying release notes ---"
+echo 
+echo ***copying release notes
 echo ""
 
 CP $webpagesdir FDS_Release_Notes.htm $bundledir/Documentation FDS_Release_Notes.html
@@ -365,9 +364,9 @@ export QFDS=$copyfdscase
 export RUNTFDS=$copyfdscase
 export RUNCFAST=$copycfastcase
 
-echo ""
-echo "--- copying example files ---"
-echo ""
+echo 
+echo ***copying example files
+echo 
 cd $FDSExamplesDirectory
 $fds_cases
 #$fds_benchmark_cases
@@ -389,14 +388,14 @@ if [ $clam_status -eq 1 ]; then
     $SCRIPTDIR/gen_eicar.sh $bundledir/eicar.com
   fi
 
-  echo ""
-  echo "--- scanning $bundlebase for viruses/malware ---"
-  echo "" 
+  echo 
+  echo ***scanning $bundlebase for viruses/malware
+  echo 
   clamscan -r $UPLOAD_DIR/$bundlebase > $scanlog 2>&1
   sed 's/.*FDS-/FDS-/' $scanlog      > $vscanlog
-  echo ""
-  echo "--- adding sha256 hashes ---"
-  echo "" 
+  echo 
+  echo ***adding sha256 hashes
+  echo 
   $SCRIPTDIR/add_sha256.sh $vscanlog > $csvlog
   sed -i.bak '/SCAN SUMMARY/,$d; s|FDS.*SMV[^/]*/||g'     $csvlog
   sort -f -o $csvlog $csvlog
@@ -420,14 +419,16 @@ else
   echo ***         bundle will not be scanned for viruses or malware
 fi
 
-echo ""
-echo "--- building bundle ---"
-echo ""
+echo 
+echo ***building bundle
+echo 
 rm -rf $UPLOAD_DIR/$bundlebase.tar
 rm -rf $UPLOAD_DIR/$bundlebase.tar.gz
 cd $UPLOAD_DIR/$bundlebase
 tar cf ../$bundlebase.tar --exclude='*.csv' .
-echo "--- compressing bundle ---"
+echo 
+echo ***compressing bundle
+echo 
 gzip    ../$bundlebase.tar
 echo Creating installer
 cd ..

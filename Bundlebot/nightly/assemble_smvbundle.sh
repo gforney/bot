@@ -106,9 +106,9 @@ cd $UPLOADDIR
 rm -rf $PLATFORMDIR
 mkdir -p $PLATFORMDIR/$smvbin
 
-echo ""
-echo "---- copying files ----"
-echo ""
+echo 
+echo "***copying files"
+echo 
 CPDIR $FORBUNDLE/textures  $PLATFORMDIR/smvbin/textures
 CPDIR $FORBUNDLE/colorbars $PLATFORMDIR/smvbin/colorbars
 

@@ -19,8 +19,8 @@ CHECK_BUILDFDSUTIL()
   builddir=$2
 
   if [ ! -e $fdsrepo/Utilities/$prog/$builddir/${prog}_$builddir ]; then
-    echo "***error: The program ${prog}_$builddir failed to build
-    echo "***error: The program ${prog}_$builddir failed to build   >> $errorlog 2>&1
+    echo "***error: The program ${prog}_$builddir failed to build"
+    echo "***error: The program ${prog}_$builddir failed to build"   >> $errorlog 2>&1
   else
     echo ${prog}_$builddir built
     cp $fdsrepo/Utilities/$prog/$builddir/${prog}_$builddir  $CURDIR/apps/$prog

@@ -34,25 +34,27 @@ CP ()
 
 if [ "$pub_type" == "fds" ]; then
   echo ""
-  echo ***copying fds pubs from github.com/$GH_OWNER_LOCAL/test_bundles using tag: $PUB_TAG
+  echo "*** copying fds from github.com/$GH_OWNER_LOCAL/test_bundles using tag: $PUB_TAG"
+  echo ""
   CP FDS_Config_Management_Plan.pdf         || exit 1
   CP FDS_Technical_Reference_Guide.pdf      || exit 1
   CP FDS_User_Guide.pdf                     || exit 1
   CP FDS_Validation_Guide.pdf               || exit 1
   CP FDS_Verification_Guide.pdf             || exit 1
   if [ "$release_type" == "nightly" ]; then
-    CP FDS_INFO.txt                           || exit 1
+    CP FDS_INFO.txt                         || exit 1
   fi
 fi
 
 if [ "$pub_type" == "smv" ]; then
   echo ""
-  echo ***copying smokeview pubs from github.com/$GH_OWNER_LOCAL/test_bundles using tag: $PUB_TAG
+  echo "***copying smokeview pubs from github.com/$GH_OWNER_LOCAL/test_bundles using tag: $PUB_TAG"
+  echo ""
   CP SMV_Technical_Reference_Guide.pdf      || exit 1
   CP SMV_User_Guide.pdf                     || exit 1
   CP SMV_Verification_Guide.pdf             || exit 1
   if [ "$release_type" == "nightly" ]; then
-    CP SMV_INFO.txt                           || exit 1
+    CP SMV_INFO.txt                         || exit 1
   fi
 fi
 exit $return_code

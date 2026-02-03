@@ -72,7 +72,6 @@ if [ $mpirun_status -eq 0 ]; then
 fi
 
 IS_INTEL=`mpirun --version | head -1 | grep Intel| wc -l`
-echo IS_INTEL=$IS_INTEL
 if [[ $IS_INTEL -eq 0 ]] && [[ "$platform" == "osx" ]]; then
     export MPI_TYPE="OPENMPI"
 elif [[ $IS_INTEL -ne 0 ]] && [[ "$platform" == "lnx" ]]; then
@@ -412,7 +411,7 @@ htmllog=${installer_base_platform}_manifest.html
 
 cd $SCRIPTDIR
 echo ""
-echo -n  "***Building installer"
+echo "***Building installer"
 ./assemble_bundle.sh $FDSREV $SMVREV $BUNDLE_PREFIX
 assemble_bundle_status=$?
 echo " - complete"

@@ -1,6 +1,6 @@
 #!/bin/bash
-TODIR=$1
-FDS=$2
+TOLIBDIR=$1
+TOBINDIR=$2
 
 ABORT=
 CURDIR=`pwd`
@@ -18,16 +18,12 @@ fi
 FDSOSX=$FDSBUILDDIR/ompi_gnu_osx/fds_ompi_gnu_osx
 FDSLINUX=$FDSBUILDDIR/impi_intel_linux/fds_impi_intel_linux
 if [ "`uname`" == "Darwin" ]; then
-  if [ "$FDS" == "" ]; then
-    FDS=$FDSOSX
-  fi
+  FDS=$FDSOSX
 else
-  if [ "$FDS" == "" ]; then
-    FDS=$FDSLINUX
-  fi
+  FDS=$FDSLINUX
 fi
-if [ ! -d $TODIR ]; then
-  echo "***error: directory $TODIR does not exist"
+if [ ! -d $TOLIBDIR ]; then
+  echo "***error: directory $TOLIBDIR does not exist"
   ABORT=1
 fi
 if [ ! -e $FDS ]; then
@@ -43,12 +39,28 @@ if [ "`uname`" == "Darwin" ]; then
 else
   FILES=`ldd $FDS  | awk '{print $3 }' | grep oneapi | grep -v fds`
 fi
+echo
+echo ***copying shared fds files to $TOLIBDIR
+echo
 for file in $FILES; do
   if [ -e $file ]; then
-    echo copying shared library $file to $TODIR
-    cp $file $TODIR/.
+    echo copying $file
+    cp $file $TOLIBDIR/.
   else
     echo "***error: shared library: $file does not exist"
   fi
 done
-echo shared library copy complete
+if [ "`uname`" == "Darwin" ]; then
+  echo
+  echo ***copying shared mpirun files to $TOBINDIR
+  echo
+  FILES=`otool -L $OPENMPI_BIN/mpirun  | grep homebrew | grep -v mpirun | awk '{print $1 }'`
+  for file in $FILES; do
+    if [ -e $file ]; then
+      echo copying $file
+      cp $file $TOBINDIR/.
+    else
+      echo "***error: shared library: $file does not exist"
+    fi
+  done
+fi
