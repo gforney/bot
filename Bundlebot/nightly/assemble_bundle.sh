@@ -320,11 +320,17 @@ else
     echo "***copying mpi bin files"
     echo ""
     mkdir -p $fdsbindir/openmpi/bin
-    mkdir -p $fdsbindir/openmpi/lib
     CP ${OPENMPI_BIN}         mpirun   $fdsbindir/openmpi/bin
     CP ${OPENMPI_BIN}         prterun  $fdsbindir/openmpi/bin
+
+    echo ""
+    echo "***copying mpi help file"
+    mkdir -p $fdsbindir/openmpi/share/pmix
+    CP ${OPENMPI_BIN}/../share/pmix         help-pcompress.txt  $fdsbindir/openmpi/share/pmix
+
     echo ""
     echo "***copying mpi shared files"
+    mkdir -p $fdsbindir/openmpi/lib
     $SCRIPTDIR/copy_shared.sh          $fdsbindir/openmpi/lib $fdsbindir/openmpi/bin
   fi
 fi
