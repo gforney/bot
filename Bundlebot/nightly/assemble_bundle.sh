@@ -152,10 +152,11 @@ CPDIR ()
     echo "***copying directory"
     echo "  from:$FROMDIR"
     echo "    to:$TODIR"
+    echo "       copy successful"
     cp -r $FROMDIR $TODIR
   fi
   if [ -e $TODIR ]; then
-    echo "$FROMDIR copied"
+    echo "       copy successful"
   else
     if [ "$ERR" == "" ]; then
       echo "***error: the directory $FROMDIR could not copied to $TODIR" >> $errlog
@@ -295,10 +296,10 @@ if [ "$MPI_TYPE" == "INTEL" ]; then
     done
     PROVDIR=${INTELMPI_BIN}/../opt/mpi/libfabric/lib/prov
     if [ -d $PROVDIR ]; then
-      CPDIR=`pwd`
+      CDIR=`pwd`
       cd $PROVDIR
       PROVDIR=`pwd`
-      cd $CPDIR
+      cd $PDIR
       echo ""
       echo "***copying mpi providence files"
       FILELIST="libefa-fi.so libmlx-fi.so libpsm3-fi.so libpsmx2-fi.so librxm-fi.so libshm-fi.so libtcp-fi.so libverbs-1.12-fi.so libverbs-1.1-fi.so"
@@ -324,14 +325,16 @@ else
     CP ${OPENMPI_BIN}         prterun  $fdsbindir/openmpi/bin
 
     echo ""
-    echo "***copying mpi help file"
-    mkdir -p $fdsbindir/openmpi/share/pmix
-    CP ${OPENMPI_BIN}/../share/pmix         help-pcompress.txt  $fdsbindir/openmpi/share/pmix
-
-    echo ""
     echo "***copying mpi shared files"
     mkdir -p $fdsbindir/openmpi/lib
     $SCRIPTDIR/copy_shared.sh          $fdsbindir/openmpi/lib $fdsbindir/openmpi/bin
+
+    echo ""
+    echo "***copying mpi help file"
+    mkdir -p $fdsbindir/openmpi/share
+    CPDIR ${OPENMPI_BIN}/../share/pmix         $fdsbindir/openmpi/share/pmix
+    CPDIR ${OPENMPI_BIN}/../share/prte         $fdsbindir/openmpi/share/prte
+    CPDIR ${OPENMPI_BIN}/../share/openmpi      $fdsbindir/openmpi/share/openmpi
   fi
 fi
 
