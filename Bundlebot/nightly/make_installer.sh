@@ -463,6 +463,7 @@ BASH
 fi
 if [[ "$ostype" == "OSX" ]]; then
 cat << BASH >> \$BASHRCFDS
+export DYLD_LIBRARY_PATH=\\\$FDSBINDIR/openmpi/lib:\\\$DYLD_LIBRARY_PATH
 export TMPDIR=/tmp
 BASH
 fi
