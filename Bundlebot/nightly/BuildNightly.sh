@@ -1,6 +1,4 @@
 #!/bin/bash
-rm -f BuildNightly.pid
-echo $$ > BuildNightly.pid
 
 #---------------------------------------------
 #                   usage
@@ -19,6 +17,7 @@ echo "-c - bundle without warning about cloning/erasing fds and smv repos"
 echo "-f - force this script to run"
 echo "-h - display this message"
 echo "-I - only build installer, assume repos are already cloned and apps are already built"
+echo "-k - kill BuildNightly.sh and all of its child processes"
 echo "-L - build apps using latest revision"
 if [ "$MAILTO" != "" ]; then
   echo "-m mailto - email address [default: $MAILTO]"
@@ -126,8 +125,9 @@ INSTALL=
 export TEST_VIRUS=
 USE_CURRENT=
 ONLY_INSTALLER=
+PIDFILE=$SCRIPTDIR/BuildNightly.pid
 
-while getopts 'BcCfhILm:o:r:R:TuU' OPTION
+while getopts 'BcCfhkILm:o:r:R:TuU' OPTION
 do
 case $OPTION  in
   B)
@@ -147,6 +147,17 @@ case $OPTION  in
    ;;
   I)
    ONLY_INSTALLER=1
+   ;;
+  k)
+   if [ -e $PIDFILE ]; then
+     PID=`head -1 $PIDFILE`
+     echo ***killing process ID $PID and all of its child processes
+     kill -9 -- -$PID
+   fi
+   else
+     echo ***warning: BuildNightly.sh is not running
+   fi
+   exit
    ;;
   L)
    LATEST=1
@@ -177,6 +188,8 @@ esac
 done
 shift $(($OPTIND-1))
 
+rm -f $PIDFILE
+echo $$ > $PIDFILE
 if [ "$BRANCH" == "nightly" ]; then
   FDS_TAG=
   SMV_TAG=
@@ -473,6 +486,5 @@ if [ "$INSTALL" != "" ]; then
   cd $bundle_dir
   cat autoinstall.txt | bash $LATEST >& $HOME/.bundle/bundle_lnx_nightly_install.log
 fi
-rm -f $LOCK_FILE
+rm -f $LOCK_FILE $PIDFILE
 
-rm $LOCKFILE

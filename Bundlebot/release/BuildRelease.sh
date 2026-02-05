@@ -1,6 +1,20 @@
 #!/bin/bash
-rm -f BuildRelease.pid
-echo $$ > BuildRelease.pid
+PIDFILE=`pwd`/BuildRelease.pid
+
+if [ "$1" == "-k" ]; then
+   if [ -e $PIDFILE ]; then
+     PID=`head -1 $PIDFILE`
+     echo ***killing process ID $PID and all child processes
+     kill -9 -- -$PID
+   fi
+   else
+     echo ***warning: BuildRelease.sh is not running
+   fi
+   exit
+fi
+
+rm -f $PIDFILE
+echo $$ > $PIDFILE
 # build a release bundle using revision and tags defined in config.sh .
 source config.sh
 export DISABLEPUSH=1
@@ -30,3 +44,4 @@ cd $CURDIR/../nightly
 cd $CURDIR
 TITLE="Bundle Test - $BUNDLE_FDS_TAG/$BUNDLE_FDS_HASH - $BUNDLE_SMV_TAG/$BUNDLE_SMV_HASH"
 gh release edit FDS_TEST  -t "$TITLE" -R github.com/$OWNER/test_bundles
+rm -f $PIDFILE
