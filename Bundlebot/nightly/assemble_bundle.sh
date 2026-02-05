@@ -283,17 +283,18 @@ done
 echo 
 echo "*** copying mpi files"
 echo 
-if [ "$MPI_TYPE" == "INTEL" ]; then
-    mkdir -p $fdsbindir/INTEL/bin
-    mkdir -p $fdsbindir/INTEL/lib
-    mkdir -p $fdsbindir/INTEL/prov
+if [ "$MPI_TYPE" == "INTELMPI" ]; then
+    mkdir -p $fdsbindir/intelmpi/bin
+    mkdir -p $fdsbindir/intelmpi/lib
+    mkdir -p $fdsbindir/intelmpi/prov
     echo ""
     echo "***copying mpi bin files"
     echo ""
     FILELIST="cpuinfo hydra_bstrap_proxy hydra_nameserver hydra_pmi_proxy impi_info mpiexec mpiexec.hydra mpirun"
     for file in $FILELIST ; do
-      CP ${INTELMPI_BIN} $file $fdsbindir/INTEL/bin
+      CP ${INTELMPI_BIN} $file $fdsbindir/intelmpi/bin
     done
+
     PROVDIR=${INTELMPI_BIN}/../opt/mpi/libfabric/lib/prov
     if [ -d $PROVDIR ]; then
       CDIR=`pwd`
@@ -304,14 +305,31 @@ if [ "$MPI_TYPE" == "INTEL" ]; then
       echo "***copying mpi providence files"
       FILELIST="libefa-fi.so libmlx-fi.so libpsm3-fi.so libpsmx2-fi.so librxm-fi.so libshm-fi.so libtcp-fi.so libverbs-1.12-fi.so libverbs-1.1-fi.so"
       for file in $FILELIST ; do
-        CP $PROVDIR $file $fdsbindir/INTEL/prov
+        CP $PROVDIR $file $fdsbindir/intelmpi/prov
       done
     else
       echo "***error: providence directory, $PROVDIR, does not exist"
     fi
     echo ""
     echo "***copying mpi shared files"
-    $SCRIPTDIR/copy_shared.sh                      $fdsbindir/INTEL/lib
+    $SCRIPTDIR/copy_shared.sh                      $fdsbindir/intelmpi/lib
+
+    FABRICDIR=${INTELMPI_BIN}/../opt/mpi/libfabric/lib
+    if [ -d $FABRICDIR ]; then
+      CDIR=`pwd`
+      cd $FABRICDIR
+      FABRICDIR=`pwd`
+      cd $CDIR
+      echo ""
+      echo "***copying mpi fabric files"
+      echo ""
+      mkdir -p $fdsbindir/intelmpi/lib
+      CP ${FABRICDIR} libfabric.so   $fdsbindir/intelmpi/lib
+      CP ${FABRICDIR} libfabric.so.1 $fdsbindir/intelmpi/lib
+    else
+      echo "***error: fabric directory, $FABRICDIR, does not exist"
+    fi
+
 else
   if [[ "$PLATFORM" == "OSX64" ]] && [[ -d ${OPENMPI_BIN} ]]; then
     if [ -d $fdsbindir/openmpi ]; then
