@@ -6,6 +6,7 @@ if [ "$1" == "-k" ]; then
      PID=`head -1 $PIDFILE`
      echo ***killing process ID $PID and all child processes
      kill -9 -- -$PID
+     rm -f $PIDFILE
    else
      echo ***warning: BuildRelease.sh is not running
    fi
