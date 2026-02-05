@@ -26,8 +26,9 @@ fi
 echo "-o - specify GH_OWNER when building a bundle. [default: $GH_OWNER]"
 echo "-r - specify GH_REPO when building a bundle. [default: $GH_REPO]"
 echo "-R branch - clone repos using name branch {default: $BRANCH]"
-echo "-r - create a release bundle (same as -R branc)"
-echo "-U - upload bundle file to GitHub."
+echo "-r - create a release bundle (same as -R branch)"
+echo "-u - upload bundle file to GitHub using `whoami`."
+echo "-U - upload bundle file to GitHub using firemodels."
 exit 0
 }
 
@@ -124,7 +125,7 @@ export TEST_VIRUS=
 USE_CURRENT=
 ONLY_INSTALLER=
 
-while getopts 'BcCfhILm:o:r:R:TU' OPTION
+while getopts 'BcCfhILm:o:r:R:TuU' OPTION
 do
 case $OPTION  in
   B)
@@ -162,6 +163,10 @@ case $OPTION  in
    ;;
   T)
    TEST_VIRUS=1
+   ;;
+  u)
+   GHUPLOADOWNER=`whoami` 
+   UPLOADBUNDLE=1
    ;;
   U)
    UPLOADBUNDLE=1
@@ -324,9 +329,13 @@ export NOPAUSE=1
 if [ "$BUILDING_release" == "1" ]; then
   releasetype="release"
   GHOWNER=`whoami`
+  GHUPLOADOWNER=`whoami`
 else
   releasetype="nightly"
   GHOWNER=firemodels
+  if [ "$GHUPLOADOWNER" == "" ]; then
+    GHUPLOADOWNER=firemodels
+  fi
 fi
 
 #run time libraries are located in
@@ -429,16 +438,16 @@ if [[ "$UPLOADBUNDLE" == "1" ]]; then
     echo ""
     echo "uploading installer"
     
-    FILELIST=`gh release view FDS_TEST  -R github.com/$GHOWNER/test_bundles | grep SMV | grep FDS | grep $platform | awk '{print $2}'`
+    FILELIST=`gh release view FDS_TEST  -R github.com/$GHUPLOADOWNER/test_bundles | grep SMV | grep FDS | grep $platform | awk '{print $2}'`
     for file in $FILELIST ; do
-      gh release delete-asset FDS_TEST $file -R github.com/$GHOWNER/test_bundles -y
+      gh release delete-asset FDS_TEST $file -R github.com/$GHUPLOADOWNER/test_bundles -y
     done
 
-    echo gh release upload FDS_TEST $bundle_dir/${installer_base_platform}.sh -R github.com/$GHOWNER/test_bundles  --clobber
-         gh release upload FDS_TEST $bundle_dir/${installer_base_platform}.sh -R github.com/$GHOWNER/test_bundles  --clobber
+    echo gh release upload FDS_TEST $bundle_dir/${installer_base_platform}.sh -R github.com/$GHUPLOADOWNER/test_bundles  --clobber
+         gh release upload FDS_TEST $bundle_dir/${installer_base_platform}.sh -R github.com/$GHUPLOADOWNER/test_bundles  --clobber
     if [ -e $outputdir/$htmllog ]; then
-      echo gh release upload FDS_TEST $outputdir/$htmllog                       -R github.com/$GHOWNER/test_bundles  --clobber
-           gh release upload FDS_TEST $outputdir/$htmllog                       -R github.com/$GHOWNER/test_bundles  --clobber
+      echo gh release upload FDS_TEST $outputdir/$htmllog                       -R github.com/$GHUPLOADOWNER/test_bundles  --clobber
+           gh release upload FDS_TEST $outputdir/$htmllog                       -R github.com/$GHUPLOADOWNER/test_bundles  --clobber
     fi
     if [ "$platform" == "lnx" ]; then
       cd $REPO_ROOT/fds
