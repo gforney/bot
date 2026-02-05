@@ -153,7 +153,6 @@ case $OPTION  in
      PID=`head -1 $PIDFILE`
      echo ***killing process ID $PID and all of its child processes
      kill -9 -- -$PID
-   fi
    else
      echo ***warning: BuildNightly.sh is not running
    fi
