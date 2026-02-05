@@ -187,7 +187,6 @@ esac
 done
 shift $(($OPTIND-1))
 
-rm -f $PIDFILE
 echo $$ > $PIDFILE
 if [ "$BRANCH" == "nightly" ]; then
   FDS_TAG=

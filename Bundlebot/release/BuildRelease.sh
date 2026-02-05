@@ -12,7 +12,6 @@ if [ "$1" == "-k" ]; then
    exit
 fi
 
-rm -f $PIDFILE
 echo $$ > $PIDFILE
 # build a release bundle using revision and tags defined in config.sh .
 source config.sh
