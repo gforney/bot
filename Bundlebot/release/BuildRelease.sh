@@ -1,4 +1,6 @@
 #!/bin/bash
+rm -f BuildRelease.pid
+echo $$ > BuildRelease.pid
 # build a release bundle using revision and tags defined in config.sh .
 source config.sh
 export DISABLEPUSH=1

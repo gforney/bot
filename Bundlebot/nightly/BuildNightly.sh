@@ -1,4 +1,6 @@
 #!/bin/bash
+rm -f BuildNightly.pid
+echo $$ > BuildNightly.pid
 
 #---------------------------------------------
 #                   usage
