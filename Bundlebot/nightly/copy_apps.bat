@@ -19,7 +19,8 @@ set BUNDLE_DIR=%userprofile%\.bundle
 if NOT exist %BUNDLE_DIR%\smv mkdir %BUNDLE_DIR%\smv
 
 if "%type%" == "fds" goto skip_smokeview
-echo erasing %BUNDLE_DIR%\smv
+echo.
+echo ***erasing %BUNDLE_DIR%\smv
 echo.
 erase /q %BUNDLE_DIR%\smv\*
 call :copyfile %smvrepo%\Build\background\intel_win background_win.exe %BUNDLE_DIR%\smv background.exe
@@ -35,7 +36,8 @@ call :copyfile %smvrepo%\Build\wind2fds\intel_win   wind2fds_win.exe   %BUNDLE_D
 
 if "%type%" == "smv" goto skip_fds
 if NOT exist %BUNDLE_DIR%\fds mkdir %BUNDLE_DIR%\fds
-echo erasing %BUNDLE_DIR%\fds
+echo.
+echo ***erasing %BUNDLE_DIR%\fds
 echo.
 erase /q %BUNDLE_DIR%\fds\*
 call :copyfile %fdsrepo%\Build\impi_intel_win              fds_impi_intel_win.exe          %BUNDLE_DIR%\fds fds.exe
