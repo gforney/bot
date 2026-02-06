@@ -431,7 +431,7 @@ htmllog=${installer_base_platform}_manifest.html
 cd $SCRIPTDIR
 echo ""
 echo "***Building installer"
-./assemble_bundle.sh $FDSREV $SMVREV $BUNDLE_PREFIX
+./assemble_bundle.sh $FDSREV $SMVREV $BUNDLE_PREFIX $ARM
 assemble_bundle_status=$?
 echo " - complete"
   
