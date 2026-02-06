@@ -60,10 +60,12 @@ GITROOT=`pwd`
 ARM=
 
 if [ "`uname`" == "Darwin" ] ; then
-  platform=osx
   if [ "`uname -m`" == "arm64" ] ; then
     ARM=_arm
+  else
+    ARM=_intel
   fi
+  platform=osx
 else
   platform=lnx
 fi
@@ -446,7 +448,7 @@ if [[ "$UPLOADBUNDLE" == "1" ]]; then
     echo ""
     echo "uploading installer"
     
-    FILELIST=`gh release view FDS_TEST  -R github.com/$GHUPLOADOWNER/test_bundles | grep SMV | grep FDS | grep $platform | awk '{print $2}'`
+    FILELIST=`gh release view FDS_TEST  -R github.com/$GHUPLOADOWNER/test_bundles | grep SMV | grep FDS | grep $platform$ARM | awk '{print $2}'`
     for file in $FILELIST ; do
       gh release delete-asset FDS_TEST $file -R github.com/$GHUPLOADOWNER/test_bundles -y
     done
@@ -467,7 +469,7 @@ if [[ "$UPLOADBUNDLE" == "1" ]]; then
     echo ***error: virus detected in bundle, bundle not uploaded
   fi
 fi
-LATEST=$bundle_dir/FDS_SMV_latest_$platform.sh
+LATEST=$bundle_dir/FDS_SMV_latest_$platform$ARM.sh
 BUNDLEBASE=$bundle_dir/${installer_base_platform}
 if [ -e ${BUNDLEBASE}.sh ]; then
   rm -f  $LATEST
