@@ -2,13 +2,14 @@
 setlocal
 
 set error=0
-set option=%1
+set USE_C=0
+set CURDIR=%CD%
 
 call :getopts %*
 
-set gawk=..\..\Scripts\bin\gawk.exe
+set gawk=%CURDIR%\..\..\Scripts\bin\gawk.exe
 
-if %option% == 1 goto skip1
+if %USE_C% == 1 goto skip1
 call :getfile FDS_INFO.txt
 grep FDS_HASH     output\FDS_INFO.txt | %gawk% "{print $2}" > output\FDS_HASH
 grep SMV_HASH     output\FDS_INFO.txt | %gawk% "{print $2}" > output\SMV_HASH
@@ -17,16 +18,13 @@ grep SMV_REVISION output\FDS_INFO.txt | %gawk% "{print $2}" > output\SMV_REVISIO
 goto eof
 
 :skip1
-set CURDIR=%CD%
 cd ..\..\..\fds
-git describe | %gawk% "{ sub(/-[^-]+$/, \"\"); print }"            > output\FDS_REVISION
-git describe | %gawk% "{ match($0, /-g([^-]+)$/, a); print a[1] }" > output\FDS_HASH
+git describe | %gawk% "{ sub(/-[^-]+$/, \"\"); print }"            > %CURDIR%\output\FDS_REVISION
+git describe | %gawk% "{ match($0, /-g([^-]+)$/, a); print a[1] }" > %CURDIR%\output\FDS_HASH
 
 cd ..\smv
-git describe | %gawk% "{ sub(/-[^-]+$/, \"\"); print }"            > output\SMV_REVISION
-git describe | %gawk% "{ match($0, /-g([^-]+)$/, a); print a[1] }" > output\SMV_HASH
-
-cd %CURDIR%
+git describe | %gawk% "{ sub(/-[^-]+$/, \"\"); print }"            > %CURDIR%\output\SMV_REVISION
+git describe | %gawk% "{ match($0, /-g([^-]+)$/, a); print a[1] }" > %CURDIR%\output\SMV_HASH
 goto eof
 
 
@@ -51,6 +49,11 @@ exit /b
  if /I "%1" EQU "-h" (
    call :usage
    set stopscript=1
+   exit /b
+ )
+ if /I "%1" EQU "-L" (
+   set valid=1
+   set USE_C=1
    exit /b
  )
  shift
@@ -79,6 +82,7 @@ exit /b 0
 
 :eof
 
+cd %CURDIR%
 if "%error%" == "1" exit /b 1
 exit /b 0
  
