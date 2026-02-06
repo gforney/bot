@@ -123,7 +123,7 @@ set release_version=%FDSMAJORVERSION%_win
 set release_version=
 
 echo.
-echo --- filling bundle directory ---
+echo ***filling bundle directory
 echo.
 
 
@@ -266,15 +266,20 @@ if %ERRORLEVEL% == 1 goto elsescan
   set summary=%logdir%\summary.txt
   set htmllog=%logdir%\%basename%_manifest.html
   set nvscanlog=%logdir%\%basename%_nlog.txt
+  echo.
   echo ***scanning bundle
   echo    input: %basedir%
   echo    output: %vscanlog%
   clamscan -r %basedir% > %scanlog% 2>&1
+  echo.
   echo ***adding sha256 hashes
+  echo.
   cd %scriptdir%
   call %ADDSHA256% %scanlog%         > %vscanlog%
   cd %scriptdir%
+  echo.
   echo ***removing %basename% from filepaths
+  echo.
   sed -i.bak "s/%basename%\\//g"   %vscanlog%
 
 :: split file into two parts
@@ -288,14 +293,16 @@ if %ERRORLEVEL% == 1 goto elsescan
   sed "s/,,/ /g" %summary%     >> %vscanlog%
 
   cd %scriptdir%
+  echo.
   echo ***converting scan log to html
   call %CSV2HTML% %vscanlog%
   if NOT exist %htmllog% echo ***error: %htmllog% does not exist
   if NOT exist %htmllog% goto skiphtml
   CALL :COPY %htmllog% %out_doc%\Manifest.html
   :skiphtml
-  
+
   echo complete
+  echo.
   cd %scriptdir%
   grep Infected %vscanlog% | %gawk% -F":" "{print $2}" > %nvscanlog%
   set have_virus=1
@@ -312,7 +319,8 @@ if %ERRORLEVEL% == 1 goto elsescan
 :endifscan
 
 echo.
-echo --- compressing bundle ---
+echo ***compressing bundle
+echo.
 
 cd %upload_dir%
 if exist %basename%.zip erase %basename%.zip
@@ -323,7 +331,8 @@ wzzip -a -r -xExamples\*.csv -P ..\%basename%.zip firemodels > Nul
 :: create a self extracting installation file from the zipped bundle directory
 
 echo.
-echo --- creating installer ---
+echo ***creating installer
+echo.
 
 cd %upload_dir%
 echo Press Setup to begin installation. > %fds_forbundle%\main.txt
@@ -335,7 +344,8 @@ CALL :COPY %upload_dir%\%basename%.exe       %bundles_dir%\%basename%.exe
 CALL :COPY %upload_dir%\%basename%.zip       %bundles_dir%\%basename%.zip
 
 echo.
-echo --- installer built ---
+echo ***installer built
+echo.
 
 cd %CURDIR%>Nul
 
