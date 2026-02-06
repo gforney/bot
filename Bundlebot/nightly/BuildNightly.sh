@@ -153,7 +153,8 @@ case $OPTION  in
      PID=`head -1 $PIDFILE`
      echo ***killing process ID $PID and all of its child processes
      kill -9 -- -$PID
-   fi
+     rm -f $PIDFILE
+     rm -f $LOCKFILE
    else
      echo ***warning: BuildNightly.sh is not running
    fi
@@ -188,7 +189,6 @@ esac
 done
 shift $(($OPTIND-1))
 
-rm -f $PIDFILE
 echo $$ > $PIDFILE
 if [ "$BRANCH" == "nightly" ]; then
   FDS_TAG=
@@ -367,17 +367,6 @@ fi
 
 # prevent more than one instance of this script from running at the same time
 
-LOCK_FILE=$HOME/.bundle/assemble_bundle_lock
-if [ "$FORCE" == "" ]; then
-  if [ -e $LOCK_FILE ]; then
-    echo "***error: another instance of $0 is running."
-    echo "          If this is not the case, re-run after removing"
-    echo "          the lock file: $LOCKFILE"
-    exit 1
-  fi
-fi
-touch $LOCK_FILE
-
 # determine platform script is running on
 
 if [ "$BRANCH" == "release" ]; then
@@ -401,7 +390,7 @@ if [ "$return_code" == "1" ]; then
   cat $error_log
   echo ""
   echo "bundle generation aborted"
-  rm -f $LOCK_FILE
+  rm -f $LOCKFILE
   exit 1
 fi
 
@@ -486,5 +475,6 @@ if [ "$INSTALL" != "" ]; then
   cd $bundle_dir
   cat autoinstall.txt | bash $LATEST >& $HOME/.bundle/bundle_lnx_nightly_install.log
 fi
-rm -f $LOCK_FILE $PIDFILE
+rm -f $LOCKFILE 
+rm -f $PIDFILE
 

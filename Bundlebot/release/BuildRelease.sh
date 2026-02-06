@@ -6,14 +6,13 @@ if [ "$1" == "-k" ]; then
      PID=`head -1 $PIDFILE`
      echo ***killing process ID $PID and all child processes
      kill -9 -- -$PID
-   fi
+     rm -f $PIDFILE
    else
      echo ***warning: BuildRelease.sh is not running
    fi
    exit
 fi
 
-rm -f $PIDFILE
 echo $$ > $PIDFILE
 # build a release bundle using revision and tags defined in config.sh .
 source config.sh

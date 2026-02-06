@@ -397,19 +397,19 @@ if [ "$ostype" == "LINUX" ] ; then
 cat << MODULE >> \$FDSMODULEtmp
 prepend-path    LD_LIBRARY_PATH /usr/lib64
 MODULE
-if [ "$MPI_TYPE" == "INTEL" ] ; then
+if [ "$MPI_TYPE" == "INTELMPI" ] ; then
 cat << MODULE >> \$FDSMODULEtmp
 
 # Intel runtime environment
 
-set impihome \$FDS_root/bin/INTEL
+set impihome \$FDS_root/bin/intelmpi
 prepend-path FI_PROVIDER_PATH \\\$impihome/prov
 prepend-path LD_LIBRARY_PATH \\\$impihome/lib
 prepend-path PATH \\\$impihome/bin
 MODULE
 fi
 fi
-if [ "$MPI_TYPE" != "INTEL" ] ; then
+if [ "$MPI_TYPE" != "INTELMPI" ] ; then
 cat << MODULE >> \$FDSMODULEtmp
 prepend-path    PATH            \$FDS_root/bin/openmpi/bin
 setenv          OPAL_PREFIX     \$FDS_root/bin/openmpi
@@ -455,7 +455,7 @@ FDSBINDIR=\$FDS_root/bin
 export PATH=\\\$FDSBINDIR:\\\$PATH
 BASH
 
-if [ "$MPI_TYPE" != "INTEL" ] ; then
+if [ "$MPI_TYPE" != "INTELMPI" ] ; then
 cat << BASH >> \$BASHRCFDS
 export PATH=\\\$FDSBINDIR/openmpi/bin:\\\$PATH
 export OPAL_PREFIX=\\\$FDSBINDIR/openmpi  # used when running the bundled fds
@@ -487,12 +487,12 @@ cat << BASH >> \$BASHRCFDS
 export OMP_NUM_THREADS=4
 BASH
 
-if [[ "$ostype" == "LINUX" ]] &&  [[ "$MPI_TYPE" == "INTEL" ]] ; then
+if [[ "$ostype" == "LINUX" ]] &&  [[ "$MPI_TYPE" == "INTELMPI" ]] ; then
 cat << BASH >> \$BASHRCFDS
 
 # Intel runtime environment
 
-impihome=\$FDS_root/bin/INTEL
+impihome=\$FDS_root/bin/intelmpi
 export FI_PROVIDER_PATH=\\\$impihome/prov
 export LD_LIBRARY_PATH=\\\$impihome/lib:\\\$LD_LIBRARY_PATH
 export PATH=\\\$impihome/bin:\\\$PATH

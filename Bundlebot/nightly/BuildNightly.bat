@@ -3,6 +3,7 @@
 :: release bundles are uploaded to the users test repo 
 set OWNER=%username%
 if "x%is_release%" == "x" set OWNER=firemodels
+set UPLOADOWNER=%OWNER%
 
 if not exist %userprofile%\.bundle mkdir %userprofile%\.bundle
 set CURDIR=%CD%
@@ -13,6 +14,7 @@ set SMV_TAG=
 set logfile=%userprofile%\.bundle\logfile.txt
 set emailto=
 set ONLY_INSTALLER=0
+set USE_CURRENT=
 
 ::*** parse command line arguments
 call :getopts %*
@@ -79,7 +81,7 @@ if x%is_release% == x goto else1
   goto endif1
 :else1
 :: this is a nightly bundle - hash and revisions obtained from latest firebot pass
-  call get_hash_revisions.bat || exit /b 1
+  call get_hash_revisions.bat %USE_CURRENT% || exit /b 1
   set /p FDS_HASH_BUNDLER=<output\FDS_HASH
   set /p SMV_HASH_BUNDLER=<output\SMV_HASH
   set /p FDS_REVISION_BUNDLER=<output\FDS_REVISION
@@ -200,19 +202,19 @@ if "x%upload_bundle%" == "x" goto skip_upload
   echo.
 
   set filelist=%TEMP%\fds_smv_files_win.out
-  gh release view FDS_TEST -R github.com/%OWNER%/test_bundles | grep FDS | grep SMV | grep win | %gawk% "{print $2}" > %filelist%
-  for /F "tokens=*" %%A in (%filelist%) do gh release delete-asset FDS_TEST -R github.com/%OWNER%/test_bundles %%A -y
+  gh release view FDS_TEST -R github.com/%UPLOADOWNER%/test_bundles | grep FDS | grep SMV | grep win | %gawk% "{print $2}" > %filelist%
+  for /F "tokens=*" %%A in (%filelist%) do gh release delete-asset FDS_TEST -R github.com/%UPLOADOWNER%/test_bundles %%A -y
   erase %filelist%
 
   set /p basename=<%TEMP%\fds_smv_basename.txt
 
   set fullfilebase=%userprofile%\.bundle\bundles\%basename%
 
-  echo gh release upload FDS_TEST %fullfilebase%.exe -R github.com/%OWNER%/test_bundles --clobber
-       gh release upload FDS_TEST %fullfilebase%.exe -R github.com/%OWNER%/test_bundles --clobber
+  echo gh release upload FDS_TEST %fullfilebase%.exe -R github.com/%UPLOADOWNER%/test_bundles --clobber
+       gh release upload FDS_TEST %fullfilebase%.exe -R github.com/%UPLOADOWNER%/test_bundles --clobber
 
-  echo gh release upload FDS_TEST %CURDIR%\output\%basename%_manifest.html -R github.com/%OWNER%/test_bundles --clobber
-       gh release upload FDS_TEST %CURDIR%\output\%basename%_manifest.html -R github.com/%OWNER%/test_bundles --clobber
+  echo gh release upload FDS_TEST %CURDIR%\output\%basename%_manifest.html -R github.com/%UPLOADOWNER%/test_bundles --clobber
+       gh release upload FDS_TEST %CURDIR%\output\%basename%_manifest.html -R github.com/%UPLOADOWNER%/test_bundles --clobber
 :skip_upload
 
 if "x%emailto%" == "x" goto endif6
@@ -235,8 +237,11 @@ echo specified fds and smv repo revisions or revisions from the latest firebot p
 echo.
 echo Options:
 echo -h - display this message
+echo -I - only build installer, assume repos are already cloned and apps are already built
+echo -L - build apps using current revision
 echo -m mailtto - send email to mailto
-echo -U - upload bundle
+echo -u - upload bundle to %username%
+echo -U - upload bundle to %UPLOADOWNER%
 exit /b 0
 
 ::-----------------------------------------------------------------------
@@ -256,10 +261,20 @@ exit /b 0
    set ONLY_INSTALLER=1
    set valid=1
  )
+ if "%1" EQU "-L" (
+   set USE_CURRENT=-L
+   set valid=1
+   shift
+ )
  if "%1" EQU "-m" (
    set emailto=%2
    set valid=1
    shift
+ )
+ if "%1" EQU "-u" (
+   set upload_bundle=1
+   set UPLOADOWNER=%username%
+   set valid=1
  )
  if "%1" EQU "-U" (
    set upload_bundle=1
