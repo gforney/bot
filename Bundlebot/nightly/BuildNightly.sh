@@ -57,9 +57,13 @@ SCRIPTDIR=$DIR
 
 cd ../../..
 GITROOT=`pwd`
+ARM=
 
 if [ "`uname`" == "Darwin" ] ; then
   platform=osx
+  if [ "`uname -m`" == "arm64" ] ; then
+    ARM=_arm
+  fi
 else
   platform=lnx
 fi
@@ -418,7 +422,7 @@ cd ../../..
 REPO_ROOT=`pwd`
 cd $SCRIPTDIR
 installer_base=${FDSREV}_${SMVREV}
-installer_base_platform=${installer_base}_${BUNDLE_PREFIX_FILE}$platform
+installer_base_platform=${installer_base}_${BUNDLE_PREFIX_FILE}$platform$ARM
 csvlog=${installer_base_platform}.csv
 htmllog=${installer_base_platform}_manifest.html
 
