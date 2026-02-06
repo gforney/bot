@@ -13,6 +13,7 @@ set SMV_TAG=
 set logfile=%userprofile%\.bundle\logfile.txt
 set emailto=
 set ONLY_INSTALLER=0
+set USE_CURRENT=0
 
 ::*** parse command line arguments
 call :getopts %*
@@ -54,6 +55,7 @@ cd ..
 set basedir=%CD%
 
 if %ONLY_INSTALLER% == 1 goto skip1
+if %USE_CURRENT% == 1 goto skip1
 :: bring the webpages and wiki repos up to date
 echo.
 echo ------------------------------------------------------
@@ -79,7 +81,7 @@ if x%is_release% == x goto else1
   goto endif1
 :else1
 :: this is a nightly bundle - hash and revisions obtained from latest firebot pass
-  call get_hash_revisions.bat || exit /b 1
+  call get_hash_revisions.bat %USE_CURRENT% || exit /b 1
   set /p FDS_HASH_BUNDLER=<output\FDS_HASH
   set /p SMV_HASH_BUNDLER=<output\SMV_HASH
   set /p FDS_REVISION_BUNDLER=<output\FDS_REVISION
@@ -235,6 +237,8 @@ echo specified fds and smv repo revisions or revisions from the latest firebot p
 echo.
 echo Options:
 echo -h - display this message
+echo -I - only build installer, assume repos are already cloned and apps are already built
+echo -L - build apps using current revision
 echo -m mailtto - send email to mailto
 echo -U - upload bundle
 exit /b 0
@@ -255,6 +259,11 @@ exit /b 0
  if "%1" EQU "-I" (
    set ONLY_INSTALLER=1
    set valid=1
+ )
+ if "%1" EQU "-L" (
+   set USE_CURRENT=1
+   set valid=1
+   shift
  )
  if "%1" EQU "-m" (
    set emailto=%2

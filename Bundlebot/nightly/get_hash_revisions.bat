@@ -1,14 +1,32 @@
 @echo off
+setlocal
+
 set error=0
+set option=%1
 
 call :getopts %*
 
 set gawk=..\..\Scripts\bin\gawk.exe
+
+if %option% == 1 goto skip1
 call :getfile FDS_INFO.txt
 grep FDS_HASH     output\FDS_INFO.txt | %gawk% "{print $2}" > output\FDS_HASH
 grep SMV_HASH     output\FDS_INFO.txt | %gawk% "{print $2}" > output\SMV_HASH
 grep FDS_REVISION output\FDS_INFO.txt | %gawk% "{print $2}" > output\FDS_REVISION
 grep SMV_REVISION output\FDS_INFO.txt | %gawk% "{print $2}" > output\SMV_REVISION
+goto eof
+
+:skip1
+set CURDIR=%CD%
+cd ..\..\..\fds
+git describe | %gawk% "{ sub(/-[^-]+$/, \"\"); print }"            > output\FDS_REVISION
+git describe | %gawk% "{ match($0, /-g([^-]+)$/, a); print a[1] }" > output\FDS_HASH
+
+cd ..\smv
+git describe | %gawk% "{ sub(/-[^-]+$/, \"\"); print }"            > output\SMV_REVISION
+git describe | %gawk% "{ match($0, /-g([^-]+)$/, a); print a[1] }" > output\SMV_HASH
+
+cd %CURDIR%
 goto eof
 
 
@@ -63,3 +81,4 @@ exit /b 0
 
 if "%error%" == "1" exit /b 1
 exit /b 0
+ 
