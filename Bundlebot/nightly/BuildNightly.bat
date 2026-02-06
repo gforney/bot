@@ -58,9 +58,7 @@ set basedir=%CD%
 if %ONLY_INSTALLER% == 1 goto skip1
 :: bring the webpages and wiki repos up to date
 echo.
-echo ------------------------------------------------------
-echo ------------------------------------------------------
-echo updating web and wiki repos
+echo ***updating web and wiki repos
 echo.
 cd %REPOROOT%\bot\Scripts
 call update_repos -w > Nul
@@ -93,9 +91,7 @@ if x%is_release% == x goto else1
 :endif1
 
 echo.                                                         > %logfile%
-echo ------------------------------------------------------  >> %logfile%
-echo ------------------------------------------------------  >> %logfile%
-echo Building bundle using:                                  >> %logfile%
+echo ***building bundle using:                               >> %logfile%
 echo.                                                        >> %logfile%
 if "x%FDS_REVISION_BUNDLER%" == "x" goto skip_fdsrev
   echo             FDS revision: %FDS_REVISION_BUNDLER%      >> %logfile%
@@ -133,9 +129,7 @@ if %ONLY_INSTALLER% == 1 goto skip2
 call clone_repos %FDS_HASH_BUNDLER% %SMV_HASH_BUNDLER%  || exit /b 1
 
 echo.
-echo ------------------------------------------------------
-echo ------------------------------------------------------
-echo Building apps
+echo ***building apps
 echo.
 
 cd %BUNDLESCRIPTDIR%
@@ -143,44 +137,34 @@ call make_apps         || exit /b 1
 :skip2
 
 echo.
-echo ------------------------------------------------------
-echo ------------------------------------------------------
-echo Copying fds apps
+echo ***copying fds apps
 echo.
 cd %BUNDLESCRIPTDIR%
 call copy_apps fds bot || exit /b 1
 
 echo.
-echo ------------------------------------------------------
-echo ------------------------------------------------------
-echo Copying smv apps
+echo ***copying smv apps
 echo.
 
 cd %BUNDLESCRIPTDIR%
 call copy_apps smv bot || exit /b 1
 
 echo.
-echo ------------------------------------------------------
-echo ------------------------------------------------------
-echo Copying fds pubs
+echo ***copying fds pubs
 echo.
 
 cd %BUNDLESCRIPTDIR%
 call copy_pubs firebot  %OWNER% || exit /b 1
 
 echo.
-echo ------------------------------------------------------
-echo ------------------------------------------------------
-echo Copying smv pubs
+echo ***copying smv pubs
 echo.
 
 cd %BUNDLESCRIPTDIR%
 call copy_pubs smokebot %OWNER% || exit /b 1
 
 echo.
-echo ------------------------------------------------------
-echo ------------------------------------------------------
-echo making bundle
+echo ***making bundle
 echo.
 
 cd %BUNDLESCRIPTDIR%
@@ -196,9 +180,7 @@ if %HAVEVIRUS% == 1 goto skip_upload
 if %HAVEVIRUS% == 0 echo ***no viruses were found in the bundle ***
 if "x%upload_bundle%" == "x" goto skip_upload
   echo.
-  echo ------------------------------------------------------
-  echo ------------------------------------------------------
-  echo uploading bundle
+  echo ***uploading bundle
   echo.
 
   set filelist=%TEMP%\fds_smv_files_win.out
