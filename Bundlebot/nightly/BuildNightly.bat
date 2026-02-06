@@ -13,7 +13,7 @@ set SMV_TAG=
 set logfile=%userprofile%\.bundle\logfile.txt
 set emailto=
 set ONLY_INSTALLER=0
-set USE_CURRENT=0
+set USE_CURRENT=
 
 ::*** parse command line arguments
 call :getopts %*
@@ -55,7 +55,6 @@ cd ..
 set basedir=%CD%
 
 if %ONLY_INSTALLER% == 1 goto skip1
-if %USE_CURRENT% == 1 goto skip1
 :: bring the webpages and wiki repos up to date
 echo.
 echo ------------------------------------------------------
@@ -261,7 +260,7 @@ exit /b 0
    set valid=1
  )
  if "%1" EQU "-L" (
-   set USE_CURRENT=1
+   set USE_CURRENT=-L
    set valid=1
    shift
  )
