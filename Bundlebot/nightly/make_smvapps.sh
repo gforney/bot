@@ -37,7 +37,7 @@ CHECK_BUILD()
 
 #--------------------- start of script -------------------------------
 
-if [ "$MPITYPE" == "INTEL" ]; then
+if [ "$MPITYPE" == "INTELMPI" ]; then
   smvcompiler=intel
 else
   smvcompiler=gnu

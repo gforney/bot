@@ -93,7 +93,7 @@ BUILDFDSLIB()
 
 #--------------------- start of script -------------------------------
 
-if [ "$MPITYPE" == "INTEL" ]; then
+if [ "$MPITYPE" == "INTELMPI" ]; then
   mpitype=impi
   fdscompiler=intel
 else
@@ -166,7 +166,7 @@ echo building fds
 BUILDFDS                                                      &
 pid_fds=$!
 
-if [ "$MPITYPE" == "INTEL" ]; then
+if [ "$MPITYPE" == "INTELMPI" ]; then
   echo building fds openmp
   BUILDFDSOPENMP                                                &
   pid_fdsopenmp=$!
@@ -176,7 +176,7 @@ wait $pid_fds
 CHECK_BUILDFDS
 
 
-if [ "$MPITYPE" == "INTEL" ]; then
+if [ "$MPITYPE" == "INTELMPI" ]; then
   wait $pid_fdsopenmp
   CHECK_BUILDFDSOPENMP
 fi

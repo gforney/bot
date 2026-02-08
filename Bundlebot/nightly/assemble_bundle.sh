@@ -275,7 +275,7 @@ echo "***copying fds app files"
 echo ""
 cd $fdsbindir
 FILELIST="fds fds2ascii test_mpi"
-if [ "$MPITYPE" == "INTEL" ]; then
+if [ "$MPITYPE" == "INTELMPI" ]; then
   FILELIST="$FILELIST fds_openmp"
 fi
 for file in $FILELIST ; do
@@ -285,7 +285,7 @@ done
 echo 
 echo "*** copying mpi files"
 echo 
-if [ "$MPI_TYPE" == "INTELMPI" ]; then
+if [ "$MPITYPE" == "INTELMPI" ]; then
     mkdir -p $fdsbindir/intelmpi/bin
     mkdir -p $fdsbindir/intelmpi/lib
     mkdir -p $fdsbindir/intelmpi/prov

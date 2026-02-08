@@ -230,6 +230,7 @@ echo "             bundle type: $BUNDLETYPE"
 echo "              bot branch: $BOTBRANCH"
 echo "              fds branch: $FDSBRANCH"
 echo "              smv branch: $SMVBRANCH"
+echo "                MPI type: $MPI_TYPE"
 if [ "$INTELMPI_BIN" != "" ]; then
   echo "   Intel mpi bin directory: $INTELMPI_BIN"
   if [ -e $INTELMPI_BIN/mpirun ]; then
