@@ -110,6 +110,13 @@ if [ "$BUNDLE_MAILTO" != "" ]; then
   MAILTO=$BUNDLE_MAILTO
 fi
 
+#get branch names
+BOTBRANCH=`git branch --show-current`
+cd $DIR/../../../fds
+FDSBRANCH=`git branch --show-current`
+cd $DIR/../../../smv
+SMVBRANCH=`git branch --show-current`
+
 cd $DIR/output
 outputdir=`pwd`
 git clean -dxf
@@ -428,14 +435,6 @@ fi
 
 cd ../../..
 REPO_ROOT=`pwd`
-
-#get branch names
-cd $REPO_ROOT/bot
-BOTBRANCH=`git branch --show-current`
-cd $REPO_ROOT/fds
-FDSBRANCH=`git branch --show-current`
-cd $REPO_ROOT/smv
-SMVBRANCH=`git branch --show-current`
 
 cd $SCRIPTDIR
 installer_base=${FDSREV}_${SMVREV}
