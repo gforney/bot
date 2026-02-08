@@ -1,4 +1,5 @@
 #!/bin/bash
+MPITYPE=$1
 
 
 # -------------------------------------------------------------
@@ -36,16 +37,15 @@ CHECK_BUILD()
 
 #--------------------- start of script -------------------------------
 
+if [ "$MPITYPE" == "INTEL" ]; then
+  smvcompiler=intel
+else
+  smvcompiler=gnu
+fi
 platform=linux
-fdscompiler=intel
-smvcompiler=intel
-mpitype=impi
 export FDS_BUILD_TARGET=intel
 if [ "`uname`" == "Darwin" ] ; then
   platform="osx"
-  fdscompiler=intel
-  smvcompiler=gnu
-  mpitype=ompi
   export FDS_BUILD_TARGET=osx
 fi
 

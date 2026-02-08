@@ -2,7 +2,8 @@
 fds_version=$1
 smv_version=$2
 NIGHTLY=$3
-ARM=$4
+MPITYPE=$4
+ARM=$5
 
 returncode=0
 SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
@@ -274,7 +275,7 @@ echo "***copying fds app files"
 echo ""
 cd $fdsbindir
 FILELIST="fds fds2ascii test_mpi"
-if [ "$platform" == "linux" ]; then
+if [ "$MPITYPE" == "INTEL" ]; then
   FILELIST="$FILELIST fds_openmp"
 fi
 for file in $FILELIST ; do

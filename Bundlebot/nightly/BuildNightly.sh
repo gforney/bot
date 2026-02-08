@@ -14,11 +14,11 @@ echo ""
 echo "Options:"
 echo "-B - install bundle after it is built"
 echo "-c - bundle without warning about cloning/erasing fds and smv repos"
+echo "-C - build apps using current revision"
 echo "-f - force this script to run"
 echo "-h - display this message"
 echo "-I - only build installer, assume repos are already cloned and apps are already built"
 echo "-k - kill BuildNightly.sh and all of its child processes"
-echo "-L - build apps using latest revision"
 if [ "$MAILTO" != "" ]; then
   echo "-m mailto - email address [default: $MAILTO]"
 else
@@ -80,17 +80,19 @@ if [ $mpirun_status -eq 0 ]; then
 fi
 
 IS_INTEL=`mpirun --version | head -1 | grep Intel| wc -l`
-if [[ $IS_INTEL -eq 0 ]] && [[ "$platform" == "osx" ]]; then
+if [[ "$platform" == "osx" ]]; then
+  if [[ $IS_INTEL -eq 0 ]]; then
     export MPI_TYPE="OPENMPI"
-elif [[ $IS_INTEL -ne 0 ]] && [[ "$platform" == "lnx" ]]; then
-    export MPI_TYPE="INTELMPI"
-else
-  if [ "$platform" == "osx"  ]; then
-    echo "***error: Intel mpi not supported on a Mac"
   else
-    echo "***error: OpenMPI not supported on Linux"
+    echo "***error: Intel mpi not supported on a Mac"
+    exit
   fi
-  exit
+else
+  if [[ $IS_INTEL -eq 0 ]]; then
+    export MPI_TYPE="OPENMPI"
+  else
+    export MPI_TYPE="INTELMPI"
+  fi
 fi
 
 OPENMPI_BIN=
@@ -126,14 +128,13 @@ RELEASE=
 BRANCH=nightly
 FDS_TAG=
 SMV_TAG=
-LATEST=
 INSTALL=
 export TEST_VIRUS=
 USE_CURRENT=
 ONLY_INSTALLER=
 PIDFILE=$SCRIPTDIR/BuildNightly.pid
 
-while getopts 'BcCfhkILm:o:r:R:TuU' OPTION
+while getopts 'BcCfhkIm:o:r:R:TuU' OPTION
 do
 case $OPTION  in
   B)
@@ -165,9 +166,6 @@ case $OPTION  in
      echo ***warning: BuildNightly.sh is not running
    fi
    exit
-   ;;
-  L)
-   LATEST=1
    ;;
   m)
    MAILTO="$OPTARG"
@@ -248,7 +246,7 @@ touch $LOCKFILE
 
 curdir=`pwd`
 
-if [[ "$PROCEED" == "" ]] && [[ "$USE_CURRENT" ]]; then
+if [[ "$PROCEED" == "" ]] && [[ "$USE_CURRENT" == "" ]]; then
   echo ""
   echo "------------------------------------------------------------"
   echo "------------------------------------------------------------"
@@ -272,13 +270,15 @@ fi
 if [ "$ONLY_INSTALLER" == "" ]; then
 # clone 3rd party repos
   cd $curdir/../../Scripts
-  echo cloning hypre
-  ./setup_repos.sh -K hypre > $outputdir/clone_hypre 2&>1 &
-  pid_clonehypre=$!
+  if [ "$USE_CURRENT" == "" ]; then
+    echo cloning hypre
+    ./setup_repos.sh -K hypre > $outputdir/clone_hypre 2&>1 &
+    pid_clonehypre=$!
 
-  echo cloning sundials
-  ./setup_repos.sh -K sundials > $outputdir/clone_sundials 2&>1 &
-  pid_clonesundials=$!
+    echo cloning sundials
+    ./setup_repos.sh -K sundials > $outputdir/clone_sundials 2&>1 &
+    pid_clonesundials=$!
+  fi
 
   cd $curdir
   pid_clonefds=
@@ -302,11 +302,13 @@ if [ "$ONLY_INSTALLER" == "" ]; then
     pid_cloneall=$!
   fi
 
-  wait $pid_clonehypre
-  echo hypre cloned
+  if [ "$USE_CURRENT" ]; then
+    wait $pid_clonehypre
+    echo hypre cloned
 
-  wait $pid_clonesundials
-  echo sundials cloned
+    wait $pid_clonesundials
+    echo sundials cloned
+  fi
 
   if [ "$pid_clonefds" != "" ]; then
     wait $pid_clonefds
@@ -322,10 +324,10 @@ if [ "$ONLY_INSTALLER" == "" ]; then
     echo all repos clone complete
   fi
 
-  ./make_fdsapps.sh &
+  ./make_fdsapps.sh $MPI_TYPE &
   pid_fdsapps=$1
 
-  ./make_smvapps.sh &
+  ./make_smvapps.sh $MPI_TYPE &
   pid_smvapps=$!
 
   wait $pid_fdsapps
@@ -431,7 +433,7 @@ htmllog=${installer_base_platform}_manifest.html
 cd $SCRIPTDIR
 echo ""
 echo "***Building installer"
-./assemble_bundle.sh $FDSREV $SMVREV $BUNDLE_PREFIX $ARM
+./assemble_bundle.sh $FDSREV $SMVREV $BUNDLE_PREFIX $MPI_TYPE $ARM
 assemble_bundle_status=$?
 echo " - complete"
   
@@ -469,17 +471,17 @@ if [[ "$UPLOADBUNDLE" == "1" ]]; then
     echo ***error: virus detected in bundle, bundle not uploaded
   fi
 fi
-LATEST=$bundle_dir/FDS_SMV_latest_$platform$ARM.sh
+LATESTBUNDLE=$bundle_dir/FDS_SMV_latest_$platform$ARM.sh
 BUNDLEBASE=$bundle_dir/${installer_base_platform}
 if [ -e ${BUNDLEBASE}.sh ]; then
-  rm -f  $LATEST
-  ln -s ${BUNDLEBASE}.sh $LATEST
+  rm -f  $LATESTBUNDLE
+  ln -s ${BUNDLEBASE}.sh $LATESTBUNDLE
 fi
 cp $REPO_ROOT/bot/Bundlebot/nightly/autoinstall.txt $bundle_dir/.
 #don't remove bundle directory
 if [ "$INSTALL" != "" ]; then
   cd $bundle_dir
-  cat autoinstall.txt | bash $LATEST >& $HOME/.bundle/bundle_lnx_nightly_install.log
+  cat autoinstall.txt | bash $LATESTBUNDLE >& $HOME/.bundle/bundle_lnx_nightly_install.log
 fi
 rm -f $LOCKFILE 
 rm -f $PIDFILE

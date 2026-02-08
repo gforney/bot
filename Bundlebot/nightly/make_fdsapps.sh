@@ -1,4 +1,5 @@
 #!/bin/bash
+MPITYPE=$1
 
 # -------------------------------------------------------------
 
@@ -92,16 +93,17 @@ BUILDFDSLIB()
 
 #--------------------- start of script -------------------------------
 
-platform=linux
-fdscompiler=intel
-smvcompiler=intel
-mpitype=impi
+if [ "$MPITYPE" == "INTEL" ]; then
+  mpitype=impi
+  fdscompiler=intel
+else
+  mpitype=ompi
+  fdscompiler=gnu
+fi
 export FDS_BUILD_TARGET=intel
+platform=linux
 if [ "`uname`" == "Darwin" ] ; then
   platform="osx"
-  fdscompiler=gnu
-  smvcompiler=gnu
-  mpitype=ompi
   export FDS_BUILD_TARGET=osx
 fi
 
@@ -164,7 +166,7 @@ echo building fds
 BUILDFDS                                                      &
 pid_fds=$!
 
-if [ "$platform" == "linux" ]; then
+if [ "$MPITYPE" == "INTEL" ]; then
   echo building fds openmp
   BUILDFDSOPENMP                                                &
   pid_fdsopenmp=$!
@@ -174,7 +176,7 @@ wait $pid_fds
 CHECK_BUILDFDS
 
 
-if [ "$platform" == "linux" ]; then
+if [ "$MPITYPE" == "INTEL" ]; then
   wait $pid_fdsopenmp
   CHECK_BUILDFDSOPENMP
 fi
