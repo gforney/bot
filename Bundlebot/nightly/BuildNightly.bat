@@ -6,7 +6,7 @@ if "x%is_release%" == "x" set OWNER=firemodels
 set UPLOADOWNER=%OWNER%
 
 if not exist %userprofile%\.bundle mkdir %userprofile%\.bundle
-set CURDIR=%CD%
+set BNCURDIR=%CD%
 
 set upload_bundle=
 set FDS_TAG=
@@ -195,8 +195,8 @@ if "x%upload_bundle%" == "x" goto skip_upload
   echo gh release upload FDS_TEST %fullfilebase%.exe -R github.com/%UPLOADOWNER%/test_bundles --clobber
        gh release upload FDS_TEST %fullfilebase%.exe -R github.com/%UPLOADOWNER%/test_bundles --clobber
 
-  echo gh release upload FDS_TEST %CURDIR%\output\%basename%_manifest.html -R github.com/%UPLOADOWNER%/test_bundles --clobber
-       gh release upload FDS_TEST %CURDIR%\output\%basename%_manifest.html -R github.com/%UPLOADOWNER%/test_bundles --clobber
+  echo gh release upload FDS_TEST %BNCURDIR%\output\%basename%_manifest.html -R github.com/%UPLOADOWNER%/test_bundles --clobber
+       gh release upload FDS_TEST %BNCURDIR%\output\%basename%_manifest.html -R github.com/%UPLOADOWNER%/test_bundles --clobber
 :skip_upload
 
 if "x%emailto%" == "x" goto endif6
@@ -315,5 +315,5 @@ exit /b 0
 
 :eof
 
-cd %CURDIR%
+cd %BNCURDIR%
 exit /b 0
