@@ -111,12 +111,14 @@ if [ "$BUNDLE_MAILTO" != "" ]; then
 fi
 
 #get branch names
+cd $DIR/../../../bot
 BOTBRANCH=`git branch --show-current`
 cd $DIR/../../../fds
 FDSBRANCH=`git branch --show-current`
 cd $DIR/../../../smv
 SMVBRANCH=`git branch --show-current`
 
+#define output directory
 cd $DIR/output
 outputdir=`pwd`
 git clean -dxf
