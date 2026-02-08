@@ -26,7 +26,7 @@ else
 fi
 echo "-o - specify GH_OWNER when building a bundle. [default: $GH_OWNER]"
 echo "-r - specify GH_REPO when building a bundle. [default: $GH_REPO]"
-echo "-R branch - clone repos using name branch {default: $BRANCH]"
+echo "-R branch - clone repos using name branch {default: $BUNDLETYPE]"
 echo "-r - create a release bundle (same as -R branch)"
 echo "-u - upload bundle file to GitHub using `whoami`."
 echo "-U - upload bundle file to GitHub using firemodels."
@@ -126,7 +126,7 @@ fi
 PROCEED=
 FORCE=
 RELEASE=
-BRANCH=nightly
+BUNDLETYPE=nightly
 FDS_TAG=
 SMV_TAG=
 INSTALL=
@@ -178,7 +178,7 @@ case $OPTION  in
    export GH_REPO="$OPTARG"
    ;;
   R)
-   BRANCH="$OPTARG"
+   BUNDLETYPE="$OPTARG"
    ;;
   T)
    TEST_VIRUS=1
@@ -195,7 +195,7 @@ done
 shift $(($OPTIND-1))
 
 echo $$ > $PIDFILE
-if [ "$BRANCH" == "nightly" ]; then
+if [ "$BUNDLETYPE" == "nightly" ]; then
   FDS_TAG=
   SMV_TAG=
   if [ "$USE_CURRENT" == "" ]; then
@@ -217,7 +217,10 @@ fi
 
 echo ""
 echo "------------------------------------------------------------"
-echo "          Firebot branch: $BRANCH"
+echo "             bundle type: $BUNDLETYPE"
+echo "              bot branch: $BOTBRANCH"
+echo "              fds branch: $FDSBRANCH"
+echo "              smv branch: $SMVBRANCH"
 if [ "$INTELMPI_BIN" != "" ]; then
   echo "   Intel mpi bin directory: $INTELMPI_BIN"
   if [ -e $INTELMPI_BIN/mpirun ]; then
@@ -285,7 +288,7 @@ if [ "$ONLY_INSTALLER" == "" ]; then
   pid_clonefds=
   pid_clonesmv=
   pid_cloneall=
-  if [ "$BRANCH" == "nightly" ]; then
+  if [ "$BUNDLETYPE" == "nightly" ]; then
     if [ "$USE_CURRENT" == "" ]; then
 # a nightly bundle - clone fds and smv repos
       echo cloning fds
@@ -335,7 +338,7 @@ if [ "$ONLY_INSTALLER" == "" ]; then
   wait $pid_smvapps
 fi
 
-if [ "$BRANCH" != "nightly" ]; then
+if [ "$BUNDLETYPE" != "nightly" ]; then
   FDS_TAG="-X $BUNDLE_FDS_TAG"
   SMV_TAG="-Y $BUNDLE_SMV_TAG"
 fi
@@ -378,15 +381,15 @@ fi
 
 # determine platform script is running on
 
-if [ "$BRANCH" == "release" ]; then
+if [ "$BUNDLETYPE" == "release" ]; then
   BUNDLE_PREFIX=
   BUNDLE_PREFIX_FILE=
-  BRANCHDIR=$BRANCH
+  BUNDLETYPEDIR=$BUNDLETYPE
   UPLOAD_DIR="bundle_test"
 else
   BUNDLE_PREFIX="nightly"
   BUNDLE_PREFIX_FILE=${BUNDLE_PREFIX}_
-  BRANCHDIR=
+  BUNDLETYPEDIR=
   UPLOAD_DIR=
 fi
 
@@ -425,6 +428,15 @@ fi
 
 cd ../../..
 REPO_ROOT=`pwd`
+
+#get branch names
+cd $REPO_ROOT/bot
+BOTBRANCH=`git branch --show-current`
+cd $REPO_ROOT/fds
+FDSBRANCH=`git branch --show-current`
+cd $REPO_ROOT/smv
+SMVBRANCH=`git branch --show-current`
+
 cd $SCRIPTDIR
 installer_base=${FDSREV}_${SMVREV}
 installer_base_platform=${installer_base}_${BUNDLE_PREFIX_FILE}$platform$LABEL
