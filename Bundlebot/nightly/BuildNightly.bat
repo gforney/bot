@@ -218,9 +218,9 @@ echo This script builds FDS and Smokeview apps and generates a bundle using eith
 echo specified fds and smv repo revisions or revisions from the latest firebot pass.
 echo.
 echo Options:
+echo -C - build apps using current revision
 echo -h - display this message
 echo -I - only build installer, assume repos are already cloned and apps are already built
-echo -L - build apps using current revision
 echo -m mailtto - send email to mailto
 echo -u - upload bundle to %username%
 echo -U - upload bundle to %UPLOADOWNER%
@@ -234,6 +234,11 @@ exit /b 0
  set valid=0
  set arg=%1
  
+ if "%1" EQU "-C" (
+   set USE_CURRENT=-C
+   set valid=1
+   shift
+ )
  if "%1" EQU "-h" (
    call :usage
    set stopscript=1
@@ -242,11 +247,6 @@ exit /b 0
  if "%1" EQU "-I" (
    set ONLY_INSTALLER=1
    set valid=1
- )
- if "%1" EQU "-L" (
-   set USE_CURRENT=-L
-   set valid=1
-   shift
  )
  if "%1" EQU "-m" (
    set emailto=%2

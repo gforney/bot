@@ -46,14 +46,14 @@ exit /b
  if (%1)==() exit /b
  set valid=0
  set arg=%1
+ if /I "%1" EQU "-C" (
+   set valid=1
+   set USE_C=1
+   exit /b
+ )
  if /I "%1" EQU "-h" (
    call :usage
    set stopscript=1
-   exit /b
- )
- if /I "%1" EQU "-L" (
-   set valid=1
-   set USE_C=1
    exit /b
  )
  shift
