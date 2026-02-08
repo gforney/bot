@@ -3,7 +3,7 @@ fds_version=$1
 smv_version=$2
 NIGHTLY=$3
 MPITYPE=$4
-ARM=$5
+LABEL=$5
 
 returncode=0
 SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
@@ -35,10 +35,10 @@ cd $curdir
 
 if [ "`uname`" == "Darwin" ]; then
   platform=osx
-  bundlebase=${fds_version}_${smv_version}_${NIGHTLY}osx$ARM
+  bundlebase=${fds_version}_${smv_version}_${NIGHTLY}osx$LABEL
 else
   platform=linux
-  bundlebase=${fds_version}_${smv_version}_${NIGHTLY}lnx
+  bundlebase=${fds_version}_${smv_version}_${NIGHTLY}lnx$LABEL
 fi
 custombase=${fds_version}_${smv_version}
 

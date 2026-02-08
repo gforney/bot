@@ -57,14 +57,8 @@ SCRIPTDIR=$DIR
 
 cd ../../..
 GITROOT=`pwd`
-ARM=
 
 if [ "`uname`" == "Darwin" ] ; then
-  if [ "`uname -m`" == "arm64" ] ; then
-    ARM=_arm
-  else
-    ARM=_intel
-  fi
   platform=osx
 else
   platform=lnx
@@ -87,11 +81,18 @@ if [[ "$platform" == "osx" ]]; then
     echo "***error: Intel mpi not supported on a Mac"
     exit
   fi
+  if [ "`uname -m`" == "arm64" ] ; then
+    LABEL=_ompi_arm
+  else
+    LABEL=_ompi_intel
+  fi
 else
   if [[ $IS_INTEL -eq 0 ]]; then
     export MPI_TYPE="OPENMPI"
+    LABEL=_ompi
   else
     export MPI_TYPE="INTELMPI"
+    LABEL=_impi
   fi
 fi
 
@@ -426,14 +427,14 @@ cd ../../..
 REPO_ROOT=`pwd`
 cd $SCRIPTDIR
 installer_base=${FDSREV}_${SMVREV}
-installer_base_platform=${installer_base}_${BUNDLE_PREFIX_FILE}$platform$ARM
+installer_base_platform=${installer_base}_${BUNDLE_PREFIX_FILE}$platform$LABEL
 csvlog=${installer_base_platform}.csv
 htmllog=${installer_base_platform}_manifest.html
 
 cd $SCRIPTDIR
 echo ""
 echo "***Building installer"
-./assemble_bundle.sh $FDSREV $SMVREV $BUNDLE_PREFIX $MPI_TYPE $ARM
+./assemble_bundle.sh $FDSREV $SMVREV $BUNDLE_PREFIX $MPI_TYPE $LABEL
 assemble_bundle_status=$?
 echo " - complete"
   
@@ -450,7 +451,7 @@ if [[ "$UPLOADBUNDLE" == "1" ]]; then
     echo ""
     echo "uploading installer"
     
-    FILELIST=`gh release view FDS_TEST  -R github.com/$GHUPLOADOWNER/test_bundles | grep SMV | grep FDS | grep $platform$ARM | awk '{print $2}'`
+    FILELIST=`gh release view FDS_TEST  -R github.com/$GHUPLOADOWNER/test_bundles | grep SMV | grep FDS | grep $platform$LABEL | awk '{print $2}'`
     for file in $FILELIST ; do
       gh release delete-asset FDS_TEST $file -R github.com/$GHUPLOADOWNER/test_bundles -y
     done
@@ -471,7 +472,7 @@ if [[ "$UPLOADBUNDLE" == "1" ]]; then
     echo ***error: virus detected in bundle, bundle not uploaded
   fi
 fi
-LATESTBUNDLE=$bundle_dir/FDS_SMV_latest_$platform$ARM.sh
+LATESTBUNDLE=$bundle_dir/FDS_SMV_latest_$platform$LABEL.sh
 BUNDLEBASE=$bundle_dir/${installer_base_platform}
 if [ -e ${BUNDLEBASE}.sh ]; then
   rm -f  $LATESTBUNDLE
