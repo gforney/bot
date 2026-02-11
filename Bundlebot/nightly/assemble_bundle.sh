@@ -459,7 +459,7 @@ tar cf $bundlebase.tar --exclude='*.csv' $bundlebase
 echo 
 echo ***compressing bundle
 echo 
-gzip    ../$bundlebase.tar
+gzip    $bundlebase.tar
 echo
 echo ***creating installer
 echo
