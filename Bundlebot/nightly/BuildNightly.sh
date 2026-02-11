@@ -315,6 +315,16 @@ if [ "$ONLY_INSTALLER" == "" ]; then
     ./clone_all_repos.sh  $outputdir > $outputdir/clone_all 2&>1 &
     pid_cloneall=$!
   fi
+  if [ "$pid_clonesmv" != "" ]; then
+    wait $pid_clonesmv
+    echo smv cloned
+  fi
+  if [ "$pid_cloneall" != "" ]; then
+    wait $pid_cloneall
+    echo all repos clone complete
+  fi
+  ./make_smvapps.sh $MPI_TYPE &
+  pid_smvapps=$!
 
   if [ "$USE_CURRENT" ]; then
     wait $pid_clonehypre
@@ -329,20 +339,9 @@ if [ "$ONLY_INSTALLER" == "" ]; then
     echo fds cloned
 
   fi
-  if [ "$pid_clonesmv" != "" ]; then
-    wait $pid_clonesmv
-    echo sundials cloned
-  fi
-  if [ "$pid_cloneall" != "" ]; then
-    wait $pid_cloneall
-    echo all repos clone complete
-  fi
 
   ./make_fdsapps.sh $MPI_TYPE &
   pid_fdsapps=$1
-
-  ./make_smvapps.sh $MPI_TYPE &
-  pid_smvapps=$!
 
   wait $pid_fdsapps
   wait $pid_smvapps
@@ -352,6 +351,17 @@ if [ "$BUNDLETYPE" != "nightly" ]; then
   FDS_TAG="-X $BUNDLE_FDS_TAG"
   SMV_TAG="-Y $BUNDLE_SMV_TAG"
 fi
+if [ "$pid_clonesmv" != "" ]; then
+  wait $pid_clonesmv
+  echo smv cloned
+fi
+if [ "$pid_cloneall" != "" ]; then
+  wait $pid_cloneall
+  echo all repos clone complete
+fi
+./make_smvapps.sh &
+pid_smvapps=$!
+
 
 echo $FDS_HASH     > $GITROOT/bot/Bundlebot/nightly/apps/FDS_HASH
 echo $SMV_HASH     > $GITROOT/bot/Bundlebot/nightly/apps/SMV_HASH

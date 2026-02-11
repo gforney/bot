@@ -80,13 +80,8 @@ git clean -dxf  >> $cleanlog 2>&1
 
 # build smokeview libraries
 echo building smokeview libraries
-BUILDSMVLIBS &
-pid_smvlibs=$!
+BUILDSMVLIBS
 
-#wait for smokeview libraries to be built before continuing
-wait $pid_smvlibs
-
-echo building smokeview
 BUILD smokeview &
 pid_smokeview=$!
 
