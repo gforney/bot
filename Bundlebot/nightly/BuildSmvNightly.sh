@@ -17,6 +17,7 @@ echo "BUILDSmvNightly.sh usage"
 echo ""
 echo "Options:"
 echo "-h - display this message"
+echo "-u - upload bundle file to GitHub owner: `pwd`"
 echo "-U - upload bundle file to GitHub owner: $GHOWNER"
 exit 0
 }
@@ -25,7 +26,7 @@ UPLOADBUNDLE=
 export BUILDING_release=
 OUTPUT_USAGE=
 
-while getopts 'hUR' OPTION
+while getopts 'huUR' OPTION
 do
 case $OPTION  in
   h)
@@ -33,6 +34,10 @@ case $OPTION  in
    ;;
   R)
    export BUILDING_release=1
+   ;;
+  u)
+   GHOWNER=`whoami`
+   UPLOADBUNDLE=1
    ;;
   U)
    UPLOADBUNDLE=1
@@ -42,11 +47,11 @@ done
 shift $(($OPTIND-1))
 
 if [ "$BUILDING_release" == "" ]; then
-  smv_revision=`git describe --abbrev=7 --dirty --long`
-  GHOWNER=firemodels
+  if [ "$GHOWNER" == "" ]; then
+    GHOWNER=firemodels
+  fi
 else
   git tag -a $BUNDLE_SMV_TAG -m "tag for smokeview release" >> $outdir/stage2_clone 2>&1
-  smv_revision=$BUNDLE_SMV_TAG
   GHOWNER=`whoami`
 fi
 if [ "$OUTPUT_USAGE" != "" ]; then
@@ -106,6 +111,11 @@ cd $reporoot/bot/Bundlebot/nightly
 ./clone_smvrepo.sh $smv_hash $BUILDING_release >& $outdir/stage2_clone
 
 cd $reporoot/smv
+if [ "$BUILDING_release" == "" ]; then
+  smv_revision=`git describe --abbrev=7 --dirty --long`
+else
+  smv_revision=$BUNDLE_SMV_TAG
+fi
 echo "***     smv_hash: $smv_hash"
 echo "*** smv_revision: $smv_revision"
 
