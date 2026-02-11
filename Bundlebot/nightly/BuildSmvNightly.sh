@@ -144,8 +144,8 @@ if [ "$UPLOADBUNDLE" != "" ]; then
     gh release delete-asset SMOKEVIEW_TEST $file -R github.com/$GHOWNER/test_bundles -y
   done
 
-  $reporoot/bot/Bundlebot/nightly/upload_smvbundle.sh $uploaddir ${smv_revision}_${platform2}.sh                $basereporoot/bot/Bundlebot/nightly --clobber
-  $reporoot/bot/Bundlebot/nightly/upload_smvbundle.sh $uploaddir ${smv_revision}_${platform2}_manifest.html     $basereporoot/bot/Bundlebot/nightly --clobber
+  $reporoot/bot/Bundlebot/nightly/upload_smvbundle.sh $uploaddir ${smv_revision}_${platform2}.sh                $basereporoot/bot/Bundlebot/nightly $GHOWNER
+  $reporoot/bot/Bundlebot/nightly/upload_smvbundle.sh $uploaddir ${smv_revision}_${platform2}_manifest.html     $basereporoot/bot/Bundlebot/nightly $GHOWNER
 
   echo "*** upload complete"
 fi

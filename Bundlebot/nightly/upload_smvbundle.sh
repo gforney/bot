@@ -2,12 +2,7 @@
 FROM_DIR=$1
 FROM_FILE=$2
 SCRIPTDIR=$3
-
-if [ "$BUILDING_release" == "1" ]; then
-  OWNER=`whoami`
-else
-  OWNER=firemodels
-fi
+OWNER=$4
 
 CURDIR=`pwd`
 
