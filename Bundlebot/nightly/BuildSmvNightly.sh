@@ -61,13 +61,13 @@ fi
 #*** determine platform script is running on
 
 platform=linux
-platform2=lnx_intel
+LABEL=lnx_intel
 comp=intel
 if [ "`uname`" == "Darwin" ] ; then
   platform="osx"
-  platform2="osx_intel"
+  LABEL="osx_intel"
   if [ "`uname -m`" == "arm64" ] ; then
-    platform2="osx_arm"
+    LABEL="osx_arm"
   fi
   comp=gnu
 fi
@@ -128,13 +128,13 @@ cd $reporoot/bot/Bundlebot/nightly
 
 echo "*** bundling smokeview"
 
-$reporoot/bot/Bundlebot/nightly/assemble_smvbundle.sh $smv_revision $basereporoot
+$reporoot/bot/Bundlebot/nightly/assemble_smvbundle.sh $smv_revision $basereporoot $LABEL
 
 uploaddir=$HOME/.bundle/bundles
-if [ -e $uploaddir/${smv_revision}_${platform2}.sh ]; then
-  echo smv bundle: $HOME/$uploaddir/${smv_revision}_${platform2}.sh created
+if [ -e $uploaddir/${smv_revision}_${LABEL}.sh ]; then
+  echo smv bundle: $HOME/$uploaddir/${smv_revision}_${LABEL}.sh created
 else
-  echo ***error: smv bundle: $HOME/$uploaddir/${smv_revision}_${platform2}.sh failed to be created
+  echo ***error: smv bundle: $HOME/$uploaddir/${smv_revision}_${LABEL}.sh failed to be created
 fi
 
 
@@ -142,13 +142,13 @@ fi
 if [ "$UPLOADBUNDLE" != "" ]; then
   echo "*** uploading smokeview bundle"
 
-  FILELIST=`gh release view SMOKEVIEW_TEST  -R github.com/$GHOWNER/test_bundles | grep SMV |   grep -v FDS | grep $platform2 | awk '{print $2}'`
+  FILELIST=`gh release view SMOKEVIEW_TEST  -R github.com/$GHOWNER/test_bundles | grep SMV |   grep -v FDS | grep $LABEL | awk '{print $2}'`
   for file in $FILELIST ; do
     gh release delete-asset SMOKEVIEW_TEST $file -R github.com/$GHOWNER/test_bundles -y
   done
 
-  $reporoot/bot/Bundlebot/nightly/upload_smvbundle.sh $uploaddir ${smv_revision}_${platform2}.sh                $basereporoot/bot/Bundlebot/nightly $GHOWNER
-  $reporoot/bot/Bundlebot/nightly/upload_smvbundle.sh $uploaddir ${smv_revision}_${platform2}_manifest.html     $basereporoot/bot/Bundlebot/nightly $GHOWNER
+  $reporoot/bot/Bundlebot/nightly/upload_smvbundle.sh $uploaddir ${smv_revision}_${LABEL}.sh                $basereporoot/bot/Bundlebot/nightly $GHOWNER
+  $reporoot/bot/Bundlebot/nightly/upload_smvbundle.sh $uploaddir ${smv_revision}_${LABEL}_manifest.html     $basereporoot/bot/Bundlebot/nightly $GHOWNER
 
   echo "*** upload complete"
 fi

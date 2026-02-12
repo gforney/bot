@@ -3,6 +3,7 @@ FDSEDITION=FDS6
 
 revision=$1
 GITROOT=~/$2
+LABEL=$3
 
 SCRIPTDIR="$(cd "$(dirname "$0")" && pwd)"
 
@@ -12,13 +13,11 @@ errlog=/tmp/smv_errlog.$$
 
 platform="linux"
 platform2="LINUX"
-platform3="lnx"
 COMPILER=intel
 if [ "`uname`" == "Darwin" ]
 then
   platform="osx"
   platform2="OSX"
-  platform3="osx"
   COMPILER=gnu
 fi
 
@@ -93,7 +92,7 @@ FLUSHFILEDIR=$GITROOT/smv/Build/flush/${COMPILER}_${platform}
 FORBUNDLE=$GITROOT/smv/Build/for_bundle
 SMVSCRIPTDIR=$GITROOT/smv/scripts
 UTILSCRIPTDIR=$GITROOT/smv/Utilities/Scripts
-PLATFORMDIR=$revision\_${platform3}
+PLATFORMDIR=$revision\_${LABEL}
 MAKEINSTALLER=$GITROOT/bot/Bundlebot/nightly/make_smv_installer.sh
 UPLOADDIR=$HOME/.bundle/bundles
 flushfile=$GITROOT/smv/Build/flush/${COMPILER}_${platform}/flush_${platform}
