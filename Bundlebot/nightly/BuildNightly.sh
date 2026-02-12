@@ -113,10 +113,13 @@ fi
 #get branch names
 cd $DIR/../../../bot
 BOTBRANCH=`git branch --show-current`
+BOTREVISION=`git describe`
 cd $DIR/../../../fds
 FDSBRANCH=`git branch --show-current`
+FDSREVISION=`git describe`
 cd $DIR/../../../smv
 SMVBRANCH=`git branch --show-current`
+SMVREVISION=`git describe`
 
 #define output directory
 cd $DIR/output
@@ -226,11 +229,11 @@ fi
 
 echo ""
 echo "------------------------------------------------------------"
-echo "             bundle type: $BUNDLETYPE"
-echo "              bot branch: $BOTBRANCH"
-echo "              fds branch: $FDSBRANCH"
-echo "              smv branch: $SMVBRANCH"
-echo "                MPI type: $MPI_TYPE"
+echo "               bundle type: $BUNDLETYPE"
+echo "              bot revision: $BOTREVISION/$BOTBRANCH"
+echo "              fds revision: $FDSREVISION/$FDSBRANCH"
+echo "              smv revision: $SMVREVISION/$SMVBRANCH"
+echo "                  MPI type: $MPI_TYPE"
 if [ "$INTELMPI_BIN" != "" ]; then
   echo "   Intel mpi bin directory: $INTELMPI_BIN"
   if [ -e $INTELMPI_BIN/mpirun ]; then
@@ -238,9 +241,9 @@ if [ "$INTELMPI_BIN" != "" ]; then
   fi
 fi
 if [ "$OPENMPI_BIN" != "" ]; then
-  echo "   Openmpi bin directory: $OPENMPI_BIN"
+  echo "     Openmpi bin directory: $OPENMPI_BIN"
   if [ -e $OPENMPI_BIN/mpirun ]; then
-    echo "         Openmpi version: `$OPENMPI_BIN/mpirun -V | head -1`"
+    echo "           Openmpi version: `$OPENMPI_BIN/mpirun -V | head -1`"
   fi
 fi
 if [ "$MAILTO" != "" ]; then
