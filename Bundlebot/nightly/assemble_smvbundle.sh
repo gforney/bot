@@ -91,6 +91,7 @@ FDS2FEDDIR=$GITROOT/smv/Build/fds2fed/${COMPILER}_${platform}
 WIND2FDSDIR=$GITROOT/smv/Build/wind2fds/${COMPILER}_${platform}
 FLUSHFILEDIR=$GITROOT/smv/Build/flush/${COMPILER}_${platform}
 FORBUNDLE=$GITROOT/smv/Build/for_bundle
+SMVSCRIPTDIR=$GITROOT/smv/scripts
 UTILSCRIPTDIR=$GITROOT/smv/Utilities/Scripts
 PLATFORMDIR=$revision\_${platform3}
 MAKEINSTALLER=$GITROOT/bot/Bundlebot/nightly/make_smv_installer.sh
@@ -121,6 +122,7 @@ CP $FORBUNDLE       volrender.ssf     $PLATFORMDIR/$smvbin
 CP $UTILSCRIPTDIR   slice2html.sh     $PLATFORMDIR/$smvbin
 CP $UTILSCRIPTDIR   slice2mp4.sh      $PLATFORMDIR/$smvbin
 CP $FORBUNDLE       .smokeview_bin    $PLATFORMDIR/$smvbin
+CP $SMVSCRIPTDIR    jp2conv.sh        $PLATFORMDIR/$smvbin
 
 CP  $BACKGROUNDDIR background_${platform} $PLATFORMDIR/$smvbin background
 if [ "$platform" == "osx" ]; then
