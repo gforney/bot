@@ -17,7 +17,7 @@ echo "BUILDSmvNightly.sh usage"
 echo ""
 echo "Options:"
 echo "-h - display this message"
-echo "-u - upload bundle file to GitHub owner: `pwd`"
+echo "-u - upload bundle file to GitHub owner: `whoami`"
 echo "-U - upload bundle file to GitHub owner: $GHOWNER"
 exit 0
 }
