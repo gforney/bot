@@ -61,11 +61,14 @@ fi
 #*** determine platform script is running on
 
 platform=linux
-platform2=lnx
+platform2=lnx_intel
 comp=intel
 if [ "`uname`" == "Darwin" ] ; then
   platform="osx"
-  platform2="osx"
+  platform2="osx_intel"
+  if [ "`uname -m`" == "arm64" ] ; then
+    platform2="osx_arm"
+  fi
   comp=gnu
 fi
 
