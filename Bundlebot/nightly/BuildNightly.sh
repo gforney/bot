@@ -213,7 +213,7 @@ if [ "$BUNDLETYPE" == "nightly" ]; then
   if [ "$USE_CURRENT" == "" ]; then
     $GITROOT/bot/Firebot/getGHfile.sh FDS_INFO.txt
   else
-    $SCRIPTDIR/make_fdsinfo.sh        FDS_INFO.txt
+    $SCRIPTDIR/make_info.sh        FDS_INFO.txt
   fi
   FDS_HASH=`grep FDS_HASH  FDS_INFO.txt | awk '{print $2}'`
   SMV_HASH=`grep SMV_HASH  FDS_INFO.txt | awk '{print $2}'`

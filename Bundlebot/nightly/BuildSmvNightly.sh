@@ -16,7 +16,9 @@ echo ""
 echo "BUILDSmvNightly.sh usage"
 echo ""
 echo "Options:"
+echo "-C - use current revision"
 echo "-h - display this message"
+echo "-k - kill the BuildSmvNightly.sh process and all of its child processes"
 echo "-u - upload bundle file to GitHub owner: `whoami`"
 echo "-U - upload bundle file to GitHub owner: $GHOWNER"
 exit 0
@@ -25,12 +27,27 @@ exit 0
 UPLOADBUNDLE=
 export BUILDING_release=
 OUTPUT_USAGE=
+USE_CURRENT=
+PIDFILE=$curdir/smvbundle.pid
 
-while getopts 'huUR' OPTION
+while getopts 'ChkuUR' OPTION
 do
 case $OPTION  in
+  C)
+   USE_CURRENT=1
+   ;;
   h)
    OUTPUT_USAGE=1
+   ;;
+  k)
+   if [ -e $PIDFILE ]; then
+     PID=`head -1 $PIDFILE`
+     kill -9 -- -$PID
+     rm -f $PIDFILE
+   else
+     echo ***warning pid file $PIDFILE does not exist
+   fi
+   exit
    ;;
   R)
    export BUILDING_release=1
@@ -45,6 +62,8 @@ case $OPTION  in
 esac
 done
 shift $(($OPTIND-1))
+
+echo $$ > $PIDFILE
 
 if [ "$BUILDING_release" == "" ]; then
   if [ "$GHOWNER" == "" ]; then
@@ -102,7 +121,7 @@ if [ "$BUILDING_release" == "" ]; then
   cd $reporoot/bot/Bundlebot/nightly/output
   outdir=`pwd`
   cd $reporoot/bot/Bundlebot/nightly
-  ./get_hash_revisions.sh $outdir $S_HASH $S_REVISION >& $outdir/stage1_hash
+  ./get_hash_revisions.sh $outdir $USE_CURRENT >& $outdir/stage1_hash
   smv_hash=`head -1 $outdir/SMV_HASH`
 else
   cd $reporoot/bot/Bundlebot/release/output
@@ -152,4 +171,5 @@ if [ "$UPLOADBUNDLE" != "" ]; then
 
   echo "*** upload complete"
 fi
+rm -f $PIDFILE
 
