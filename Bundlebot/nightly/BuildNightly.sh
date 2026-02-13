@@ -146,8 +146,9 @@ export TEST_VIRUS=
 USE_CURRENT=
 ONLY_INSTALLER=
 PIDFILE=$SCRIPTDIR/BuildNightly.pid
+scan_bundle=1
 
-while getopts 'BcCfhkIm:o:r:R:TuU' OPTION
+while getopts 'BcCfhkIm:no:r:R:TuU' OPTION
 do
 case $OPTION  in
   B)
@@ -182,6 +183,9 @@ case $OPTION  in
    ;;
   m)
    MAILTO="$OPTARG"
+   ;;
+  n)
+   scan_bundle=0
    ;;
   o)
    export GH_OWNER="$OPTARG"
@@ -461,7 +465,7 @@ htmllog=${installer_base_platform}_manifest.html
 cd $SCRIPTDIR
 echo ""
 echo "***Building installer"
-./assemble_bundle.sh $FDSREV $SMVREV $BUNDLE_PREFIX $MPI_TYPE $LABEL
+./assemble_bundle.sh $FDSREV $SMVREV $BUNDLE_PREFIX $MPI_TYPE $LABEL $scan_bundle
 assemble_bundle_status=$?
 echo " - complete"
   
@@ -514,3 +518,4 @@ fi
 rm -f $LOCKFILE 
 rm -f $PIDFILE
 
+ 

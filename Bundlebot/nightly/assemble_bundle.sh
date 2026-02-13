@@ -4,6 +4,7 @@ smv_version=$2
 NIGHTLY=$3
 MPITYPE=$4
 LABEL=$5
+scan_bundle=$6
 
 returncode=0
 SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
@@ -407,6 +408,7 @@ rm -rf $OUTDIR/Immersed_Boundary_Method
 
 # scan for viruses
 
+if [ "$scan_bundle" == "1" ]; then
 clam_status=`IS_PROGRAM_INSTALLED clamscan`
 if [ $clam_status -eq 1 ]; then
   scanlog=$SCRIPTDIR/output/${bundlebase}_log.txt
@@ -447,6 +449,7 @@ if [ $clam_status -eq 1 ]; then
 else
   echo ***warning: clamscan not found
   echo ***         bundle will not be scanned for viruses or malware
+fi
 fi
 
 echo 
