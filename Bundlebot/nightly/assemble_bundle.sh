@@ -78,7 +78,7 @@ CP ()
     cp $FROMDIR/$FROMFILE $TODIR/$TOFILE
   fi
   if [ -e $TODIR/$TOFILE ]; then
-    echo "$FROMFILE copied to $TODIR/$TOFILE"
+    echo "*** FROMFILE copied to $TODIR/$TOFILE"
   else
     if [ "ERR" == "" ]; then
       echo "***error: $FROMFILE could not be copied from $FROMDIR to $TODIR" >> $errlog
@@ -124,7 +124,7 @@ CPPUB ()
     cp $FROMDIR/$FROMFILE $TODIR/$TOFILE
   fi
   if [ -e $TODIR/$TOFILE ]; then
-    echo "$FROMFILE copied"
+    echo "*** $FROMFILE copied"
   else
     if [ "$ERR" == "" ]; then
       echo "***error: $FROMFILE could not be copied to $TODIR" >> $errlog
@@ -152,14 +152,14 @@ CPDIR ()
     fi
   else
     echo ""
-    echo "***copying directory"
+    echo "*** copying directory"
     echo "  from:$FROMDIR"
     echo "    to:$TODIR"
     echo "       copy successful"
     cp -r $FROMDIR $TODIR
   fi
   if [ -e $TODIR ]; then
-    echo "       copy successful"
+    echo "***    copy successful"
   else
     if [ "$ERR" == "" ]; then
       echo "***error: the directory $FROMDIR could not copied to $TODIR" >> $errlog
@@ -186,7 +186,7 @@ CPDIRFILES ()
       read val
     fi
   else
-    echo "***copying files"
+    echo "*** copying files"
     echo "   from: $FROMDIR to $TODIR"
     echo "     to: $TODIR"
     cp $FROMDIR/* $TODIR/.
@@ -255,9 +255,7 @@ mkdir -p $smvbindir/textures
 
 # smokeview apps
 
-echo ""
-echo "***copying smv app files"
-echo ""
+echo "*** copying smv app files"
 FILELIST="background smokeview  smokediff  pnginfo fds2fed smokezip wind2fds"
 for file in $FILELIST ; do
   CP $APPS_DIR $file $smvbindir
@@ -271,9 +269,7 @@ CPDIR $texturedir $smvbindir
 
 # FDS apps
 
-echo ""
-echo "***copying fds app files"
-echo ""
+echo "*** copying fds app files"
 cd $fdsbindir
 FILELIST="fds fds2ascii test_mpi"
 if [ "$MPITYPE" == "INTELMPI" ]; then
@@ -283,16 +279,12 @@ for file in $FILELIST ; do
   CP $APPS_DIR $file $fdsbindir
 done
 
-echo 
 echo "*** copying mpi files"
-echo 
 if [ "$MPITYPE" == "INTELMPI" ]; then
     mkdir -p $fdsbindir/intelmpi/bin
     mkdir -p $fdsbindir/intelmpi/lib
     mkdir -p $fdsbindir/intelmpi/prov
-    echo ""
-    echo "***copying mpi bin files"
-    echo ""
+    echo "*** copying mpi bin files"
     FILELIST="cpuinfo hydra_bstrap_proxy hydra_nameserver hydra_pmi_proxy impi_info mpiexec mpiexec.hydra mpirun"
     for file in $FILELIST ; do
       CP ${INTELMPI_BIN} $file $fdsbindir/intelmpi/bin
@@ -304,17 +296,15 @@ if [ "$MPITYPE" == "INTELMPI" ]; then
       cd $PROVDIR
       PROVDIR=`pwd`
       cd $PDIR
-      echo ""
-      echo "***copying mpi providence files"
+      echo "*** copying mpi providence files"
       FILELIST="libefa-fi.so libmlx-fi.so libpsm3-fi.so libpsmx2-fi.so librxm-fi.so libshm-fi.so libtcp-fi.so libverbs-1.12-fi.so libverbs-1.1-fi.so"
       for file in $FILELIST ; do
         CP $PROVDIR $file $fdsbindir/intelmpi/prov
       done
     else
-      echo "***error: providence directory, $PROVDIR, does not exist"
+      echo "*** error: providence directory, $PROVDIR, does not exist"
     fi
-    echo ""
-    echo "***copying mpi shared files"
+    echo "*** copying mpi shared files"
     $SCRIPTDIR/copy_shared.sh                      $fdsbindir/intelmpi/lib
 
     FABRICDIR=${INTELMPI_BIN}/../opt/mpi/libfabric/lib
@@ -323,14 +313,12 @@ if [ "$MPITYPE" == "INTELMPI" ]; then
       cd $FABRICDIR
       FABRICDIR=`pwd`
       cd $CDIR
-      echo ""
-      echo "***copying mpi fabric files"
-      echo ""
+      echo "*** copying mpi fabric files"
       mkdir -p $fdsbindir/intelmpi/lib
       CP ${FABRICDIR} libfabric.so   $fdsbindir/intelmpi/lib
       CP ${FABRICDIR} libfabric.so.1 $fdsbindir/intelmpi/lib
     else
-      echo "***error: fabric directory, $FABRICDIR, does not exist"
+      echo "*** error: fabric directory, $FABRICDIR, does not exist"
     fi
 
 else
@@ -339,19 +327,15 @@ else
       rm -r $fdsbindir/openmpi
     fi
     echo ""
-    echo "***copying mpi bin files"
-    echo ""
     mkdir -p $fdsbindir/openmpi/bin
     CP ${OPENMPI_BIN}         mpirun   $fdsbindir/openmpi/bin
     CP ${OPENMPI_BIN}         prterun  $fdsbindir/openmpi/bin
 
-    echo ""
-    echo "***copying mpi shared files"
+    echo "*** copying mpi shared files"
     mkdir -p $fdsbindir/openmpi/lib
     $SCRIPTDIR/copy_shared.sh          $fdsbindir/openmpi/lib $fdsbindir/openmpi/bin
 
-    echo ""
-    echo "***copying mpi help file"
+    echo "*** copying mpi help file"
     mkdir -p $fdsbindir/openmpi/share
     CPDIR ${OPENMPI_BIN}/../share/pmix         $fdsbindir/openmpi/share/pmix
     CPDIR ${OPENMPI_BIN}/../share/prte         $fdsbindir/openmpi/share/prte
@@ -361,9 +345,7 @@ fi
 
 CURDIR=`pwd`
 
-echo 
-echo "***copying configuration files"
-echo 
+echo "*** copying configuration files"
 
 FILELIST="smokeview.ini volrender.ssf objects.svo .smokeview_bin"
 for file in $FILELIST ; do
@@ -375,17 +357,13 @@ if [ "$PLATFORM" == "LINUX64" ]; then
   CP $utilscriptdir slice2mp4.sh    $smvbindir
 fi
 
-echo 
-echo ***copying documentation
-echo 
+echo "*** copying documentation"
 FILELIST="FDS_Config_Management_Plan.pdf FDS_Technical_Reference_Guide.pdf FDS_User_Guide.pdf FDS_Validation_Guide.pdf FDS_Verification_Guide.pdf SMV_User_Guide.pdf SMV_Technical_Reference_Guide.pdf SMV_Verification_Guide.pdf"
 for file in $FILELIST ; do
   CPPUB $GUIDE_DIR $file $bundledir/Documentation
 done
 
-echo 
-echo ***copying release notes
-echo ""
+echo "*** copying release notes"
 
 CP $webpagesdir FDS_Release_Notes.htm $bundledir/Documentation FDS_Release_Notes.html
 CP $webpagesdir SMV_Release_Notes.htm $bundledir/Documentation SMV_Release_Notes.html
@@ -395,9 +373,7 @@ export QFDS=$copyfdscase
 export RUNTFDS=$copyfdscase
 export RUNCFAST=$copycfastcase
 
-echo 
-echo ***copying example files
-echo 
+echo "***copying example files"
 cd $FDSExamplesDirectory
 $fds_cases
 #$fds_benchmark_cases
@@ -420,14 +396,10 @@ if [ $clam_status -eq 1 ]; then
     $SCRIPTDIR/gen_eicar.sh $bundledir/eicar.com
   fi
 
-  echo 
-  echo ***scanning $bundlebase for viruses/malware
-  echo 
+  echo "*** scanning $bundlebase for viruses/malware"
   clamscan -r $UPLOAD_DIR/$bundlebase > $scanlog 2>&1
   sed 's/.*FDS-/FDS-/' $scanlog      > $vscanlog
-  echo 
-  echo ***adding sha256 hashes
-  echo 
+  echo "*** adding sha256 hashes"
   $SCRIPTDIR/add_sha256.sh $vscanlog > $csvlog
   sed -i.bak '/SCAN SUMMARY/,$d; s|FDS.*SMV[^/]*/||g'     $csvlog
   sort -f -o $csvlog $csvlog
@@ -441,30 +413,26 @@ if [ $clam_status -eq 1 ]; then
     ninfected=0
   fi
   if [[ $ninfected -eq 0 ]]; then
-    echo "no viruses found in $UPLOAD_DIR/$bundlebase"
+    echo "*** no viruses found in $UPLOAD_DIR/$bundlebase"
   else
     returncode=1
     echo "***error: $ninfected files found with a virus and/or malware in $UPLOAD_DIR/$bundlebase"
   fi
 else
-  echo ***warning: clamscan not found
-  echo ***         bundle will not be scanned for viruses or malware
+  echo "***warning: clamscan not found"
+  echo "***         bundle will not be scanned for viruses or malware"
 fi
 fi
 
-echo 
-echo ***building bundle
-echo 
+echo "*** building bundle"
 rm -rf $UPLOAD_DIR/$bundlebase.tar
 rm -rf $UPLOAD_DIR/$bundlebase.tar.gz
 cd $UPLOAD_DIR
 tar cf $bundlebase.tar --exclude='*.csv' $bundlebase
-echo 
-echo ***compressing bundle
-echo 
+echo "*** compressing bundle"
 gzip    $bundlebase.tar
 echo
-echo ***creating installer
+echo "*** creating installer"
 echo
 bundlepathdir=`pwd`
 bundlepath=`pwd`/$bundlebase.sh
@@ -484,5 +452,5 @@ if [ -e $errlog ]; then
   fi
   rm $errlog
 fi
-echo installer located at: $bundlepath
+echo "*** installer located at: $bundlepath"
 exit $returncode

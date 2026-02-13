@@ -30,7 +30,7 @@ export BUILDING_release=
 OUTPUT_USAGE=
 USE_CURRENT=
 PIDFILE=$curdir/smvbundle.pid
-scan_bundle=0
+scan_bundle=1
 
 while getopts 'ChknuUR' OPTION
 do
@@ -52,7 +52,7 @@ case $OPTION  in
    exit
    ;;
   n)
-   scan_bundle=1
+   scan_bundle=0
    ;;
   R)
    export BUILDING_release=1
@@ -101,19 +101,19 @@ reporoot=`pwd`
 basereporoot=`basename $reporoot`
 
 cd $reporoot/smv
-echo updating smv repo
-git remote update
-git merge firemodels/master
-git merge origin/master
+echo "*** updating smv repo"
+git remote update           > /dev/null 2>&1 
+git merge firemodels/master > /dev/null 2>&1
+git merge origin/master     > /dev/null 2>&1
 
 if [ "$BUILDING_release" != "" ]; then
   ERROR=
   if [ "$BUNDLE_SMV_HASH" == "" ]; then
-    echo ***error: environment variable BUNDLE_SMV_HASH not defined
+    echo "***error: environment variable BUNDLE_SMV_HASH not defined"
     ERROR=1
   fi
   if [ "$BUNDLE_SMV_TAG" == "" ]; then
-    echo ***error: environment variable BUNDLE_SMV_TAG not defined
+    echo "***error: environment variable BUNDLE_SMV_TAG not defined"
     ERROR=1
   fi
   if [ "$ERROR" != "" ]; then
@@ -135,6 +135,7 @@ else
 fi
 
 cd $reporoot/bot/Bundlebot/nightly
+echo "*** cloning smv repo"
 ./clone_smvrepo.sh $smv_hash $BUILDING_release >& $outdir/stage2_clone
 
 #get branch names
@@ -174,10 +175,8 @@ echo "*** bundling smokeview"
 $reporoot/bot/Bundlebot/nightly/assemble_smvbundle.sh $smv_revision $basereporoot $LABEL $scan_bundle
 
 uploaddir=$HOME/.bundle/bundles
-if [ -e $uploaddir/${smv_revision}_${LABEL}.sh ]; then
-  echo smv bundle: $HOME/$uploaddir/${smv_revision}_${LABEL}.sh created
-else
-  echo ***error: smv bundle: $HOME/$uploaddir/${smv_revision}_${LABEL}.sh failed to be created
+if [ ! -e $uploaddir/${smv_revision}_${LABEL}.sh ]; then
+  echo "***error: smv bundle: $HOME/$uploaddir/${smv_revision}_${LABEL}.sh failed to be created"
 fi
 
 

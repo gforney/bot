@@ -292,11 +292,11 @@ if [ "$ONLY_INSTALLER" == "" ]; then
 # clone 3rd party repos
   cd $curdir/../../Scripts
   if [ "$USE_CURRENT" == "" ]; then
-    echo cloning hypre
+    echo "*** cloning hypre"
     ./setup_repos.sh -K hypre > $outputdir/clone_hypre 2&>1 &
     pid_clonehypre=$!
 
-    echo cloning sundials
+    echo "*** cloning sundials"
     ./setup_repos.sh -K sundials > $outputdir/clone_sundials 2&>1 &
     pid_clonesundials=$!
   fi
@@ -308,23 +308,23 @@ if [ "$ONLY_INSTALLER" == "" ]; then
   if [ "$BUNDLETYPE" == "nightly" ]; then
     if [ "$USE_CURRENT" == "" ]; then
 # a nightly bundle - clone fds and smv repos
-      echo cloning fds
+      echo "*** cloning fds"
       ./clone_repo.sh -F -N -r $FDS_HASH > $outputdir/clone_fds 2&>1 &
       pid_clonefds=$!
 
-      echo cloning smv
+      echo "*** cloning smv"
       ./clone_repo.sh -S -N -r $SMV_HASH > $outputdir/clone_smv 2&>1 &
       pid_clonesmv=$!
     fi
   else
 #a release bundle - clone all repos except for bot
-    echo cloning all repos 
+    echo "*** cloning all repos "
     ./clone_all_repos.sh  $outputdir > $outputdir/clone_all 2&>1 &
     pid_cloneall=$!
   fi
   if [ "$pid_clonesmv" != "" ]; then
     wait $pid_clonesmv
-    echo smv cloned
+    echo "*** smv cloned"
   fi
   if [ "$pid_cloneall" != "" ]; then
     wait $pid_cloneall
@@ -335,15 +335,15 @@ if [ "$ONLY_INSTALLER" == "" ]; then
 
   if [ "$USE_CURRENT" ]; then
     wait $pid_clonehypre
-    echo hypre cloned
+    echo "*** hypre cloned"
 
     wait $pid_clonesundials
-    echo sundials cloned
+    echo "*** sundials cloned"
   fi
 
   if [ "$pid_clonefds" != "" ]; then
     wait $pid_clonefds
-    echo fds cloned
+    echo "*** fds cloned"
 
   fi
 
@@ -360,7 +360,7 @@ if [ "$BUNDLETYPE" != "nightly" ]; then
 fi
 if [ "$pid_clonesmv" != "" ]; then
   wait $pid_clonesmv
-  echo smv cloned
+  echo "*** smv cloned"
 fi
 if [ "$pid_cloneall" != "" ]; then
   wait $pid_cloneall

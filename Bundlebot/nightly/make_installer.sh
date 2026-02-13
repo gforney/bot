@@ -192,7 +192,7 @@ MKDIR()
     echo "FDS installation aborted."
     exit 0
   fi
-  echo The installation directory, "\$DIR, has been created."
+#  echo "The installation directory, \$DIR, has been created."
   rm \$DIR/temp.\$\$
 }
 

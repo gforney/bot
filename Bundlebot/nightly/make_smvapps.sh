@@ -1,5 +1,4 @@
 #!/bin/bash
-MPITYPE=$1
 
 
 # -------------------------------------------------------------
@@ -30,23 +29,20 @@ CHECK_BUILD()
     echo "***error: The program ${prog}_${platform} failed to build"
     echo "***error: The program ${prog}_${platform} failed to build"   >> $errorlog 2>&1
   else
-    echo ${prog} built
+    echo "*** ${prog} built"
     cp $smvrepo/Build/$prog/${smvcompiler}_$platform/${prog}_$platform $CURDIR/apps/$prog
   fi
 }
 
 #--------------------- start of script -------------------------------
 
-if [ "$MPITYPE" == "INTELMPI" ]; then
-  smvcompiler=intel
-else
-  smvcompiler=gnu
-fi
 platform=linux
+smvcompiler=intel
 export FDS_BUILD_TARGET=intel
 if [ "`uname`" == "Darwin" ] ; then
   platform="osx"
   export FDS_BUILD_TARGET=osx
+  smvcompiler=gnu
 fi
 
 CURDIR=`pwd`
@@ -71,45 +67,45 @@ cd $REPOROOT/bot
 botrepo=`pwd`
 
 cd $smvrepo/Source
-echo ***cleaning $smvrepo/Source
+echo "*** cleaning $smvrepo/Source"
 git clean -dxf  >> $cleanlog 2>&1 
 
 cd $smvrepo/Build
-echo ***cleaning $smvrepo/Build
+echo "*** cleaning $smvrepo/Build"
 git clean -dxf  >> $cleanlog 2>&1
 
 # build smokeview libraries
-echo building smokeview libraries
+echo "*** building smokeview libraries"
 BUILDSMVLIBS
 
 BUILD smokeview &
 pid_smokeview=$!
 
-echo building background
+echo "*** building background"
 BUILD background &
 pid_background=$!
 
-echo building fds2fed
+echo "*** building fds2fed"
 BUILD fds2fed &
 pid_fds2fed=$!
 
-echo building flush
+echo "*** building flush"
 BUILD flush &
 pid_flush=$!
 
-echo building pnginfo
+echo "*** building pnginfo"
 BUILD pnginfo &
 pid_pnginfo=$!
 
-echo building smokediff
+echo "*** building smokediff"
 BUILD smokediff &
 pid_smokediff=$!
 
-echo building smokezip
+echo "*** building smokezip"
 BUILD smokezip &
 pid_smokezip=$!
 
-echo building wind2fds
+echo "*** building wind2fds"
 BUILD wind2fds &
 pid_wind2fds=$!
 
@@ -140,6 +136,6 @@ CHECK_BUILD smokezip
 wait $pid_wind2fds
 CHECK_BUILD wind2fds
 
-echo smv app builds complete
+echo "*** smv app builds complete"
 
 cd $CURDIR
