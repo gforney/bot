@@ -132,14 +132,33 @@ fi
 cd $reporoot/bot/Bundlebot/nightly
 ./clone_smvrepo.sh $smv_hash $BUILDING_release >& $outdir/stage2_clone
 
+#get branch names
+cd $reporoot/bot
+BOTBRANCH=`git branch --show-current`
+BOTREVISION=`git describe`
+cd $reporoot/smv
+SMVBRANCH=`git branch --show-current`
+SMVREVISION=`git describe`
+if [ "$BUILDING_release" == "" ]; then
+  BUNDLETYPE=nightly
+else
+  BUNDLETYPE=release
+fi
+
+echo ""
+echo "------------------------------------------------------------"
+echo "               bundle type: $BUNDLETYPE"
+echo "              bot revision: $BOTREVISION/$BOTBRANCH"
+echo "              smv revision: $SMVREVISION/$SMVBRANCH"
+echo "------------------------------------------------------------"
+echo ""
+
 cd $reporoot/smv
 if [ "$BUILDING_release" == "" ]; then
   smv_revision=`git describe --abbrev=7 --dirty --long`
 else
   smv_revision=$BUNDLE_SMV_TAG
 fi
-echo "***     smv_hash: $smv_hash"
-echo "*** smv_revision: $smv_revision"
 
 #build apps
 cd $reporoot/bot/Bundlebot/nightly
