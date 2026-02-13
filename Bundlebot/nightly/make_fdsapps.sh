@@ -23,7 +23,7 @@ CHECK_BUILDFDSUTIL()
     echo "***error: The program ${prog}_$builddir failed to build"
     echo "***error: The program ${prog}_$builddir failed to build"   >> $errorlog 2>&1
   else
-    echo ${prog}_$builddir built
+    echo "*** ${prog}_$builddir built"
     cp $fdsrepo/Utilities/$prog/$builddir/${prog}_$builddir  $CURDIR/apps/$prog
   fi
 }
@@ -36,7 +36,7 @@ CHECK_BUILDTESTMPI()
     echo "***error: The program test_mpi failed to build"
     echo "***error: The program test_mpi failed to build"  >> $errorlog 2>&1
   else
-    echo test_mpi built
+    echo "*** test_mpi built"
     cp $fdsrepo/Utilities/test_mpi/${mpitype}_${fdscompiler}_$platform/test_mpi  $CURDIR/apps/test_mpi
   fi
 }
@@ -63,7 +63,7 @@ CHECK_BUILDFDS()
     echo "***error: The program fds_${mpitype}_${fdscompiler}_${platform} failed to build"
     echo "***error: The program fds_${mpitype}_${fdscompiler}_${platform} failed to build"  >> $errorlog 2>&1
   else
-    echo fds_${mpitype}_${fdscompiler}_${platform} built
+    echo "*** fds_${mpitype}_${fdscompiler}_${platform} built"
     cp $fdsrepo/Build/${mpitype}_${fdscompiler}_${platform}/fds_${mpitype}_${fdscompiler}_${platform} $CURDIR/apps/fds
   fi
 }
@@ -76,7 +76,7 @@ CHECK_BUILDFDSOPENMP()
     echo "***error: The program fds_${mpitype}_${fdscompiler}_${platform}_openmp failed to build"
     echo "***error: The program fds_${mpitype}_${fdscompiler}_${platform}_openmp failed to build"   >> $errorlog 2>&1
   else
-    echo fds_${mpitype}_${fdscompiler}_${platform}_openmp built
+    echo "*** fds_${mpitype}_${fdscompiler}_${platform}_openmp built"
     cp  $fdsrepo/Build/${mpitype}_${fdscompiler}_${platform}_openmp/fds_${mpitype}_${fdscompiler}_${platform}_openmp $CURDIR/apps/fds_openmp
   fi
 }
@@ -138,36 +138,36 @@ git clean -dxf  >> $cleanlog 2>&1
 
 cd $CURDIR
 
-echo building test_mpi
+echo "*** building test_mpi"
 BUILDFDSUTIL test_mpi  ${mpitype}_${fdscompiler}_$platform    &
 pid_test_mpi=$!
 
-echo building fds2ascii
+echo "*** building fds2ascii"
 BUILDFDSUTIL fds2ascii ${fdscompiler}_$platform               &
 pid_fds2ascii=$!
 
 # build hypre library
-echo building hypre
+echo "*** building hypre"
 BUILDFDSLIB hypre &
 pid_hypre=$!
 
-echo building sundials
+echo "*** building sundials"
 BUILDFDSLIB sundials &
 pid_sundials=$!
 
 wait $pid_hypre
-echo hypre built
+echo "*** hypre built"
 
 wait $pid_sundials
-echo sundials built
+echo "*** sundials built"
 
 # build fds apps
-echo building fds
+echo "*** building fds"
 BUILDFDS                                                      &
 pid_fds=$!
 
 if [ "$MPITYPE" == "INTELMPI" ]; then
-  echo building fds openmp
+  echo "*** building fds openmp"
   BUILDFDSOPENMP                                                &
   pid_fdsopenmp=$!
 fi
