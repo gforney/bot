@@ -19,6 +19,7 @@ echo "Options:"
 echo "-C - use current revision"
 echo "-h - display this message"
 echo "-k - kill the BuildSmvNightly.sh process and all of its child processes"
+echo "-n - do not scan bundle"
 echo "-u - upload bundle file to GitHub owner: `whoami`"
 echo "-U - upload bundle file to GitHub owner: $GHOWNER"
 exit 0
@@ -29,8 +30,9 @@ export BUILDING_release=
 OUTPUT_USAGE=
 USE_CURRENT=
 PIDFILE=$curdir/smvbundle.pid
+scan_bundle=0
 
-while getopts 'ChkuUR' OPTION
+while getopts 'ChknuUR' OPTION
 do
 case $OPTION  in
   C)
@@ -48,6 +50,9 @@ case $OPTION  in
      echo ***warning pid file $PIDFILE does not exist
    fi
    exit
+   ;;
+  n)
+   scan_bundle=1
    ;;
   R)
    export BUILDING_release=1
@@ -166,7 +171,7 @@ cd $reporoot/bot/Bundlebot/nightly
 
 echo "*** bundling smokeview"
 
-$reporoot/bot/Bundlebot/nightly/assemble_smvbundle.sh $smv_revision $basereporoot $LABEL
+$reporoot/bot/Bundlebot/nightly/assemble_smvbundle.sh $smv_revision $basereporoot $LABEL $scan_bundle
 
 uploaddir=$HOME/.bundle/bundles
 if [ -e $uploaddir/${smv_revision}_${LABEL}.sh ]; then

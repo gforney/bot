@@ -2,6 +2,7 @@
 setlocal
 :: release info
 set versionbase=%1
+set scan_bundle%2
 set zipbase=%versionbase%_win
 set SMVEDITION=SMV6
 
@@ -84,6 +85,7 @@ CALL :COPY  %gettime%\get_time_win.exe                %smvdir%\get_time.exe
 CALL :COPY  %reporoot%\webpages\SMV_Release_Notes.htm %smvdir%\release_notes.html
 CALL :COPY  %forbundle%\.smokeview_bin                %smvdir%\.
 
+if "%scan_bundle%" == "0" goto endifscan
 call :IS_FILE_INSTALLED clamscan
 set nightlydir=%reporoot%\bot\Bundlebot\nightly
 set logdir=%nightlydir%\output

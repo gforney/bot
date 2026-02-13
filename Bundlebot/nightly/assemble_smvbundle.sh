@@ -4,6 +4,7 @@ FDSEDITION=FDS6
 revision=$1
 GITROOT=~/$2
 LABEL=$3
+scan_bundle=$4
 
 SCRIPTDIR="$(cd "$(dirname "$0")" && pwd)"
 
@@ -141,6 +142,7 @@ CURDIR=`pwd`
 # scan for viruses
 
 clam_status=`IS_PROGRAM_INSTALLED clamscan`
+if [ "$scan_bundle"== "1" ]; then
 if [ $clam_status -eq 1 ]; then
   scanlog=$SCRIPTDIR/output/${PLATFORMDIR}_log.txt
   vscanlog=$SCRIPTDIR/output/${PLATFORMDIR}.log
@@ -184,6 +186,7 @@ else
   echo ***warning: clamscan not found
   echo ***         bundle will not be scanned for viruses or malware
 fi
+fi
 
 rm -f $PLATFORMDIR.tar $PLATFORMDIR.tar.gz
 echo ""
@@ -207,3 +210,4 @@ if [ -e $errlog ]; then
   fi
   rm $errlog
 fi
+ 
