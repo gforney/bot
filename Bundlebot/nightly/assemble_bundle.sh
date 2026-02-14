@@ -78,7 +78,8 @@ CP ()
     cp $FROMDIR/$FROMFILE $TODIR/$TOFILE
   fi
   if [ -e $TODIR/$TOFILE ]; then
-    echo "*** FROMFILE copied to $TODIR/$TOFILE"
+    echo "      from: $FROMFILE"
+    echo "          to: $TODIR/$TOFILE"
   else
     if [ "ERR" == "" ]; then
       echo "***error: $FROMFILE could not be copied from $FROMDIR to $TODIR" >> $errlog
@@ -151,16 +152,12 @@ CPDIR ()
       read val
     fi
   else
-    echo ""
     echo "*** copying directory"
-    echo "  from:$FROMDIR"
-    echo "    to:$TODIR"
-    echo "       copy successful"
+    echo "      from:$FROMDIR"
+    echo "        to:$TODIR"
     cp -r $FROMDIR $TODIR
   fi
-  if [ -e $TODIR ]; then
-    echo "***    copy successful"
-  else
+  if [ ! -e $TODIR ]; then
     if [ "$ERR" == "" ]; then
       echo "***error: the directory $FROMDIR could not copied to $TODIR" >> $errlog
       echo "***error: the directory $FROMDIR could not copied to $TODIR"
@@ -326,7 +323,6 @@ else
     if [ -d $fdsbindir/openmpi ]; then
       rm -r $fdsbindir/openmpi
     fi
-    echo ""
     mkdir -p $fdsbindir/openmpi/bin
     CP ${OPENMPI_BIN}         mpirun   $fdsbindir/openmpi/bin
     CP ${OPENMPI_BIN}         prterun  $fdsbindir/openmpi/bin
@@ -373,7 +369,7 @@ export QFDS=$copyfdscase
 export RUNTFDS=$copyfdscase
 export RUNCFAST=$copycfastcase
 
-echo "***copying example files"
+echo "*** copying example files"
 cd $FDSExamplesDirectory
 $fds_cases
 #$fds_benchmark_cases
@@ -431,9 +427,7 @@ cd $UPLOAD_DIR
 tar cf $bundlebase.tar --exclude='*.csv' $bundlebase
 echo "*** compressing bundle"
 gzip    $bundlebase.tar
-echo
 echo "*** creating installer"
-echo
 bundlepathdir=`pwd`
 bundlepath=`pwd`/$bundlebase.sh
 

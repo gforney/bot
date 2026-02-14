@@ -39,25 +39,21 @@ if [ "`uname`" == "Darwin" ]; then
 else
   FILES=`ldd $FDS  | awk '{print $3 }' | grep oneapi | grep -v fds`
 fi
-echo
-echo ***copying shared fds files to $TOLIBDIR
-echo
+echo "*** copying shared fds files to $TOLIBDIR"
 for file in $FILES; do
   if [ -e $file ]; then
-    echo copying $file
+    echo "*** copying $file"
     cp $file $TOLIBDIR/.
   else
     echo "***error: shared library: $file does not exist"
   fi
 done
 if [ "`uname`" == "Darwin" ]; then
-  echo
-  echo ***copying shared mpirun files to $TOBINDIR
-  echo
+  echo "*** copying shared mpirun files to $TOBINDIR"
   FILES=`otool -L $OPENMPI_BIN/mpirun  | grep homebrew | grep -v mpirun | awk '{print $1 }'`
   for file in $FILES; do
     if [ -e $file ]; then
-      echo copying $file
+      echo "*** copying $file"
       cp $file $TOBINDIR/.
     else
       echo "***error: shared library: $file does not exist"

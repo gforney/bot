@@ -111,13 +111,26 @@ if [ "$BUNDLE_MAILTO" != "" ]; then
 fi
 
 #get branch names
+
 cd $DIR/../../../bot
 BOTBRANCH=`git branch --show-current`
 BOTREVISION=`git describe`
-cd $DIR/../../../fds
+
+if [ -d $DIR/../../../fds ]; then
+  cd $DIR/../../../fds
+else
+  echo ***error: fds repo does not exist
+  exit
+fi
 FDSBRANCH=`git branch --show-current`
 FDSREVISION=`git describe`
-cd $DIR/../../../smv
+
+if [ -d $DIR/../../../smv ]; then
+  cd $DIR/../../../smv
+else
+  echo ***error: smv repo does not exist
+  exit
+fi
 SMVBRANCH=`git branch --show-current`
 SMVREVISION=`git describe`
 
@@ -209,7 +222,6 @@ case $OPTION  in
 esac
 done
 shift $(($OPTIND-1))
-
 echo $$ > $PIDFILE
 if [ "$BUNDLETYPE" == "nightly" ]; then
   FDS_TAG=
@@ -217,7 +229,7 @@ if [ "$BUNDLETYPE" == "nightly" ]; then
   if [ "$USE_CURRENT" == "" ]; then
     $GITROOT/bot/Firebot/getGHfile.sh FDS_INFO.txt
   else
-    $SCRIPTDIR/make_info.sh        FDS_INFO.txt
+    $SCRIPTDIR/make_info.sh  >      FDS_INFO.txt
   fi
   FDS_HASH=`grep FDS_HASH  FDS_INFO.txt | awk '{print $2}'`
   SMV_HASH=`grep SMV_HASH  FDS_INFO.txt | awk '{print $2}'`
@@ -238,6 +250,7 @@ echo "              bot revision: $BOTREVISION/$BOTBRANCH"
 echo "              fds revision: $FDSREVISION/$FDSBRANCH"
 echo "              smv revision: $SMVREVISION/$SMVBRANCH"
 echo "                  MPI type: $MPI_TYPE"
+
 if [ "$INTELMPI_BIN" != "" ]; then
   echo "   Intel mpi bin directory: $INTELMPI_BIN"
   if [ -e $INTELMPI_BIN/mpirun ]; then
@@ -281,7 +294,7 @@ fi
 
 #*** update webpages repos
 if [[ -d $GITROOT/webpages ]] && [[ "$ONLY_INSTALLER" == "" ]]; then
-  echo updating webpages repo
+  echo "*** updating webpages repo"
   cd $GITROOT/webpages
   get fetch origin              > $outputdir/update_webpages 2&>1
   git merge origin/nist-pages  >> $outputdir/update_webpages 2&>1
@@ -322,6 +335,7 @@ if [ "$ONLY_INSTALLER" == "" ]; then
     ./clone_all_repos.sh  $outputdir > $outputdir/clone_all 2&>1 &
     pid_cloneall=$!
   fi
+
   if [ "$pid_clonesmv" != "" ]; then
     wait $pid_clonesmv
     echo "*** smv cloned"
@@ -333,10 +347,12 @@ if [ "$ONLY_INSTALLER" == "" ]; then
   ./make_smvapps.sh $MPI_TYPE &
   pid_smvapps=$!
 
-  if [ "$USE_CURRENT" ]; then
+  if [ "$pid_clonehypre" != "" ]; then
     wait $pid_clonehypre
     echo "*** hypre cloned"
+  fi
 
+  if [ "$pid_clonesundials" != "" ]; then
     wait $pid_clonesundials
     echo "*** sundials cloned"
   fi
@@ -344,13 +360,10 @@ if [ "$ONLY_INSTALLER" == "" ]; then
   if [ "$pid_clonefds" != "" ]; then
     wait $pid_clonefds
     echo "*** fds cloned"
-
   fi
 
-  ./make_fdsapps.sh $MPI_TYPE &
-  pid_fdsapps=$1
+  ./make_fdsapps.sh $MPI_TYPE
 
-  wait $pid_fdsapps
   wait $pid_smvapps
 fi
 
@@ -358,17 +371,6 @@ if [ "$BUNDLETYPE" != "nightly" ]; then
   FDS_TAG="-X $BUNDLE_FDS_TAG"
   SMV_TAG="-Y $BUNDLE_SMV_TAG"
 fi
-if [ "$pid_clonesmv" != "" ]; then
-  wait $pid_clonesmv
-  echo "*** smv cloned"
-fi
-if [ "$pid_cloneall" != "" ]; then
-  wait $pid_cloneall
-  echo all repos clone complete
-fi
-./make_smvapps.sh &
-pid_smvapps=$!
-
 
 echo $FDS_HASH     > $GITROOT/bot/Bundlebot/nightly/apps/FDS_HASH
 echo $SMV_HASH     > $GITROOT/bot/Bundlebot/nightly/apps/SMV_HASH
@@ -463,14 +465,11 @@ csvlog=${installer_base_platform}.csv
 htmllog=${installer_base_platform}_manifest.html
 
 cd $SCRIPTDIR
-echo ""
-echo "***Building installer"
+echo "*** building installer"
 ./assemble_bundle.sh $FDSREV $SMVREV $BUNDLE_PREFIX $MPI_TYPE $LABEL $scan_bundle
 assemble_bundle_status=$?
-echo " - complete"
   
-echo
-echo ***Virus scan summary
+echo "*** virus scan summary"
 if [ -e $outputdir/$csvlog ]; then
   grep -v OK$ $outputdir/$csvlog | grep -v ^$ | grep -v SUMMARY
 else
@@ -479,8 +478,7 @@ fi
 
 if [[ "$UPLOADBUNDLE" == "1" ]]; then
   if [[ $assemble_bundle_status -eq 0 ]]; then
-    echo ""
-    echo "uploading installer"
+    echo "*** uploading installer"
     
     FILELIST=`gh release view FDS_TEST  -R github.com/$GHUPLOADOWNER/test_bundles | grep SMV | grep FDS | grep $platform$LABEL | awk '{print $2}'`
     for file in $FILELIST ; do

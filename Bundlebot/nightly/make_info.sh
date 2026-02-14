@@ -1,5 +1,4 @@
 #!/bin/bash
-OUTPUT=$1
 
 CURDIR=`pwd`
 cd ../../..
@@ -34,7 +33,7 @@ GETHASH(){
   echo "$REVISION" | awk -F'-' '{print $NF}'
 }
 
-cat << EOF  > $OUTPUT
+cat << EOF  
 FDS_HASH     `GETHASH     $GITROOT/fds`
 FDS_REVISION `GETREVISION $GITROOT/fds`
 SMV_HASH     `GETHASH     $GITROOT/smv`
