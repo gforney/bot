@@ -111,11 +111,15 @@ shift $(($OPTIND-1))
 echo $$ > $PIDFILE
 
 if [ "$BUILDING_release" == "" ]; then
+  cd $reporoot/bot/Bundlebot/nightly/output
+  outputdir=`pwd`
   if [ "$GHOWNER" == "" ]; then
     GHOWNER=firemodels
   fi
 else
-  git tag -a $BUNDLE_SMV_TAG -m "tag for smokeview release" >> $outdir/stage2_clone 2>&1
+  cd $reporoot/bot/Bundlebot/release/output
+  outputdir=`pwd`
+  git tag -a $BUNDLE_SMV_TAG -m "tag for smokeview release" >> $outputdir/stage2_clone 2>&1
   GHOWNER=`whoami`
 fi
 if [ "$OUTPUT_USAGE" != "" ]; then
@@ -153,11 +157,9 @@ fi
 
 echo "*** get smv repo revision"
 if [ "$BUILDING_release" == "" ]; then
-  cd $reporoot/bot/Bundlebot/nightly/output
-  outdir=`pwd`
   cd $reporoot/bot/Bundlebot/nightly
-  ./get_hash_revisions.sh $outdir $USE_CURRENT >& $outdir/stage1_hash
-  smv_hash=`head -1 $outdir/SMV_HASH`
+  ./get_hash_revisions.sh $outputdir $USE_CURRENT >& $outputdir/stage1_hash
+  smv_hash=`head -1 $outputdir/SMV_HASH`
 else
   ERROR=
   if [ "$BUNDLE_SMV_HASH" == "" ]; then
@@ -171,8 +173,6 @@ else
   if [ "$ERROR" != "" ]; then
     exit
   fi
-  cd $reporoot/bot/Bundlebot/release/output
-  outdir=`pwd`
   smv_hash=$BUNDLE_SMV_HASH
 fi
 
@@ -180,7 +180,7 @@ fi
 
 cd $reporoot/bot/Bundlebot/nightly
 echo "*** cloning smv repo"
-./clone_smvrepo.sh $smv_hash $BUILDING_release >& $outdir/stage2_clone
+./clone_smvrepo.sh $smv_hash $BUILDING_release >& $outputdir/stage2_clone
 
 #*** get branch names
 
@@ -245,3 +245,4 @@ rm -f $PIDFILE
 TIME_end=`GET_TIME`
 GET_DURATION $TIME_beg $TIME_end TIME
 echo Time: $TIME_diff
+echo Time: $TIME_diff > $outputdir/time.log
