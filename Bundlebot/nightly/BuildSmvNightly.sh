@@ -1,10 +1,44 @@
 #!/bin/bash
 
 #---------------------------------------------
-#                   usage
+#                   GET_TIME
 #---------------------------------------------
 
-function usage {
+GET_TIME(){
+  echo $(date +"%s")
+}
+
+#---------------------------------------------
+#                   GET_DURATION
+#---------------------------------------------
+
+GET_DURATION(){
+  local time_before=$1
+  local time_after=$2
+  local __var=$3
+
+  DELTA_TIME=`echo $(($time_after-$time_before))`
+  TIME_H=`echo $(($DELTA_TIME / 3600 ))`
+  TIME_M=`echo $((($DELTA_TIME % 3600 ) / 60))`
+  TIME_S=`echo $(($DELTA_TIME % 60 ))`
+  if (( "$DELTA_TIME" >= 3600 )) ; then
+    DIFF_TIME="${TIME_H}h ${TIME_M}m ${TIME_S}s"
+  else
+    if (( "$DELTA_TIME" >= 60 )) ; then
+      DIFF_TIME="${TIME_M}m ${TIME_S}s"
+    else
+      DIFF_TIME="${TIME_S}s"
+    fi
+  fi
+  eval ${__var}_DIFF="'${DIFF_TIME}'"
+  eval ${__var}_DELTA="'${DELTA_TIME}'"
+}
+
+#---------------------------------------------
+#                   USAGE
+#---------------------------------------------
+
+function USAGE {
 echo ""
 echo "BUILDSmvNightly.sh usage"
 echo ""
@@ -20,6 +54,7 @@ exit 0
 
 #-------------------- start of script ---------------------------------
 
+TIME_beg=`GET_TIME`
 curdir=`pwd`
 
 S_HASH=
@@ -84,7 +119,7 @@ else
   GHOWNER=`whoami`
 fi
 if [ "$OUTPUT_USAGE" != "" ]; then
-  usage
+  USAGE
   exit
 fi
 
@@ -207,3 +242,6 @@ if [ "$UPLOADBUNDLE" != "" ]; then
   echo "*** upload complete"
 fi
 rm -f $PIDFILE
+TIME_end=`GET_TIME`
+GET_DURATION $TIME_beg $TIME_end TIME
+echo Time: $TIME_diff
