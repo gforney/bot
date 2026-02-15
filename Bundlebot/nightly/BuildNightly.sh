@@ -1,62 +1,17 @@
 #!/bin/bash
 
-#---------------------------------------------
-#                   usage
-#---------------------------------------------
-
-function usage {
-echo ""
-echo "BuildNightly.sh usage"
-echo ""
-echo "This script builds FDS and Smokeview apps and generates a bundle using either the"
-echo "specified fds and smv repo revisions or revisions from the latest firebot pass."
-echo ""
-echo "Options:"
-echo "-B - install bundle after it is built"
-echo "-c - bundle without warning about cloning/erasing fds and smv repos"
-echo "-C - build apps using current revision"
-echo "-f - force this script to run"
-echo "-h - display this message"
-echo "-I - only build installer, assume repos are already cloned and apps are already built"
-echo "-k - kill BuildNightly.sh and all of its child processes"
-if [ "$MAILTO" != "" ]; then
-  echo "-m mailto - email address [default: $MAILTO]"
-else
-  echo "-m mailto - email address"
-fi
-echo "-o - specify GH_OWNER when building a bundle. [default: $GH_OWNER]"
-echo "-r - specify GH_REPO when building a bundle. [default: $GH_REPO]"
-echo "-R branch - clone repos using name branch {default: $BUNDLETYPE]"
-echo "-r - create a release bundle (same as -R branch)"
-echo "-u - upload bundle file to GitHub using `whoami`."
-echo "-U - upload bundle file to GitHub using firemodels."
-exit 0
-}
-
-# -------------------- is_file_installed -------------------
-
-IS_PROGRAM_INSTALLED()
-{
-  program=$1
-  notfound=`$program -help 2>&1 | tail -1 | grep "not found" | wc -l`
-  if [ $notfound -eq 0 ] ; then
-    echo 1
-  else
-    echo 0
-  fi
-  exit
-}
-
-#-------------------- start of script ---------------------------------
-
+curdir=`pwd`
 commands=$0
-DIR=$(dirname "${commands}")
-cd $DIR
-DIR=`pwd`
-SCRIPTDIR=$DIR
+SCRIPTDIR=$(dirname "${commands}")
+cd $SCRIPTDIR
+SCRIPTDIR=`pwd`
+
+bundle_dir=$HOME/.bundle/bundles
 
 cd ../../..
 GITROOT=`pwd`
+
+#*** determine platform script is running on
 
 if [ "`uname`" == "Darwin" ] ; then
   platform=osx
@@ -66,7 +21,8 @@ fi
 
 UPLOADBUNDLE=
 
-#define mpi environment used to build bundle
+#***define mpi environment used to build bundle
+
 mpirun_status=`IS_PROGRAM_INSTALLED mpirun`
 if [ $mpirun_status -eq 0 ]; then
   echo ***error: mpi environment not defined
@@ -110,14 +66,14 @@ if [ "$BUNDLE_MAILTO" != "" ]; then
   MAILTO=$BUNDLE_MAILTO
 fi
 
-#get branch names
+#***get branch names
 
-cd $DIR/../../../bot
+cd $GITROOT/bot
 BOTBRANCH=`git branch --show-current`
 BOTREVISION=`git describe`
 
-if [ -d $DIR/../../../fds ]; then
-  cd $DIR/../../../fds
+if [ -d $GITROOT/fds ]; then
+  cd $GITROOT/fds
 else
   echo ***error: fds repo does not exist
   exit
@@ -125,8 +81,8 @@ fi
 FDSBRANCH=`git branch --show-current`
 FDSREVISION=`git describe`
 
-if [ -d $DIR/../../../smv ]; then
-  cd $DIR/../../../smv
+if [ -d $GITROOT/smv ]; then
+  cd $SCR$GITROOT/IPTDIR/../../../smv
 else
   echo ***error: smv repo does not exist
   exit
@@ -134,12 +90,13 @@ fi
 SMVBRANCH=`git branch --show-current`
 SMVREVISION=`git describe`
 
-#define output directory
-cd $DIR/output
+#*** define output directory
+
+cd $SCRIPTDIR/output
 outputdir=`pwd`
 git clean -dxf
 
-cd $DIR
+cd $SCRIPTDIR
 
 LOCKFILE=$HOME/.bundle/lock
 
@@ -160,6 +117,8 @@ USE_CURRENT=
 ONLY_INSTALLER=
 PIDFILE=$SCRIPTDIR/BuildNightly.pid
 scan_bundle=1
+
+#*** parse parameters
 
 while getopts 'BcCfhkIm:no:r:R:TuU' OPTION
 do
@@ -222,7 +181,11 @@ case $OPTION  in
 esac
 done
 shift $(($OPTIND-1))
+
 echo $$ > $PIDFILE
+
+#*** define hash and revisions
+
 if [ "$BUNDLETYPE" == "nightly" ]; then
   FDS_TAG=
   SMV_TAG=
@@ -278,8 +241,6 @@ if [ -e $LOCKFILE ]; then
 fi
 touch $LOCKFILE
 
-curdir=`pwd`
-
 if [[ "$PROCEED" == "" ]] && [[ "$USE_CURRENT" == "" ]]; then
   echo ""
   echo "------------------------------------------------------------"
@@ -293,6 +254,7 @@ if [[ "$PROCEED" == "" ]] && [[ "$USE_CURRENT" == "" ]]; then
 fi
 
 #*** update webpages repos
+
 if [[ -d $GITROOT/webpages ]] && [[ "$ONLY_INSTALLER" == "" ]]; then
   echo "*** updating webpages repo"
   cd $GITROOT/webpages
@@ -302,7 +264,9 @@ fi
 
 
 if [ "$ONLY_INSTALLER" == "" ]; then
-# clone 3rd party repos
+
+#*** clone 3rd party repos
+
   cd $curdir/../../Scripts
   if [ "$USE_CURRENT" == "" ]; then
     echo "*** cloning hypre"
@@ -320,7 +284,9 @@ if [ "$ONLY_INSTALLER" == "" ]; then
   pid_cloneall=
   if [ "$BUNDLETYPE" == "nightly" ]; then
     if [ "$USE_CURRENT" == "" ]; then
-# a nightly bundle - clone fds and smv repos
+
+#*** a nightly bundle - clone fds and smv repos
+
       echo "*** cloning fds"
       ./clone_repo.sh -F -N -r $FDS_HASH > $outputdir/clone_fds 2&>1 &
       pid_clonefds=$!
@@ -330,7 +296,9 @@ if [ "$ONLY_INSTALLER" == "" ]; then
       pid_clonesmv=$!
     fi
   else
-#a release bundle - clone all repos except for bot
+
+#*** a release bundle - clone all repos except for bot
+
     echo "*** cloning all repos "
     ./clone_all_repos.sh  $outputdir > $outputdir/clone_all 2&>1 &
     pid_cloneall=$!
@@ -377,10 +345,11 @@ echo $SMV_HASH     > $GITROOT/bot/Bundlebot/nightly/apps/SMV_HASH
 echo $FDS_REVISION > $GITROOT/bot/Bundlebot/nightly/apps/FDS_REVISION
 echo $SMV_REVISION > $GITROOT/bot/Bundlebot/nightly/apps/SMV_REVISION
 
-#*** generate bundle
 cd $curdir
 
 export NOPAUSE=1
+
+#*** define github parameters
 
 if [ "$BUILDING_release" == "1" ]; then
   releasetype="release"
@@ -394,10 +363,6 @@ else
   fi
 fi
 
-#run time libraries are located in
-#  $HOME/.bundle/BUNDLE/MPI
-
-bundle_dir=$HOME/.bundle/bundles
 
 if [ "$FDS_TAG" != "" ]; then
   FDS_REVISION=$FDS_TAG
@@ -406,9 +371,6 @@ if [ "$SMV_TAG" != "" ]; then
   SMV_REVISION=$SMV_TAG
 fi
 
-# prevent more than one instance of this script from running at the same time
-
-# determine platform script is running on
 
 if [ "$BUNDLETYPE" == "release" ]; then
   BUNDLE_PREFIX=
@@ -435,7 +397,7 @@ if [ "$return_code" == "1" ]; then
   exit 1
 fi
 
-# get fds and smv repo revision used to build apps
+#*** get fds and smv repo revision used to build apps
 
 FDSREV=$FDS_REVISION
 if [ "$FDS_REVISION" == "" ]; then
@@ -464,17 +426,21 @@ installer_base_platform=${installer_base}_${BUNDLE_PREFIX_FILE}$platform$LABEL
 csvlog=${installer_base_platform}.csv
 htmllog=${installer_base_platform}_manifest.html
 
+#*** build apps, assemble bundle components, build bundle
+
 cd $SCRIPTDIR
 echo "*** building installer"
 ./assemble_bundle.sh $FDSREV $SMVREV $BUNDLE_PREFIX $MPI_TYPE $LABEL $scan_bundle
 assemble_bundle_status=$?
-  
+
 echo "*** virus scan summary"
 if [ -e $outputdir/$csvlog ]; then
   grep -v OK$ $outputdir/$csvlog | grep -v ^$ | grep -v SUMMARY
 else
   echo virus scanner not available, bundle was not scanned
 fi
+
+#*** upload bundle
 
 if [[ "$UPLOADBUNDLE" == "1" ]]; then
   if [[ $assemble_bundle_status -eq 0 ]]; then
@@ -501,6 +467,9 @@ if [[ "$UPLOADBUNDLE" == "1" ]]; then
     echo ***error: virus detected in bundle, bundle not uploaded
   fi
 fi
+
+#*** install bundle (if option set)
+
 LATESTBUNDLE=$bundle_dir/FDS_SMV_latest_$platform$LABEL.sh
 BUNDLEBASE=$bundle_dir/${installer_base_platform}
 if [ -e ${BUNDLEBASE}.sh ]; then
@@ -515,5 +484,55 @@ if [ "$INSTALL" != "" ]; then
 fi
 rm -f $LOCKFILE 
 rm -f $PIDFILE
+
+#-------------------- end of script ---------------------------------
+
+#---------------------------------------------
+#                   usage
+#---------------------------------------------
+
+function usage {
+echo ""
+echo "BuildNightly.sh usage"
+echo ""
+echo "This script builds FDS and Smokeview apps and generates a bundle using either the"
+echo "specified fds and smv repo revisions or revisions from the latest firebot pass."
+echo ""
+echo "Options:"
+echo "-B - install bundle after it is built"
+echo "-c - bundle without warning about cloning/erasing fds and smv repos"
+echo "-C - build apps using current revision"
+echo "-f - force this script to run"
+echo "-h - display this message"
+echo "-I - only build installer, assume repos are already cloned and apps are already built"
+echo "-k - kill BuildNightly.sh and all of its child processes"
+if [ "$MAILTO" != "" ]; then
+  echo "-m mailto - email address [default: $MAILTO]"
+else
+  echo "-m mailto - email address"
+fi
+echo "-o - specify GH_OWNER when building a bundle. [default: $GH_OWNER]"
+echo "-r - specify GH_REPO when building a bundle. [default: $GH_REPO]"
+echo "-R branch - clone repos using name branch {default: $BUNDLETYPE]"
+echo "-r - create a release bundle (same as -R branch)"
+echo "-u - upload bundle file to GitHub using `whoami`."
+echo "-U - upload bundle file to GitHub using firemodels."
+exit 0
+}
+
+# -------------------- is_file_installed -------------------
+
+IS_PROGRAM_INSTALLED()
+{
+  program=$1
+  notfound=`$program -help 2>&1 | tail -1 | grep "not found" | wc -l`
+  if [ $notfound -eq 0 ] ; then
+    echo 1
+  else
+    echo 0
+  fi
+  exit
+}
+
 
  
