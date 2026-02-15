@@ -110,13 +110,19 @@ shift $(($OPTIND-1))
 
 echo $$ > $PIDFILE
 
+cd ../../..
+reporoot=`pwd`
+basereporoot=`basename $reporoot`
+
 if [ "$BUILDING_release" == "" ]; then
+  mkdir -p $reporoot/bot/Bundlebot/nightly/output
   cd $reporoot/bot/Bundlebot/nightly/output
   outputdir=`pwd`
   if [ "$GHOWNER" == "" ]; then
     GHOWNER=firemodels
   fi
 else
+  mkdir -p $reporoot/bot/Bundlebot/release/output
   cd $reporoot/bot/Bundlebot/release/output
   outputdir=`pwd`
   git tag -a $BUNDLE_SMV_TAG -m "tag for smokeview release" >> $outputdir/stage2_clone 2>&1
@@ -140,10 +146,6 @@ if [ "`uname`" == "Darwin" ] ; then
   fi
   comp=gnu
 fi
-
-cd ../../..
-reporoot=`pwd`
-basereporoot=`basename $reporoot`
 
 if [ -d $reporoot/smv ]; then
   cd $reporoot/smv
@@ -244,5 +246,5 @@ fi
 rm -f $PIDFILE
 TIME_end=`GET_TIME`
 GET_DURATION $TIME_beg $TIME_end TIME
-echo Time: $TIME_diff
-echo Time: $TIME_diff > $outputdir/time.log
+echo Time: $TIME_DIFF
+echo Time: $TIME_DIFF > $outputdir/time.log

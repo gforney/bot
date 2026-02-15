@@ -570,6 +570,6 @@ rm -f $LOCKFILE
 rm -f $PIDFILE
 TIME_end=`GET_TIME`
 GET_DURATION $TIME_beg $TIME_end TIME
-echo Time: $TIME_diff
-echo Time: $TIME_diff > $outputdir/time.log
+echo Time: $TIME_DIFF
+echo Time: $TIME_DIFF > $outputdir/time.log
 
