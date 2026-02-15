@@ -166,7 +166,7 @@ FDSBRANCH=`git branch --show-current`
 FDSREVISION=`git describe`
 
 if [ -d $GITROOT/smv ]; then
-  cd $SCR$GITROOT/IPTDIR/../../../smv
+  cd $GITROOT/smv
 else
   echo ***error: smv repo does not exist
   exit
