@@ -1,5 +1,54 @@
 #!/bin/bash
 
+#---------------------------------------------
+#                   usage
+#---------------------------------------------
+
+function usage {
+echo ""
+echo "BuildNightly.sh usage"
+echo ""
+echo "This script builds FDS and Smokeview apps and generates a bundle using either the"
+echo "specified fds and smv repo revisions or revisions from the latest firebot pass."
+echo ""
+echo "Options:"
+echo "-B - install bundle after it is built"
+echo "-c - bundle without warning about cloning/erasing fds and smv repos"
+echo "-C - build apps using current revision"
+echo "-f - force this script to run"
+echo "-h - display this message"
+echo "-I - only build installer, assume repos are already cloned and apps are already built"
+echo "-k - kill BuildNightly.sh and all of its child processes"
+if [ "$MAILTO" != "" ]; then
+  echo "-m mailto - email address [default: $MAILTO]"
+else
+  echo "-m mailto - email address"
+fi
+echo "-o - specify GH_OWNER when building a bundle. [default: $GH_OWNER]"
+echo "-r - specify GH_REPO when building a bundle. [default: $GH_REPO]"
+echo "-R branch - clone repos using name branch {default: $BUNDLETYPE]"
+echo "-r - create a release bundle (same as -R branch)"
+echo "-u - upload bundle file to GitHub using `whoami`."
+echo "-U - upload bundle file to GitHub using firemodels."
+exit 0
+}
+
+# -------------------- is_file_installed -------------------
+
+IS_PROGRAM_INSTALLED()
+{
+  program=$1
+  notfound=`$program -help 2>&1 | tail -1 | grep "not found" | wc -l`
+  if [ $notfound -eq 0 ] ; then
+    echo 1
+  else
+    echo 0
+  fi
+  exit
+}
+
+#-------------------- start of script ---------------------------------
+
 curdir=`pwd`
 commands=$0
 SCRIPTDIR=$(dirname "${commands}")
@@ -484,55 +533,3 @@ if [ "$INSTALL" != "" ]; then
 fi
 rm -f $LOCKFILE 
 rm -f $PIDFILE
-
-#-------------------- end of script ---------------------------------
-
-#---------------------------------------------
-#                   usage
-#---------------------------------------------
-
-function usage {
-echo ""
-echo "BuildNightly.sh usage"
-echo ""
-echo "This script builds FDS and Smokeview apps and generates a bundle using either the"
-echo "specified fds and smv repo revisions or revisions from the latest firebot pass."
-echo ""
-echo "Options:"
-echo "-B - install bundle after it is built"
-echo "-c - bundle without warning about cloning/erasing fds and smv repos"
-echo "-C - build apps using current revision"
-echo "-f - force this script to run"
-echo "-h - display this message"
-echo "-I - only build installer, assume repos are already cloned and apps are already built"
-echo "-k - kill BuildNightly.sh and all of its child processes"
-if [ "$MAILTO" != "" ]; then
-  echo "-m mailto - email address [default: $MAILTO]"
-else
-  echo "-m mailto - email address"
-fi
-echo "-o - specify GH_OWNER when building a bundle. [default: $GH_OWNER]"
-echo "-r - specify GH_REPO when building a bundle. [default: $GH_REPO]"
-echo "-R branch - clone repos using name branch {default: $BUNDLETYPE]"
-echo "-r - create a release bundle (same as -R branch)"
-echo "-u - upload bundle file to GitHub using `whoami`."
-echo "-U - upload bundle file to GitHub using firemodels."
-exit 0
-}
-
-# -------------------- is_file_installed -------------------
-
-IS_PROGRAM_INSTALLED()
-{
-  program=$1
-  notfound=`$program -help 2>&1 | tail -1 | grep "not found" | wc -l`
-  if [ $notfound -eq 0 ] ; then
-    echo 1
-  else
-    echo 0
-  fi
-  exit
-}
-
-
- 

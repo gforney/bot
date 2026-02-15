@@ -1,4 +1,25 @@
 #!/bin/bash
+
+#---------------------------------------------
+#                   usage
+#---------------------------------------------
+
+function usage {
+echo ""
+echo "BUILDSmvNightly.sh usage"
+echo ""
+echo "Options:"
+echo "-C - use current revision"
+echo "-h - display this message"
+echo "-k - kill the BuildSmvNightly.sh process and all of its child processes"
+echo "-n - do not scan bundle"
+echo "-u - upload bundle file to GitHub owner: `whoami`"
+echo "-U - upload bundle file to GitHub owner: $GHOWNER"
+exit 0
+}
+
+#-------------------- start of script ---------------------------------
+
 curdir=`pwd`
 
 S_HASH=
@@ -186,25 +207,3 @@ if [ "$UPLOADBUNDLE" != "" ]; then
   echo "*** upload complete"
 fi
 rm -f $PIDFILE
-
-#-------------------- end of script ---------------------------------
-
-#---------------------------------------------
-#                   usage
-#---------------------------------------------
-
-function usage {
-echo ""
-echo "BUILDSmvNightly.sh usage"
-echo ""
-echo "Options:"
-echo "-C - use current revision"
-echo "-h - display this message"
-echo "-k - kill the BuildSmvNightly.sh process and all of its child processes"
-echo "-n - do not scan bundle"
-echo "-u - upload bundle file to GitHub owner: `whoami`"
-echo "-U - upload bundle file to GitHub owner: $GHOWNER"
-exit 0
-}
-
-
