@@ -64,6 +64,7 @@ else
 fi
 if [ "$OUTPUT_USAGE" != "" ]; then
   usage
+  exit
 fi
 
 #*** determine platform script is running on
