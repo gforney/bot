@@ -18,8 +18,6 @@ if "x%stopscript%" == "x" goto endif
   exit /b 1
 :endif
 
-set UPLOADOWNER=firemodels
-
 if not exist %userprofile%\.bundle mkdir %userprofile%\.bundle
 set CURDIR=%CD%
 
