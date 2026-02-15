@@ -13,8 +13,12 @@ set upload_smvbundle=
 ::*** parse command line arguments
 call :getopts %*
 
-set OWNER=firemodels
-::set OWNER=%username%
+if "x%stopscript%" == "x" goto endif
+  set stopscript=
+  exit /b 1
+:endif
+
+set UPLOADOWNER=firemodels
 
 if not exist %userprofile%\.bundle mkdir %userprofile%\.bundle
 set CURDIR=%CD%
@@ -88,15 +92,15 @@ echo *** uploading Smokeview bundle
 Title Building Smokeview bundle
 
 set filelist=%TEMP%\smv_files_win.out
-gh release view SMOKEVIEW_TEST  -R github.com/%OWNER%/test_bundles | grep SMV | grep -v FDS | grep -v CFAST | grep win | %gawk% "{print $2}" > %filelist%
-for /F "tokens=*" %%A in (%filelist%) do gh release delete-asset SMOKEVIEW_TEST %%A  -R github.com/%OWNER%/test_bundles -y
+gh release view SMOKEVIEW_TEST  -R github.com/%UPLOADOWNER%/test_bundles | grep SMV | grep -v FDS | grep -v CFAST | grep win | %gawk% "{print $2}" > %filelist%
+for /F "tokens=*" %%A in (%filelist%) do gh release delete-asset SMOKEVIEW_TEST %%A  -R github.com/%UPLOADOWNER%/test_bundles -y
 erase %filelist%
 
-echo uploading %smvrepo_revision%_win.exe to github.com//%OWNER%/test_bundles
-gh release upload SMOKEVIEW_TEST %uploaddir%\%smvrepo_revision%_win.exe  -R github.com/%OWNER%/test_bundles --clobber
+echo uploading %smvrepo_revision%_win.exe to github.com//%UPLOADOWNER%/test_bundles
+gh release upload SMOKEVIEW_TEST %uploaddir%\%smvrepo_revision%_win.exe  -R github.com/%UPLOADOWNER%/test_bundles --clobber
 
-echo uploading %smvrepo_revision%_win_manifest.html to github.com//%OWNER%/test_bundles
-gh release upload SMOKEVIEW_TEST %uploaddir%\%smvrepo_revision%_win_manifest.html  -R github.com/%OWNER%/test_bundles --clobber
+echo uploading %smvrepo_revision%_win_manifest.html to github.com//%UPLOADOWNER%/test_bundles
+gh release upload SMOKEVIEW_TEST %uploaddir%\%smvrepo_revision%_win_manifest.html  -R github.com/%UPLOADOWNER%/test_bundles --clobber
 
 echo *** upload complete
 :skip_upload
@@ -114,7 +118,8 @@ echo BuildSmvNightly usage
 echo.
 echo Options:
 echo -h - display this message
-echo -U - upload bundle
+echo -u - upload bundle to %username%
+echo -U - upload bundle to %UPLOADOWNER%
 exit /b 0
 
 ::-----------------------------------------------------------------------
@@ -130,8 +135,14 @@ exit /b 0
    set stopscript=1
    exit /b
  )
+ if "%1" EQU "-u" (
+   set upload_smvbundle=1
+   set UPLOADOWNER=%username%
+   set valid=1
+ )
  if "%1" EQU "-U" (
    set upload_smvbundle=1
+   set UPLOADOWNER=firemodels
    set valid=1
  )
  shift
