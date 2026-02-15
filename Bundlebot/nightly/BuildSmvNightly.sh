@@ -7,30 +7,14 @@ S_REVISION=
 #S_HASH=2f257722a
 #S_REVISION=SMV-6.10.5-249
 
-#---------------------------------------------
-#                   usage
-#---------------------------------------------
-
-function usage {
-echo ""
-echo "BUILDSmvNightly.sh usage"
-echo ""
-echo "Options:"
-echo "-C - use current revision"
-echo "-h - display this message"
-echo "-k - kill the BuildSmvNightly.sh process and all of its child processes"
-echo "-n - do not scan bundle"
-echo "-u - upload bundle file to GitHub owner: `whoami`"
-echo "-U - upload bundle file to GitHub owner: $GHOWNER"
-exit 0
-}
-
 UPLOADBUNDLE=
 export BUILDING_release=
 OUTPUT_USAGE=
 USE_CURRENT=
 PIDFILE=$curdir/smvbundle.pid
 scan_bundle=1
+
+#*** parse parameters
 
 while getopts 'ChknuUR' OPTION
 do
@@ -100,13 +84,24 @@ cd ../../..
 reporoot=`pwd`
 basereporoot=`basename $reporoot`
 
-cd $reporoot/smv
-echo "*** updating smv repo"
-git remote update           > /dev/null 2>&1 
-git merge firemodels/master > /dev/null 2>&1
-git merge origin/master     > /dev/null 2>&1
+if [ -d $reporoot/smv ]; then
+  cd $reporoot/smv
+  echo "*** updating smv repo"
+  git remote update           > /dev/null 2>&1 
+  git merge firemodels/master > /dev/null 2>&1
+  git merge origin/master     > /dev/null 2>&1
+else
+  echo "***warning: smv repo does not exist"
+fi
 
-if [ "$BUILDING_release" != "" ]; then
+echo "*** get smv repo revision"
+if [ "$BUILDING_release" == "" ]; then
+  cd $reporoot/bot/Bundlebot/nightly/output
+  outdir=`pwd`
+  cd $reporoot/bot/Bundlebot/nightly
+  ./get_hash_revisions.sh $outdir $USE_CURRENT >& $outdir/stage1_hash
+  smv_hash=`head -1 $outdir/SMV_HASH`
+else
   ERROR=
   if [ "$BUNDLE_SMV_HASH" == "" ]; then
     echo "***error: environment variable BUNDLE_SMV_HASH not defined"
@@ -119,26 +114,19 @@ if [ "$BUILDING_release" != "" ]; then
   if [ "$ERROR" != "" ]; then
     exit
   fi
-fi
-
-echo "*** get smv repo revision"
-if [ "$BUILDING_release" == "" ]; then
-  cd $reporoot/bot/Bundlebot/nightly/output
-  outdir=`pwd`
-  cd $reporoot/bot/Bundlebot/nightly
-  ./get_hash_revisions.sh $outdir $USE_CURRENT >& $outdir/stage1_hash
-  smv_hash=`head -1 $outdir/SMV_HASH`
-else
   cd $reporoot/bot/Bundlebot/release/output
   outdir=`pwd`
   smv_hash=$BUNDLE_SMV_HASH
 fi
 
+#*** cloning smv repo
+
 cd $reporoot/bot/Bundlebot/nightly
 echo "*** cloning smv repo"
 ./clone_smvrepo.sh $smv_hash $BUILDING_release >& $outdir/stage2_clone
 
-#get branch names
+#*** get branch names
+
 cd $reporoot/bot
 BOTBRANCH=`git branch --show-current`
 BOTREVISION=`git describe`
@@ -166,12 +154,14 @@ else
   smv_revision=$BUNDLE_SMV_TAG
 fi
 
-#build apps
+#*** build apps
+
 cd $reporoot/bot/Bundlebot/nightly
 ./make_smvapps.sh
 
-echo "*** bundling smokeview"
+#*** make bundle
 
+echo "*** bundling smokeview"
 $reporoot/bot/Bundlebot/nightly/assemble_smvbundle.sh $smv_revision $basereporoot $LABEL $scan_bundle
 
 uploaddir=$HOME/.bundle/bundles
@@ -179,7 +169,7 @@ if [ ! -e $uploaddir/${smv_revision}_${LABEL}.sh ]; then
   echo "***error: smv bundle: $HOME/$uploaddir/${smv_revision}_${LABEL}.sh failed to be created"
 fi
 
-
+#*** upload bundle
 
 if [ "$UPLOADBUNDLE" != "" ]; then
   echo "*** uploading smokeview bundle"
@@ -195,4 +185,25 @@ if [ "$UPLOADBUNDLE" != "" ]; then
   echo "*** upload complete"
 fi
 rm -f $PIDFILE
+
+#-------------------- end of script ---------------------------------
+
+#---------------------------------------------
+#                   usage
+#---------------------------------------------
+
+function usage {
+echo ""
+echo "BUILDSmvNightly.sh usage"
+echo ""
+echo "Options:"
+echo "-C - use current revision"
+echo "-h - display this message"
+echo "-k - kill the BuildSmvNightly.sh process and all of its child processes"
+echo "-n - do not scan bundle"
+echo "-u - upload bundle file to GitHub owner: `whoami`"
+echo "-U - upload bundle file to GitHub owner: $GHOWNER"
+exit 0
+}
+
 
