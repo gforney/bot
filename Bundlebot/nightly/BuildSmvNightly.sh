@@ -91,7 +91,7 @@ fi
 #*** determine platform script is running on
 
 platform=linux
-LABEL=lnx_intel
+LABEL=lnx
 comp=intel
 if [ "`uname`" == "Darwin" ] ; then
   platform="osx"
