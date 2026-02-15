@@ -20,7 +20,7 @@ CP ()
   local FROMFILE=$1
   rm -f $pdf_to/$FROMFILE
 
-  echo "   copying $FROMFILE to $pdf_to"
+  echo "*** copying $FROMFILE to $pdf_to"
   gh release download $PUB_TAG -p $FROMFILE -R github.com/$GH_OWNER_LOCAL/test_bundles -D $pdf_to --clobber
   if [ ! -e $pdf_to/$FROMFILE ]; then
     echo "" >> $error_log
@@ -48,7 +48,7 @@ fi
 
 if [ "$pub_type" == "smv" ]; then
   echo ""
-  echo "***copying smokeview pubs from github.com/$GH_OWNER_LOCAL/test_bundles using tag: $PUB_TAG"
+  echo "*** copying smokeview pubs from github.com/$GH_OWNER_LOCAL/test_bundles using tag: $PUB_TAG"
   echo ""
   CP SMV_Technical_Reference_Guide.pdf      || exit 1
   CP SMV_User_Guide.pdf                     || exit 1

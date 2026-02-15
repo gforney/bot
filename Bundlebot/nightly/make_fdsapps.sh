@@ -129,11 +129,11 @@ cd $REPOROOT/bot
 botrepo=`pwd`
 
 cd $fdsrepo/Utilities
-echo ***cleaning $fdsrepo/Utilities
+echo "*** cleaning $fdsrepo/Utilities"
 git clean -dxf  >> $cleanlog 2>&1 
 
 cd $fdsrepo/Build
-echo ***cleaning $fdsrepo/Build
+echo "*** cleaning $fdsrepo/Build"
 git clean -dxf  >> $cleanlog 2>&1 
 
 cd $CURDIR
@@ -186,7 +186,5 @@ CHECK_BUILDFDSUTIL    fds2ascii ${fdscompiler}_$platform
 
 wait $pid_test_mpi
 CHECK_BUILDTESTMPI  
-
-echo fds app builds complete
 
 cd $CURDIR

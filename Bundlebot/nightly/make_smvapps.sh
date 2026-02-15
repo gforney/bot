@@ -136,6 +136,6 @@ CHECK_BUILD smokezip
 wait $pid_wind2fds
 CHECK_BUILD wind2fds
 
-echo "*** smv app builds complete"
+echo "*** smv apps built"
 
 cd $CURDIR

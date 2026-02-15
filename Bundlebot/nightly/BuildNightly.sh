@@ -49,14 +49,18 @@ IS_PROGRAM_INSTALLED()
 
 #-------------------- start of script ---------------------------------
 
+curdir=`pwd`
 commands=$0
-DIR=$(dirname "${commands}")
-cd $DIR
-DIR=`pwd`
-SCRIPTDIR=$DIR
+SCRIPTDIR=$(dirname "${commands}")
+cd $SCRIPTDIR
+SCRIPTDIR=`pwd`
+
+bundle_dir=$HOME/.bundle/bundles
 
 cd ../../..
 GITROOT=`pwd`
+
+#*** determine platform script is running on
 
 if [ "`uname`" == "Darwin" ] ; then
   platform=osx
@@ -66,7 +70,8 @@ fi
 
 UPLOADBUNDLE=
 
-#define mpi environment used to build bundle
+#***define mpi environment used to build bundle
+
 mpirun_status=`IS_PROGRAM_INSTALLED mpirun`
 if [ $mpirun_status -eq 0 ]; then
   echo ***error: mpi environment not defined
@@ -110,23 +115,37 @@ if [ "$BUNDLE_MAILTO" != "" ]; then
   MAILTO=$BUNDLE_MAILTO
 fi
 
-#get branch names
-cd $DIR/../../../bot
+#***get branch names
+
+cd $GITROOT/bot
 BOTBRANCH=`git branch --show-current`
 BOTREVISION=`git describe`
-cd $DIR/../../../fds
+
+if [ -d $GITROOT/fds ]; then
+  cd $GITROOT/fds
+else
+  echo ***error: fds repo does not exist
+  exit
+fi
 FDSBRANCH=`git branch --show-current`
 FDSREVISION=`git describe`
-cd $DIR/../../../smv
+
+if [ -d $GITROOT/smv ]; then
+  cd $SCR$GITROOT/IPTDIR/../../../smv
+else
+  echo ***error: smv repo does not exist
+  exit
+fi
 SMVBRANCH=`git branch --show-current`
 SMVREVISION=`git describe`
 
-#define output directory
-cd $DIR/output
+#*** define output directory
+
+cd $SCRIPTDIR/output
 outputdir=`pwd`
 git clean -dxf
 
-cd $DIR
+cd $SCRIPTDIR
 
 LOCKFILE=$HOME/.bundle/lock
 
@@ -147,6 +166,8 @@ USE_CURRENT=
 ONLY_INSTALLER=
 PIDFILE=$SCRIPTDIR/BuildNightly.pid
 scan_bundle=1
+
+#*** parse parameters
 
 while getopts 'BcCfhkIm:no:r:R:TuU' OPTION
 do
@@ -211,13 +232,16 @@ done
 shift $(($OPTIND-1))
 
 echo $$ > $PIDFILE
+
+#*** define hash and revisions
+
 if [ "$BUNDLETYPE" == "nightly" ]; then
   FDS_TAG=
   SMV_TAG=
   if [ "$USE_CURRENT" == "" ]; then
     $GITROOT/bot/Firebot/getGHfile.sh FDS_INFO.txt
   else
-    $SCRIPTDIR/make_info.sh        FDS_INFO.txt
+    $SCRIPTDIR/make_info.sh  >      FDS_INFO.txt
   fi
   FDS_HASH=`grep FDS_HASH  FDS_INFO.txt | awk '{print $2}'`
   SMV_HASH=`grep SMV_HASH  FDS_INFO.txt | awk '{print $2}'`
@@ -238,6 +262,7 @@ echo "              bot revision: $BOTREVISION/$BOTBRANCH"
 echo "              fds revision: $FDSREVISION/$FDSBRANCH"
 echo "              smv revision: $SMVREVISION/$SMVBRANCH"
 echo "                  MPI type: $MPI_TYPE"
+
 if [ "$INTELMPI_BIN" != "" ]; then
   echo "   Intel mpi bin directory: $INTELMPI_BIN"
   if [ -e $INTELMPI_BIN/mpirun ]; then
@@ -265,8 +290,6 @@ if [ -e $LOCKFILE ]; then
 fi
 touch $LOCKFILE
 
-curdir=`pwd`
-
 if [[ "$PROCEED" == "" ]] && [[ "$USE_CURRENT" == "" ]]; then
   echo ""
   echo "------------------------------------------------------------"
@@ -280,8 +303,9 @@ if [[ "$PROCEED" == "" ]] && [[ "$USE_CURRENT" == "" ]]; then
 fi
 
 #*** update webpages repos
+
 if [[ -d $GITROOT/webpages ]] && [[ "$ONLY_INSTALLER" == "" ]]; then
-  echo updating webpages repo
+  echo "*** updating webpages repo"
   cd $GITROOT/webpages
   get fetch origin              > $outputdir/update_webpages 2&>1
   git merge origin/nist-pages  >> $outputdir/update_webpages 2&>1
@@ -289,7 +313,9 @@ fi
 
 
 if [ "$ONLY_INSTALLER" == "" ]; then
-# clone 3rd party repos
+
+#*** clone 3rd party repos
+
   cd $curdir/../../Scripts
   if [ "$USE_CURRENT" == "" ]; then
     echo "*** cloning hypre"
@@ -307,7 +333,9 @@ if [ "$ONLY_INSTALLER" == "" ]; then
   pid_cloneall=
   if [ "$BUNDLETYPE" == "nightly" ]; then
     if [ "$USE_CURRENT" == "" ]; then
-# a nightly bundle - clone fds and smv repos
+
+#*** a nightly bundle - clone fds and smv repos
+
       echo "*** cloning fds"
       ./clone_repo.sh -F -N -r $FDS_HASH > $outputdir/clone_fds 2&>1 &
       pid_clonefds=$!
@@ -317,11 +345,14 @@ if [ "$ONLY_INSTALLER" == "" ]; then
       pid_clonesmv=$!
     fi
   else
-#a release bundle - clone all repos except for bot
+
+#*** a release bundle - clone all repos except for bot
+
     echo "*** cloning all repos "
     ./clone_all_repos.sh  $outputdir > $outputdir/clone_all 2&>1 &
     pid_cloneall=$!
   fi
+
   if [ "$pid_clonesmv" != "" ]; then
     wait $pid_clonesmv
     echo "*** smv cloned"
@@ -333,10 +364,12 @@ if [ "$ONLY_INSTALLER" == "" ]; then
   ./make_smvapps.sh $MPI_TYPE &
   pid_smvapps=$!
 
-  if [ "$USE_CURRENT" ]; then
+  if [ "$pid_clonehypre" != "" ]; then
     wait $pid_clonehypre
     echo "*** hypre cloned"
+  fi
 
+  if [ "$pid_clonesundials" != "" ]; then
     wait $pid_clonesundials
     echo "*** sundials cloned"
   fi
@@ -344,13 +377,10 @@ if [ "$ONLY_INSTALLER" == "" ]; then
   if [ "$pid_clonefds" != "" ]; then
     wait $pid_clonefds
     echo "*** fds cloned"
-
   fi
 
-  ./make_fdsapps.sh $MPI_TYPE &
-  pid_fdsapps=$1
+  ./make_fdsapps.sh $MPI_TYPE
 
-  wait $pid_fdsapps
   wait $pid_smvapps
 fi
 
@@ -358,27 +388,17 @@ if [ "$BUNDLETYPE" != "nightly" ]; then
   FDS_TAG="-X $BUNDLE_FDS_TAG"
   SMV_TAG="-Y $BUNDLE_SMV_TAG"
 fi
-if [ "$pid_clonesmv" != "" ]; then
-  wait $pid_clonesmv
-  echo "*** smv cloned"
-fi
-if [ "$pid_cloneall" != "" ]; then
-  wait $pid_cloneall
-  echo all repos clone complete
-fi
-./make_smvapps.sh &
-pid_smvapps=$!
-
 
 echo $FDS_HASH     > $GITROOT/bot/Bundlebot/nightly/apps/FDS_HASH
 echo $SMV_HASH     > $GITROOT/bot/Bundlebot/nightly/apps/SMV_HASH
 echo $FDS_REVISION > $GITROOT/bot/Bundlebot/nightly/apps/FDS_REVISION
 echo $SMV_REVISION > $GITROOT/bot/Bundlebot/nightly/apps/SMV_REVISION
 
-#*** generate bundle
 cd $curdir
 
 export NOPAUSE=1
+
+#*** define github parameters
 
 if [ "$BUILDING_release" == "1" ]; then
   releasetype="release"
@@ -392,10 +412,6 @@ else
   fi
 fi
 
-#run time libraries are located in
-#  $HOME/.bundle/BUNDLE/MPI
-
-bundle_dir=$HOME/.bundle/bundles
 
 if [ "$FDS_TAG" != "" ]; then
   FDS_REVISION=$FDS_TAG
@@ -404,9 +420,6 @@ if [ "$SMV_TAG" != "" ]; then
   SMV_REVISION=$SMV_TAG
 fi
 
-# prevent more than one instance of this script from running at the same time
-
-# determine platform script is running on
 
 if [ "$BUNDLETYPE" == "release" ]; then
   BUNDLE_PREFIX=
@@ -433,7 +446,7 @@ if [ "$return_code" == "1" ]; then
   exit 1
 fi
 
-# get fds and smv repo revision used to build apps
+#*** get fds and smv repo revision used to build apps
 
 FDSREV=$FDS_REVISION
 if [ "$FDS_REVISION" == "" ]; then
@@ -462,25 +475,25 @@ installer_base_platform=${installer_base}_${BUNDLE_PREFIX_FILE}$platform$LABEL
 csvlog=${installer_base_platform}.csv
 htmllog=${installer_base_platform}_manifest.html
 
+#*** build apps, assemble bundle components, build bundle
+
 cd $SCRIPTDIR
-echo ""
-echo "***Building installer"
+echo "*** building installer"
 ./assemble_bundle.sh $FDSREV $SMVREV $BUNDLE_PREFIX $MPI_TYPE $LABEL $scan_bundle
 assemble_bundle_status=$?
-echo " - complete"
-  
-echo
-echo ***Virus scan summary
+
+echo "*** virus scan summary"
 if [ -e $outputdir/$csvlog ]; then
   grep -v OK$ $outputdir/$csvlog | grep -v ^$ | grep -v SUMMARY
 else
   echo virus scanner not available, bundle was not scanned
 fi
 
+#*** upload bundle
+
 if [[ "$UPLOADBUNDLE" == "1" ]]; then
   if [[ $assemble_bundle_status -eq 0 ]]; then
-    echo ""
-    echo "uploading installer"
+    echo "*** uploading installer"
     
     FILELIST=`gh release view FDS_TEST  -R github.com/$GHUPLOADOWNER/test_bundles | grep SMV | grep FDS | grep $platform$LABEL | awk '{print $2}'`
     for file in $FILELIST ; do
@@ -503,6 +516,9 @@ if [[ "$UPLOADBUNDLE" == "1" ]]; then
     echo ***error: virus detected in bundle, bundle not uploaded
   fi
 fi
+
+#*** install bundle (if option set)
+
 LATESTBUNDLE=$bundle_dir/FDS_SMV_latest_$platform$LABEL.sh
 BUNDLEBASE=$bundle_dir/${installer_base_platform}
 if [ -e ${BUNDLEBASE}.sh ]; then
@@ -517,5 +533,3 @@ if [ "$INSTALL" != "" ]; then
 fi
 rm -f $LOCKFILE 
 rm -f $PIDFILE
-
- 
