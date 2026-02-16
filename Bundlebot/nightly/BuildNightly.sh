@@ -456,16 +456,9 @@ if [ "$SMV_TAG" != "" ]; then
 fi
 
 
-if [ "$BUNDLETYPE" == "release" ]; then
-  BUNDLE_PREFIX=
-  BUNDLE_PREFIX_FILE=
-  BUNDLETYPEDIR=$BUNDLETYPE
-  UPLOAD_DIR="bundle_test"
-else
+BUNDLE_PREFIX=
+if [ "$BUNDLETYPE" == "nightly" ]; then
   BUNDLE_PREFIX="nightly"
-  BUNDLE_PREFIX_FILE=${BUNDLE_PREFIX}_
-  BUNDLETYPEDIR=
-  UPLOAD_DIR=
 fi
 
 return_code=0
@@ -506,7 +499,7 @@ REPO_ROOT=`pwd`
 
 cd $SCRIPTDIR
 installer_base=${FDSREV}_${SMVREV}
-installer_base_platform=${installer_base}_${BUNDLE_PREFIX_FILE}${PLATFORM}${MPI_LABEL}
+installer_base_platform=${installer_base}_${BUNDLE_PREFIX}${PLATFORM}${MPI_LABEL}
 csvlog=${installer_base_platform}.csv
 htmllog=${installer_base_platform}_manifest.html
 
