@@ -55,7 +55,7 @@ exit 0
 #-------------------- start of script ---------------------------------
 
 TIME_beg=`GET_TIME`
-curdir=`pwd`
+CURDIR=`pwd`
 
 S_HASH=
 S_REVISION=
@@ -67,8 +67,8 @@ UPLOADBUNDLE=
 BUNDLETYPE=nightly
 OUTPUT_USAGE=
 USE_CURRENT=
-PIDFILE=$curdir/smvbundle.pid
-scan_bundle=1
+PIDFILE=$CURDIR/smvbundle.pid
+SCAN_BUNDLE=1
 
 #*** parse parameters
 
@@ -92,7 +92,7 @@ case $OPTION  in
    exit
    ;;
   n)
-   scan_bundle=0
+   SCAN_BUNDLE=0
    ;;
   R)
    BUNDLETYPE=release
@@ -111,19 +111,19 @@ shift $(($OPTIND-1))
 echo $$ > $PIDFILE
 
 cd ../../..
-reporoot=`pwd`
-basereporoot=`basename $reporoot`
+GITROOT=`pwd`
+GITROOTBASE=`basename $GITROOT`
 
 if [ "$BUNDLETYPE" == "nightly" ]; then
-  mkdir -p $reporoot/bot/Bundlebot/nightly/output
-  cd $reporoot/bot/Bundlebot/nightly/output
+  mkdir -p $GITROOT/bot/Bundlebot/nightly/output
+  cd $GITROOT/bot/Bundlebot/nightly/output
   outputdir=`pwd`
   if [ "$GHOWNER" == "" ]; then
     GHOWNER=firemodels
   fi
 else
-  mkdir -p $reporoot/bot/Bundlebot/release/output
-  cd $reporoot/bot/Bundlebot/release/output
+  mkdir -p $GITROOT/bot/Bundlebot/release/output
+  cd $GITROOT/bot/Bundlebot/release/output
   outputdir=`pwd`
   git tag -a $BUNDLE_SMV_TAG -m "tag for smokeview release" >> $outputdir/stage2_clone 2>&1
   GHOWNER=`whoami`
@@ -135,20 +135,18 @@ fi
 
 #*** determine platform script is running on
 
-platform=linux
-LABEL=lnx
-comp=intel
+PLATFORM=linux
+PLATFORMLABEL=lnx
 if [ "`uname`" == "Darwin" ] ; then
-  platform="osx"
-  LABEL="osx_intel"
+  PLATFORM="osx"
+  PLATFORMLABEL="osx_intel"
   if [ "`uname -m`" == "arm64" ] ; then
-    LABEL="osx_arm"
+    PLATFORMLABEL="osx_arm"
   fi
-  comp=gnu
 fi
 
-if [ -d $reporoot/smv ]; then
-  cd $reporoot/smv
+if [ -d $GITROOT/smv ]; then
+  cd $GITROOT/smv
   echo "*** updating smv repo"
   git remote update           > /dev/null 2>&1 
   git merge firemodels/master > /dev/null 2>&1
@@ -159,7 +157,7 @@ fi
 
 echo "*** get smv repo revision"
 if [ "$BUNDLETYPE" == "nightly" ]; then
-  cd $reporoot/bot/Bundlebot/nightly
+  cd $GITROOT/bot/Bundlebot/nightly
   ./get_hash_revisions.sh $outputdir $USE_CURRENT >& $outputdir/stage1_hash
   smv_hash=`head -1 $outputdir/SMV_HASH`
 else
@@ -180,16 +178,17 @@ fi
 
 #*** cloning smv repo
 
-cd $reporoot/bot/Bundlebot/nightly
+cd $GITROOT/bot/Bundlebot/nightly
 echo "*** cloning smv repo"
 ./clone_smvrepo.sh $smv_hash $BUNDLETYPE >& $outputdir/stage2_clone
 
 #*** get branch names
 
-cd $reporoot/bot
+cd $GITROOT/bot
 BOTBRANCH=`git branch --show-current`
 BOTREVISION=`git describe`
-cd $reporoot/smv
+
+cd $GITROOT/smv
 SMVBRANCH=`git branch --show-current`
 SMVREVISION=`git describe`
 
@@ -201,7 +200,7 @@ echo "              smv revision: $SMVREVISION/$SMVBRANCH"
 echo "------------------------------------------------------------"
 echo ""
 
-cd $reporoot/smv
+cd $GITROOT/smv
 if [ "$BUNDLETYPE" == "nightly" ]; then
   smv_revision=`git describe --abbrev=7 --dirty --long`
 else
@@ -210,17 +209,17 @@ fi
 
 #*** build apps
 
-cd $reporoot/bot/Bundlebot/nightly
+cd $GITROOT/bot/Bundlebot/nightly
 ./make_smvapps.sh
 
 #*** make bundle
 
 echo "*** bundling smokeview"
-$reporoot/bot/Bundlebot/nightly/assemble_smvbundle.sh $smv_revision $basereporoot $LABEL $scan_bundle
+$GITROOT/bot/Bundlebot/nightly/assemble_smvbundle.sh $smv_revision $GITROOTBASE $PLATFORMLABEL $SCAN_BUNDLE
 
 uploaddir=$HOME/.bundle/bundles
-if [ ! -e $uploaddir/${smv_revision}_${LABEL}.sh ]; then
-  echo "***error: smv bundle: $HOME/$uploaddir/${smv_revision}_${LABEL}.sh failed to be created"
+if [ ! -e $uploaddir/${smv_revision}_${PLATFORMLABEL}.sh ]; then
+  echo "***error: smv bundle: $HOME/$uploaddir/${smv_revision}_${PLATFORMLABEL}.sh failed to be created"
 fi
 
 #*** upload bundle
@@ -228,13 +227,13 @@ fi
 if [ "$UPLOADBUNDLE" != "" ]; then
   echo "*** uploading smokeview bundle"
 
-  FILELIST=`gh release view SMOKEVIEW_TEST  -R github.com/$GHOWNER/test_bundles | grep SMV |   grep -v FDS | grep $LABEL | awk '{print $2}'`
+  FILELIST=`gh release view SMOKEVIEW_TEST  -R github.com/$GHOWNER/test_bundles | grep SMV |   grep -v FDS | grep $PLATFORMLABEL | awk '{print $2}'`
   for file in $FILELIST ; do
     gh release delete-asset SMOKEVIEW_TEST $file -R github.com/$GHOWNER/test_bundles -y
   done
 
-  $reporoot/bot/Bundlebot/nightly/upload_smvbundle.sh $uploaddir ${smv_revision}_${LABEL}.sh                $basereporoot/bot/Bundlebot/nightly $GHOWNER
-  $reporoot/bot/Bundlebot/nightly/upload_smvbundle.sh $uploaddir ${smv_revision}_${LABEL}_manifest.html     $basereporoot/bot/Bundlebot/nightly $GHOWNER
+  $GITROOT/bot/Bundlebot/nightly/upload_smvbundle.sh $uploaddir ${smv_revision}_${PLATFORMLABEL}.sh                $GITROOTBASE/bot/Bundlebot/nightly $GHOWNER
+  $GITROOT/bot/Bundlebot/nightly/upload_smvbundle.sh $uploaddir ${smv_revision}_${PLATFORMLABEL}_manifest.html     $GITROOTBASE/bot/Bundlebot/nightly $GHOWNER
 
   echo "*** upload complete"
 fi
