@@ -60,8 +60,8 @@ else
 fi
 echo "-o - specify GH_OWNER when building a bundle. [default: $GH_OWNER]"
 echo "-r - specify GH_REPO when building a bundle. [default: $GH_REPO]"
-echo "-R branch - clone repos using name branch {default: $BUNDLETYPE]"
-echo "-r - create a release bundle (same as -R branch)"
+echo "-R - clone repos naming the branch release (without -R branches"
+echo "     are named nightly)"
 echo "-u - upload bundle file to GitHub using `whoami`."
 echo "-U - upload bundle file to GitHub using firemodels."
 exit 0
@@ -204,7 +204,7 @@ scan_bundle=1
 
 #*** parse parameters
 
-while getopts 'BcCfhkIm:no:r:R:TuU' OPTION
+while getopts 'BcCfhkIm:no:r:RTuU' OPTION
 do
 case $OPTION  in
   B)
@@ -250,7 +250,7 @@ case $OPTION  in
    export GH_REPO="$OPTARG"
    ;;
   R)
-   BUNDLETYPE="$OPTARG"
+   BUNDLETYPE=release
    ;;
   T)
    TEST_VIRUS=1
@@ -435,7 +435,7 @@ export NOPAUSE=1
 
 #*** define github parameters
 
-if [ "$BUILDING_release" == "1" ]; then
+if [ "$BUNDLETYPE" == "release" ]; then
   releasetype="release"
   GHOWNER=`whoami`
   GHUPLOADOWNER=`whoami`
@@ -545,7 +545,7 @@ if [[ "$UPLOADBUNDLE" == "1" ]]; then
       cd $REPO_ROOT/fds
       FDS_SHORT_HASH=`git rev-parse --short HEAD`
       cd $SCRIPTDIR
-      ./setreleasetitle.sh fds $FDS_SHORT_HASH
+      ./setreleasetitle.sh fds $FDS_SHORT_HASH $GHOWNER
     fi
   else
     echo ***error: virus detected in bundle, bundle not uploaded

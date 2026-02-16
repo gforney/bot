@@ -64,7 +64,7 @@ S_REVISION=
 #S_REVISION=SMV-6.10.5-249
 
 UPLOADBUNDLE=
-export BUILDING_release=
+BUNDLETYPE=nightly
 OUTPUT_USAGE=
 USE_CURRENT=
 PIDFILE=$curdir/smvbundle.pid
@@ -95,7 +95,7 @@ case $OPTION  in
    scan_bundle=0
    ;;
   R)
-   export BUILDING_release=1
+   BUNDLETYPE=release
    ;;
   u)
    GHOWNER=`whoami`
@@ -114,7 +114,7 @@ cd ../../..
 reporoot=`pwd`
 basereporoot=`basename $reporoot`
 
-if [ "$BUILDING_release" == "" ]; then
+if [ "$BUNDLETYPE" == "nightly" ]; then
   mkdir -p $reporoot/bot/Bundlebot/nightly/output
   cd $reporoot/bot/Bundlebot/nightly/output
   outputdir=`pwd`
@@ -158,7 +158,7 @@ else
 fi
 
 echo "*** get smv repo revision"
-if [ "$BUILDING_release" == "" ]; then
+if [ "$BUNDLETYPE" == "nightly" ]; then
   cd $reporoot/bot/Bundlebot/nightly
   ./get_hash_revisions.sh $outputdir $USE_CURRENT >& $outputdir/stage1_hash
   smv_hash=`head -1 $outputdir/SMV_HASH`
@@ -182,7 +182,7 @@ fi
 
 cd $reporoot/bot/Bundlebot/nightly
 echo "*** cloning smv repo"
-./clone_smvrepo.sh $smv_hash $BUILDING_release >& $outputdir/stage2_clone
+./clone_smvrepo.sh $smv_hash $BUNDLETYPE >& $outputdir/stage2_clone
 
 #*** get branch names
 
@@ -192,11 +192,6 @@ BOTREVISION=`git describe`
 cd $reporoot/smv
 SMVBRANCH=`git branch --show-current`
 SMVREVISION=`git describe`
-if [ "$BUILDING_release" == "" ]; then
-  BUNDLETYPE=nightly
-else
-  BUNDLETYPE=release
-fi
 
 echo ""
 echo "------------------------------------------------------------"
@@ -207,7 +202,7 @@ echo "------------------------------------------------------------"
 echo ""
 
 cd $reporoot/smv
-if [ "$BUILDING_release" == "" ]; then
+if [ "$BUNDLETYPE" == "nightly" ]; then
   smv_revision=`git describe --abbrev=7 --dirty --long`
 else
   smv_revision=$BUNDLE_SMV_TAG
