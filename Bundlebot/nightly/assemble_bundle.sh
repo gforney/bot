@@ -71,9 +71,6 @@ CP ()
     echo "***error: the file $FROMFILE was not found in $FROMDIR" >> $errlog
     echo "***error: the file $FROMFILE was not found in $FROMDIR"
     ERR="1"
-    if [ "$NOPAUSE" == "" ]; then
-      read val
-    fi
   else
     cp $FROMDIR/$FROMFILE $TODIR/$TOFILE
   fi
@@ -84,9 +81,6 @@ CP ()
     if [ "ERR" == "" ]; then
       echo "***error: $FROMFILE could not be copied from $FROMDIR to $TODIR" >> $errlog
       echo "***error: $FROMFILE could not be copied from $FROMDIR to $TODIR"
-      if [ "$NOPAUSE" == "" ]; then
-        read val
-      fi
     fi
   fi
 }
@@ -118,9 +112,6 @@ CPPUB ()
     echo "***error: the file $FROMFILE was not found in $FROMDIR" >> $errlog
     echo "***error: the file $FROMFILE was not found in $FROMDIR"
     ERR="1"
-    if [ "$NOPAUSE" == "" ]; then
-      read val
-    fi
   else
     cp $FROMDIR/$FROMFILE $TODIR/$TOFILE
   fi
@@ -130,9 +121,6 @@ CPPUB ()
     if [ "$ERR" == "" ]; then
       echo "***error: $FROMFILE could not be copied to $TODIR" >> $errlog
       echo "***error: $FROMFILE could not be copied to $TODIR"
-      if [ "$NOPAUSE" == "" ]; then
-        read val
-      fi
     fi
   fi
 }
@@ -148,9 +136,6 @@ CPDIR ()
     echo "***error: the directory $FROMDIR does not exist" >> $errlog
     echo "***error: the directory $FROMDIR does not exist"
     ERR="1"
-    if [ "$NOPAUSE" == "" ]; then
-      read val
-    fi
   else
     echo "*** copying directory"
     echo "      from:$FROMDIR"
@@ -161,9 +146,6 @@ CPDIR ()
     if [ "$ERR" == "" ]; then
       echo "***error: the directory $FROMDIR could not copied to $TODIR" >> $errlog
       echo "***error: the directory $FROMDIR could not copied to $TODIR"
-      if [ "$NOPAUSE" == "" ]; then
-        read val
-      fi
     fi
   fi
 }
@@ -179,9 +161,6 @@ CPDIRFILES ()
     echo "***error: the directory $FROMDIR does not exist" >> $errlog
     echo "***error: the directory $FROMDIR does not exist"
     ERR="1"
-    if [ "$NOPAUSE" == "" ]; then
-      read val
-    fi
   else
     echo "*** copying files"
     echo "   from: $FROMDIR to $TODIR"
@@ -194,9 +173,6 @@ CPDIRFILES ()
     if [ "$ERR" == "" ]; then
       echo "***error: unable to copy $FROMDIR to $TODIR" >> $errlog
       echo "***error: unable to copy $FROMDIR to $TODIR"
-      if [ "$NOPAUSE" == "" ]; then
-        read val
-      fi
     fi
   fi
 }

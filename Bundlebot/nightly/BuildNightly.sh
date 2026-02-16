@@ -84,13 +84,16 @@ IS_PROGRAM_INSTALLED()
 #-------------------- start of script ---------------------------------
 
 TIME_beg=`GET_TIME`
-curdir=`pwd`
+CURDIR=`pwd`
 commands=$0
+
+#*** define some directory locations
+
 SCRIPTDIR=$(dirname "${commands}")
 cd $SCRIPTDIR
 SCRIPTDIR=`pwd`
 
-bundle_dir=$HOME/.bundle/bundles
+BUNDLEDIR=$HOME/.bundle/bundles
 
 cd ../../..
 GITROOT=`pwd`
@@ -98,23 +101,22 @@ GITROOT=`pwd`
 #*** determine platform script is running on
 
 if [ "`uname`" == "Darwin" ] ; then
-  platform=osx
+  PLATFORM=osx
 else
-  platform=lnx
+  PLATFORM=lnx
 fi
 
 UPLOADBUNDLE=
 
 #***define mpi environment used to build bundle
 
-mpirun_status=`IS_PROGRAM_INSTALLED mpirun`
-if [ $mpirun_status -eq 0 ]; then
+if [ `IS_PROGRAM_INSTALLED mpirun` -eq 0 ]; then
   echo ***error: mpi environment not defined
   exit
 fi
 
 IS_INTEL=`mpirun --version | head -1 | grep Intel| wc -l`
-if [[ "$platform" == "osx" ]]; then
+if [[ "${PLATFORM}" == "osx" ]]; then
   if [[ $IS_INTEL -eq 0 ]]; then
     export MPI_TYPE="OPENMPI"
   else
@@ -122,17 +124,17 @@ if [[ "$platform" == "osx" ]]; then
     exit
   fi
   if [ "`uname -m`" == "arm64" ] ; then
-    LABEL=_ompi_arm
+    MPI_LABEL=_ompi_arm
   else
-    LABEL=_ompi_intel
+    MPI_LABEL=_ompi_intel
   fi
 else
   if [[ $IS_INTEL -eq 0 ]]; then
     export MPI_TYPE="OPENMPI"
-    LABEL=_ompi
+    MPI_LABEL=_ompi
   else
     export MPI_TYPE="INTELMPI"
-    LABEL=_impi
+    MPI_LABEL=_impi
   fi
 fi
 
@@ -177,7 +179,7 @@ SMVREVISION=`git describe`
 #*** define output directory
 
 cd $SCRIPTDIR/output
-outputdir=`pwd`
+OUTPUTDIR=`pwd`
 git clean -dxf
 
 cd $SCRIPTDIR
@@ -200,7 +202,7 @@ export TEST_VIRUS=
 USE_CURRENT=
 ONLY_INSTALLER=
 PIDFILE=$SCRIPTDIR/BuildNightly.pid
-scan_bundle=1
+SCAN_BUNDLE=1
 
 #*** parse parameters
 
@@ -241,7 +243,7 @@ case $OPTION  in
    MAILTO="$OPTARG"
    ;;
   n)
-   scan_bundle=0
+   SCAN_BUNDLE=0
    ;;
   o)
    export GH_OWNER="$OPTARG"
@@ -342,8 +344,8 @@ fi
 if [[ -d $GITROOT/webpages ]] && [[ "$ONLY_INSTALLER" == "" ]]; then
   echo "*** updating webpages repo"
   cd $GITROOT/webpages
-  get fetch origin              > $outputdir/update_webpages 2&>1
-  git merge origin/nist-pages  >> $outputdir/update_webpages 2&>1
+  get fetch origin              > $OUTPUTDIR/update_webpages 2&>1
+  git merge origin/nist-pages  >> $OUTPUTDIR/update_webpages 2&>1
 fi
 
 
@@ -351,18 +353,18 @@ if [ "$ONLY_INSTALLER" == "" ]; then
 
 #*** clone 3rd party repos
 
-  cd $curdir/../../Scripts
+  cd $CURDIR/../../Scripts
   if [ "$USE_CURRENT" == "" ]; then
     echo "*** cloning hypre"
-    ./setup_repos.sh -K hypre > $outputdir/clone_hypre 2&>1 &
+    ./setup_repos.sh -K hypre > $OUTPUTDIR/clone_hypre 2&>1 &
     pid_clonehypre=$!
 
     echo "*** cloning sundials"
-    ./setup_repos.sh -K sundials > $outputdir/clone_sundials 2&>1 &
+    ./setup_repos.sh -K sundials > $OUTPUTDIR/clone_sundials 2&>1 &
     pid_clonesundials=$!
   fi
 
-  cd $curdir
+  cd $CURDIR
   pid_clonefds=
   pid_clonesmv=
   pid_cloneall=
@@ -372,11 +374,11 @@ if [ "$ONLY_INSTALLER" == "" ]; then
 #*** a nightly bundle - clone fds and smv repos
 
       echo "*** cloning fds"
-      ./clone_repo.sh -F -N -r $FDS_HASH > $outputdir/clone_fds 2&>1 &
+      ./clone_repo.sh -F -N -r $FDS_HASH > $OUTPUTDIR/clone_fds 2&>1 &
       pid_clonefds=$!
 
       echo "*** cloning smv"
-      ./clone_repo.sh -S -N -r $SMV_HASH > $outputdir/clone_smv 2&>1 &
+      ./clone_repo.sh -S -N -r $SMV_HASH > $OUTPUTDIR/clone_smv 2&>1 &
       pid_clonesmv=$!
     fi
   else
@@ -384,7 +386,7 @@ if [ "$ONLY_INSTALLER" == "" ]; then
 #*** a release bundle - clone all repos except for bot
 
     echo "*** cloning all repos "
-    ./clone_all_repos.sh  $outputdir > $outputdir/clone_all 2&>1 &
+    ./clone_all_repos.sh  $OUTPUTDIR > $OUTPUTDIR/clone_all 2&>1 &
     pid_cloneall=$!
   fi
 
@@ -429,9 +431,7 @@ echo $SMV_HASH     > $GITROOT/bot/Bundlebot/nightly/apps/SMV_HASH
 echo $FDS_REVISION > $GITROOT/bot/Bundlebot/nightly/apps/FDS_REVISION
 echo $SMV_REVISION > $GITROOT/bot/Bundlebot/nightly/apps/SMV_REVISION
 
-cd $curdir
-
-export NOPAUSE=1
+cd $CURDIR
 
 #*** define github parameters
 
@@ -506,7 +506,7 @@ REPO_ROOT=`pwd`
 
 cd $SCRIPTDIR
 installer_base=${FDSREV}_${SMVREV}
-installer_base_platform=${installer_base}_${BUNDLE_PREFIX_FILE}$platform$LABEL
+installer_base_platform=${installer_base}_${BUNDLE_PREFIX_FILE}${PLATFORM}${MPI_LABEL}
 csvlog=${installer_base_platform}.csv
 htmllog=${installer_base_platform}_manifest.html
 
@@ -514,12 +514,12 @@ htmllog=${installer_base_platform}_manifest.html
 
 cd $SCRIPTDIR
 echo "*** building installer"
-./assemble_bundle.sh $FDSREV $SMVREV $BUNDLE_PREFIX $MPI_TYPE $LABEL $scan_bundle
+./assemble_bundle.sh $FDSREV $SMVREV $BUNDLE_PREFIX $MPI_TYPE ${MPI_LABEL} $SCAN_BUNDLE
 assemble_bundle_status=$?
 
 echo "*** virus scan summary"
-if [ -e $outputdir/$csvlog ]; then
-  grep -v OK$ $outputdir/$csvlog | grep -v ^$ | grep -v SUMMARY
+if [ -e $OUTPUTDIR/$csvlog ]; then
+  grep -v OK$ $OUTPUTDIR/$csvlog | grep -v ^$ | grep -v SUMMARY
 else
   echo virus scanner not available, bundle was not scanned
 fi
@@ -530,18 +530,18 @@ if [[ "$UPLOADBUNDLE" == "1" ]]; then
   if [[ $assemble_bundle_status -eq 0 ]]; then
     echo "*** uploading installer"
     
-    FILELIST=`gh release view FDS_TEST  -R github.com/$GHUPLOADOWNER/test_bundles | grep SMV | grep FDS | grep $platform$LABEL | awk '{print $2}'`
+    FILELIST=`gh release view FDS_TEST  -R github.com/$GHUPLOADOWNER/test_bundles | grep SMV | grep FDS | grep ${PLATFORM}${MPI_LABEL} | awk '{print $2}'`
     for file in $FILELIST ; do
       gh release delete-asset FDS_TEST $file -R github.com/$GHUPLOADOWNER/test_bundles -y
     done
 
-    echo gh release upload FDS_TEST $bundle_dir/${installer_base_platform}.sh -R github.com/$GHUPLOADOWNER/test_bundles  --clobber
-         gh release upload FDS_TEST $bundle_dir/${installer_base_platform}.sh -R github.com/$GHUPLOADOWNER/test_bundles  --clobber
-    if [ -e $outputdir/$htmllog ]; then
-      echo gh release upload FDS_TEST $outputdir/$htmllog                       -R github.com/$GHUPLOADOWNER/test_bundles  --clobber
-           gh release upload FDS_TEST $outputdir/$htmllog                       -R github.com/$GHUPLOADOWNER/test_bundles  --clobber
+    echo gh release upload FDS_TEST $BUNDLEDIR/${installer_base_platform}.sh -R github.com/$GHUPLOADOWNER/test_bundles  --clobber
+         gh release upload FDS_TEST $BUNDLEDIR/${installer_base_platform}.sh -R github.com/$GHUPLOADOWNER/test_bundles  --clobber
+    if [ -e $OUTPUTDIR/$htmllog ]; then
+      echo gh release upload FDS_TEST $OUTPUTDIR/$htmllog                       -R github.com/$GHUPLOADOWNER/test_bundles  --clobber
+           gh release upload FDS_TEST $OUTPUTDIR/$htmllog                       -R github.com/$GHUPLOADOWNER/test_bundles  --clobber
     fi
-    if [ "$platform" == "lnx" ]; then
+    if [ "${PLATFORM}" == "lnx" ]; then
       cd $REPO_ROOT/fds
       FDS_SHORT_HASH=`git rev-parse --short HEAD`
       cd $SCRIPTDIR
@@ -554,16 +554,16 @@ fi
 
 #*** install bundle (if option set)
 
-LATESTBUNDLE=$bundle_dir/FDS_SMV_latest_$platform$LABEL.sh
-BUNDLEBASE=$bundle_dir/${installer_base_platform}
+LATESTBUNDLE=$BUNDLEDIR/FDS_SMV_latest_${PLATFORM}${MPI_LABEL}.sh
+BUNDLEBASE=$BUNDLEDIR/${installer_base_platform}
 if [ -e ${BUNDLEBASE}.sh ]; then
   rm -f  $LATESTBUNDLE
   ln -s ${BUNDLEBASE}.sh $LATESTBUNDLE
 fi
-cp $REPO_ROOT/bot/Bundlebot/nightly/autoinstall.txt $bundle_dir/.
+cp $REPO_ROOT/bot/Bundlebot/nightly/autoinstall.txt $BUNDLEDIR/.
 #don't remove bundle directory
 if [ "$INSTALL" != "" ]; then
-  cd $bundle_dir
+  cd $BUNDLEDIR
   cat autoinstall.txt | bash $LATESTBUNDLE >& $HOME/.bundle/bundle_lnx_nightly_install.log
 fi
 rm -f $LOCKFILE 
@@ -571,5 +571,5 @@ rm -f $PIDFILE
 TIME_end=`GET_TIME`
 GET_DURATION $TIME_beg $TIME_end TIME
 echo Time: $TIME_DIFF
-echo Time: $TIME_DIFF > $outputdir/time.log
+echo Time: $TIME_DIFF > $OUTPUTDIR/time.log
 
