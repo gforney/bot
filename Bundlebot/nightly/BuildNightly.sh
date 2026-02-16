@@ -457,8 +457,10 @@ fi
 
 
 BUNDLE_PREFIX=
+UNDERSCORE=
 if [ "$BUNDLETYPE" == "nightly" ]; then
   BUNDLE_PREFIX="nightly"
+UNDERSCORE=_
 fi
 
 return_code=0
@@ -499,7 +501,7 @@ REPO_ROOT=`pwd`
 
 cd $SCRIPTDIR
 installer_base=${FDSREV}_${SMVREV}
-installer_base_platform=${installer_base}_${BUNDLE_PREFIX}${PLATFORM}${MPI_LABEL}
+installer_base_platform=${installer_base}_${BUNDLE_PREFIX}$UNDERSCORE${PLATFORM}${MPI_LABEL}
 csvlog=${installer_base_platform}.csv
 htmllog=${installer_base_platform}_manifest.html
 
@@ -507,7 +509,7 @@ htmllog=${installer_base_platform}_manifest.html
 
 cd $SCRIPTDIR
 echo "*** building installer"
-./assemble_bundle.sh $FDSREV $SMVREV $BUNDLE_PREFIX $MPI_TYPE ${MPI_LABEL} $SCAN_BUNDLE
+./assemble_bundle.sh $FDSREV $SMVREV ${BUNDLE_PREFIX} $MPI_TYPE ${MPI_LABEL} $SCAN_BUNDLE
 assemble_bundle_status=$?
 
 echo "*** virus scan summary"
