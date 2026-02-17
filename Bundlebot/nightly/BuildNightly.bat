@@ -1,9 +1,6 @@
 @echo off
 :: nightly bundles are uploaded to the firemodels test repo,
 :: release bundles are uploaded to the users test repo 
-set OWNER=%username%
-if "x%is_release%" == "x" set OWNER=firemodels
-set UPLOADOWNER=%OWNER%
 
 if not exist %userprofile%\.bundle mkdir %userprofile%\.bundle
 set BNCURDIR=%CD%
@@ -19,12 +16,18 @@ set USE_CURRENT=
 ::*** parse command line arguments
 call :GETOPTS %*
 
+set DOWNLOADOWNER=firemodels
+set UPLOADOWNER=firemodels
+if "x%IS_RELEASE%" == "x1" set UPLOADOWNER=%username%
+if "x%UPLOAD_BUNDLE%" == "x2" set UPLOADOWNER=%username%
+
 if "x%stopscript%" == "x" goto endif2
   set STOPSCRIPT=
   exit /b 1
 :endif2
 
-set NIGHTLY=nightly
+set NIGHTLY=yes
+if "x%IS_RELEASE%" == "x1" set NIGHTLY=no
 
 set BUNDLESCRIPTDIR=%CD%
 cd ..\..\..
@@ -61,7 +64,7 @@ cd %BUNDLESCRIPTDIR%
 
 :: create the bundle
 
-if x%is_release% == x goto else1
+if "x%IS_RELEASE%" == "x" goto else1
 :: this is a release bundle - hash and revisions obtained from config.bat (invoked in BuildRelease.bat)
   set FDS_HASH_BUNDLER=%BUNDLE_FDS_HASH%
   set SMV_HASH_BUNDLER=%BUNDLE_SMV_HASH%
@@ -129,27 +132,27 @@ call make_apps         || exit /b 1
 
 echo ***copying fds apps
 cd %BUNDLESCRIPTDIR%
-call copy_apps fds bot || exit /b 1
+call copy_apps fds || exit /b 1
 
 echo ***copying smv apps
 
 cd %BUNDLESCRIPTDIR%
-call copy_apps smv bot || exit /b 1
+call copy_apps smv || exit /b 1
 
 echo ***copying fds pubs
 
 cd %BUNDLESCRIPTDIR%
-call copy_pubs firebot  %OWNER% || exit /b 1
+call copy_pubs firebot  %DOWNLOADOWNER% || exit /b 1
 
 echo ***copying smv pubs
 
 cd %BUNDLESCRIPTDIR%
-call copy_pubs smokebot %OWNER% || exit /b 1
+call copy_pubs smokebot %DOWNLOADOWNER% || exit /b 1
 
 echo ***making bundle
 
 cd %BUNDLESCRIPTDIR%
-call make_bundle bot %FDS_REVISION_BUNDLER% %SMV_REVISION_BUNDLER% %NIGHTLY%
+call make_bundle %FDS_REVISION_BUNDLER% %SMV_REVISION_BUNDLER% %NIGHTLY%
 set HAVEVIRUS=%ERRORLEVEL%
 
 cd %BUNDLESCRIPTDIR%
@@ -200,6 +203,7 @@ echo -C - build apps using current revision
 echo -h - display this message
 echo -I - only build installer, assume repos are already cloned and apps are already built
 echo -m mailtto - send email to mailto
+echo -R - create a release bundle using settings in ..\release\config.bat
 echo -u - upload bundle to %username%
 echo -U - upload bundle to %UPLOADOWNER%
 exit /b 0
@@ -231,9 +235,13 @@ exit /b 0
    set valid=1
    shift
  )
+ if "%1" EQU "-R" (
+   set IS_RELEASE=1
+   set valid=1
+   shift
+ )
  if "%1" EQU "-u" (
-   set UPLOAD_BUNDLE=1
-   set UPLOADOWNER=%username%
+   set UPLOAD_BUNDLE=2
    set valid=1
  )
  if "%1" EQU "-U" (

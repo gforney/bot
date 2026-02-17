@@ -1,9 +1,8 @@
 @echo off
 setlocal
-set bot=%1
-set FDS_REVISION_ARG=%2
-set SMV_REVISION_ARG=%3
-set nightly=%4
+set FDS_REVISION_ARG=%1
+set SMV_REVISION_ARG=%2
+set nightly=%3
 
 set FDSMAJORVERSION=6
 set FDSEDITION=FDS6
@@ -42,17 +41,8 @@ if "x%SMV_REVISION_ARG%" == "x" goto skip_smv_version
   set smv_version=%SMV_REVISION_ARG%
 :skip_smv_version
 
-if NOT "x%nightly%" == "xnull" goto skip_nightly_null
-  set nightly=
-:skip_nightly_null
-
-if NOT "x%nightly%" == "xrls" goto skip_nightly_rls
-  set nightly=
-:skip_nightly_rls
-
-if "x%nightly%" == "x" goto skip_nightly
-  set nightly=_%nightly%
-:skip_nightly
+set NIGHTLYLABEL=
+if "%nightly%" == "yes" set NIGHTLYLABEL=_nightly
 
 set  in_shortcut=%userprofile%\.bundle\BUNDLE\WINDOWS\repoexes
 
@@ -63,7 +53,7 @@ erase FDSREPODATE.out
 set FDSREPODATE=_%FDSREPODATE%
 set FDSREPODATE=
 
-set basename=%fds_version%_%smv_version%%FDSREPODATE%%nightly%_win
+set basename=%fds_version%_%smv_version%%FDSREPODATE%%NIGHTLYLABEL%_win
 echo %basename%> %TEMP%\fds_smv_basename.txt
 set getrepoinfo=%GITROOT%\bot\Scripts\get_repo_info.bat
 
@@ -380,9 +370,6 @@ IF NOT EXIST %infile% goto else1
    echo.
    echo *** warning: %infile% does not exist
    echo.
-if "x%bot%" == "xbot" goto skip3
-  pause
-:skip3
 :endif1
 exit /b
 
@@ -399,9 +386,6 @@ IF NOT EXIST %fromdir% goto else2
    echo.
    echo *** warning: directory %fromdir% does not exist
    echo.
-if "x%bot%" == "xbot" goto skip4
-  pause
-:skip4
 :endif2
 exit /b
 
