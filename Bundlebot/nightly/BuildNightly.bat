@@ -8,32 +8,31 @@ set UPLOADOWNER=%OWNER%
 if not exist %userprofile%\.bundle mkdir %userprofile%\.bundle
 set BNCURDIR=%CD%
 
-set upload_bundle=
+set UPLOAD_BUNDLE=
 set FDS_TAG=
 set SMV_TAG=
-set logfile=%userprofile%\.bundle\logfile.txt
-set emailto=
+set LOGFILE=%userprofile%\.bundle\logfile.txt
+set EMAILTO=
 set ONLY_INSTALLER=0
 set USE_CURRENT=
 
 ::*** parse command line arguments
-call :getopts %*
+call :GETOPTS %*
 
 if "x%stopscript%" == "x" goto endif2
-  set stopscript=
+  set STOPSCRIPT=
   exit /b 1
 :endif2
 
-set nightly=nightly
-set pub_dir=
+set NIGHTLY=nightly
 
 set BUNDLESCRIPTDIR=%CD%
 cd ..\..\..
 set REPOROOT=%CD%
 
 cd %REPOROOT%\bot
-set botrepo=%CD%
-set gawk=%botrepo%\scripts\bin\gawk.exe
+set BOTREPO=%CD%
+set GAWK=%BOTREPO%\scripts\bin\gawk.exe
 
 if exist %REPOROOT%\webpages goto endif4
   echo ***error: the webpages repo does not exist
@@ -41,19 +40,13 @@ if exist %REPOROOT%\webpages goto endif4
   exit /b 1
 :endif4
 
-set email=%botrepo%\Scripts\email_insert.bat
-set emailexe=%userprofile%\bin\mailsend.exe
-if "x%emailto%" == "x" goto endif5
-  if exist %emailexe% goto endif5
-    echo ***warning: email program %emailexe% does not exist
-    set emailto=
+set EMAIL=%BOTREPO%\Scripts\email_insert.bat
+set EMAILEXE=%userprofile%\bin\mailsend.exe
+if "x%EMAILTO%" == "x" goto endif5
+  if exist %EMAILEXE% goto endif5
+    echo ***warning: email program %EMAILEXE% does not exist
+    set EMAILTO=
 :endif5
-
-cd %REPOROOT%\webpages
-set webpagesrepo=%CD%
-
-cd ..
-set basedir=%CD%
 
 if %ONLY_INSTALLER% == 1 goto skip1
 :: bring the webpages and wiki repos up to date
@@ -90,85 +83,73 @@ if x%is_release% == x goto else1
   erase output\SMV_REVISION
 :endif1
 
-echo.                                                         > %logfile%
-echo ***building bundle using:                               >> %logfile%
-echo.                                                        >> %logfile%
+echo.                                                         > %LOGFILE%
+echo ***building bundle using:                               >> %LOGFILE%
+echo.                                                        >> %LOGFILE%
 if "x%FDS_REVISION_BUNDLER%" == "x" goto skip_fdsrev
-  echo             FDS revision: %FDS_REVISION_BUNDLER%      >> %logfile%
+  echo             FDS revision: %FDS_REVISION_BUNDLER%      >> %LOGFILE%
 :skip_fdsrev
 
 if "x%FDS_HASH_BUNDLER%" == "x" goto skip_fdshash
-echo            FDS repo hash: %FDS_HASH_BUNDLER%            >> %logfile%
+echo            FDS repo hash: %FDS_HASH_BUNDLER%            >> %LOGFILE%
 :skip_fdshash
 
 if "x%FDS_TAG%" == "x" goto skip_fdstag
-echo             FDS repo tag: %FDS_TAG%                     >> %logfile%
+echo             FDS repo tag: %FDS_TAG%                     >> %LOGFILE%
 :skip_fdstag
 
 if "x%SMV_REVISION_BUNDLER%" == "x" goto skip_smvrev
-  echo             smv revision: %SMV_REVISION_BUNDLER%      >> %logfile%
+  echo             smv revision: %SMV_REVISION_BUNDLER%      >> %LOGFILE%
 :skip_smvrev
 
 if "x%SMV_HASH_BUNDLER%" == "x" goto skip_smvhash
-echo            SMV repo hash: %SMV_HASH_BUNDLER%            >> %logfile%
+echo            SMV repo hash: %SMV_HASH_BUNDLER%            >> %LOGFILE%
 :skip_smvhash
 
 if "x%SMV_TAG%" == "x" goto skip_smvtag
-echo             SMV repo tag: %SMV_TAG%                     >> %logfile%
+echo             SMV repo tag: %SMV_TAG%                     >> %LOGFILE%
 :skip_smvtag
 
-if NOT "%emailto%" == "" (
-  echo                    email: %emailto%                   >> %logfile%
+if NOT "%EMAILTO%" == "" (
+  echo                    email: %EMAILTO%                   >> %LOGFILE%
 )
-echo.                                                        >> %logfile%
+echo.                                                        >> %LOGFILE%
 
-type %logfile%
+type %LOGFILE%
 
 if %ONLY_INSTALLER% == 1 goto skip2
 :: clone fds and smv repos 
 call clone_repos %FDS_HASH_BUNDLER% %SMV_HASH_BUNDLER%  || exit /b 1
 
-echo.
 echo ***building apps
-echo.
 
 cd %BUNDLESCRIPTDIR%
 call make_apps         || exit /b 1
 :skip2
 
-echo.
 echo ***copying fds apps
-echo.
 cd %BUNDLESCRIPTDIR%
 call copy_apps fds bot || exit /b 1
 
-echo.
 echo ***copying smv apps
-echo.
 
 cd %BUNDLESCRIPTDIR%
 call copy_apps smv bot || exit /b 1
 
-echo.
 echo ***copying fds pubs
-echo.
 
 cd %BUNDLESCRIPTDIR%
 call copy_pubs firebot  %OWNER% || exit /b 1
 
-echo.
 echo ***copying smv pubs
-echo.
 
 cd %BUNDLESCRIPTDIR%
 call copy_pubs smokebot %OWNER% || exit /b 1
 
-echo.
 echo ***making bundle
-echo.
 
 cd %BUNDLESCRIPTDIR%
-call make_bundle bot %FDS_REVISION_BUNDLER% %SMV_REVISION_BUNDLER% %nightly%
+call make_bundle bot %FDS_REVISION_BUNDLER% %SMV_REVISION_BUNDLER% %NIGHTLY%
 set HAVEVIRUS=%ERRORLEVEL%
 
 cd %BUNDLESCRIPTDIR%
@@ -178,13 +159,11 @@ if %HAVEVIRUS% == 1 echo ***error: a virus was found in the bundle
 if %HAVEVIRUS% == 1 echo bundle was built but not uploaded
 if %HAVEVIRUS% == 1 goto skip_upload
 if %HAVEVIRUS% == 0 echo ***no viruses were found in the bundle ***
-if "x%upload_bundle%" == "x" goto skip_upload
-  echo.
+if "x%UPLOAD_BUNDLE%" == "x" goto skip_upload
   echo ***uploading bundle
-  echo.
 
   set filelist=%TEMP%\fds_smv_files_win.out
-  gh release view FDS_TEST -R github.com/%UPLOADOWNER%/test_bundles | grep FDS | grep SMV | grep win | %gawk% "{print $2}" > %filelist%
+  gh release view FDS_TEST -R github.com/%UPLOADOWNER%/test_bundles | grep FDS | grep SMV | grep win | %GAWK% "{print $2}" > %filelist%
   for /F "tokens=*" %%A in (%filelist%) do gh release delete-asset FDS_TEST -R github.com/%UPLOADOWNER%/test_bundles %%A -y
   erase %filelist%
 
@@ -199,18 +178,17 @@ if "x%upload_bundle%" == "x" goto skip_upload
        gh release upload FDS_TEST %BNCURDIR%\output\%basename%_manifest.html -R github.com/%UPLOADOWNER%/test_bundles --clobber
 :skip_upload
 
-if "x%emailto%" == "x" goto endif6
-  call %email% %emailto% "PC bundle %FDS_REVISION_BUNDLER% %SMV_REVISION_BUNDLER% created on %COMPUTERNAME%" %logfile%
+if "x%EMAILTO%" == "x" goto endif6
+  call %EMAIL% %EMAILTO% "PC bundle %FDS_REVISION_BUNDLER% %SMV_REVISION_BUNDLER% created on %COMPUTERNAME%" %LOGFILE%
 :endif6
 
 goto eof
 
 
 ::-----------------------------------------------------------------------
-:usage
+:USAGE
 ::-----------------------------------------------------------------------
 
-:usage
 echo.
 echo run_bundlebot usage
 echo.
@@ -227,9 +205,9 @@ echo -U - upload bundle to %UPLOADOWNER%
 exit /b 0
 
 ::-----------------------------------------------------------------------
-:getopts
+:GETOPTS
 ::-----------------------------------------------------------------------
- set stopscript=
+ set STOPSCRIPT=
  if (%1)==() exit /b
  set valid=0
  set arg=%1
@@ -240,8 +218,8 @@ exit /b 0
    shift
  )
  if "%1" EQU "-h" (
-   call :usage
-   set stopscript=1
+   call :USAGE
+   set STOPSCRIPT=1
    exit /b
  )
  if "%1" EQU "-I" (
@@ -249,17 +227,17 @@ exit /b 0
    set valid=1
  )
  if "%1" EQU "-m" (
-   set emailto=%2
+   set EMAILTO=%2
    set valid=1
    shift
  )
  if "%1" EQU "-u" (
-   set upload_bundle=1
+   set UPLOAD_BUNDLE=1
    set UPLOADOWNER=%username%
    set valid=1
  )
  if "%1" EQU "-U" (
-   set upload_bundle=1
+   set UPLOAD_BUNDLE=1
    set valid=1
  )
  shift
@@ -268,11 +246,11 @@ exit /b 0
    echo ***Error: the input argument %arg% is invalid
    echo.
    echo Usage:
-   call :usage
-   set stopscript=1
+   call :USAGE
+   set STOPSCRIPT=1
    exit /b 1
  )
-if not (%1)==() goto getopts
+if not (%1)==() goto GETOPTS
 exit /b 0
 
 :: -------------------------------------------------------------
