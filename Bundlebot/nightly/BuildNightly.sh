@@ -67,7 +67,7 @@ echo "-U - upload bundle file to GitHub using firemodels."
 exit 0
 }
 
-# -------------------- is_file_installed -------------------
+# -------------------- IS_PROGRAM_INSTALLED -------------------
 
 IS_PROGRAM_INSTALLED()
 {
