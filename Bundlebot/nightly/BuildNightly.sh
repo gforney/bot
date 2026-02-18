@@ -185,6 +185,7 @@ git clean -dxf
 cd $SCRIPTDIR
 
 LOCKFILE=$HOME/.bundle/lock
+mkdir -p $HOME/.bundle
 
 MAILTO=
 if [ "$BUNDLE_EMAIL" != "" ]; then
