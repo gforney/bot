@@ -76,7 +76,7 @@ CP ()
   fi
   if [ -e $TODIR/$TOFILE ]; then
     echo "      from: $FROMFILE"
-    echo "          to: $TODIR/$TOFILE"
+    echo "        to: $TODIR/$TOFILE"
   else
     if [ "ERR" == "" ]; then
       echo "***error: $FROMFILE could not be copied from $FROMDIR to $TODIR" >> $errlog
