@@ -14,13 +14,10 @@ else
   echo "***error: fds build directory, $FDSBUILDDIR, does not exit"
   ABORT=1
 fi
-
-FDSOSX=$FDSBUILDDIR/ompi_gnu_osx/fds_ompi_gnu_osx
-FDSLINUX=$FDSBUILDDIR/impi_intel_linux/fds_impi_intel_linux
 if [ "`uname`" == "Darwin" ]; then
-  FDS=$FDSOSX
+  FDS=$FDSBUILDDIR/ompi_gnu_osx/fds_ompi_gnu_osx
 else
-  FDS=$FDSLINUX
+  FDS=$FDSBUILDDIR/impi_intel_linux/fds_impi_intel_linux
 fi
 if [ ! -d $TOLIBDIR ]; then
   echo "***error: directory $TOLIBDIR does not exist"
@@ -42,12 +39,13 @@ fi
 echo "*** copying shared fds files to $TOLIBDIR"
 for file in $FILES; do
   if [ -e $file ]; then
-    echo "*** copying $file"
+    echo "***    copying $file"
     cp $file $TOLIBDIR/.
   else
     echo "***error: shared library: $file does not exist"
   fi
 done
+
 if [ "`uname`" == "Darwin" ]; then
   echo "*** copying shared mpirun files to $TOLIBDIR"
   FILES=`otool -L $OPENMPI_BIN/mpirun  | grep homebrew | grep -v mpirun | awk '{print $1 }'`
@@ -56,7 +54,7 @@ if [ "`uname`" == "Darwin" ]; then
   FILES="$FILES /opt/homebrew/Cellar/gcc/15.2.0/lib/gcc/current/libgcc_s.1.1.dylib"
   for file in $FILES; do
     if [ -e $file ]; then
-      echo "*** copying $file"
+      echo "***    copying $file"
       cp $file $TOLIBDIR/.
     else
       echo "***error: shared library: $file does not exist"
