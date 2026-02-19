@@ -67,7 +67,7 @@ echo "-U - upload bundle file to GitHub using firemodels."
 exit 0
 }
 
-# -------------------- is_file_installed -------------------
+# -------------------- IS_PROGRAM_INSTALLED -------------------
 
 IS_PROGRAM_INSTALLED()
 {
@@ -185,6 +185,7 @@ git clean -dxf
 cd $SCRIPTDIR
 
 LOCKFILE=$HOME/.bundle/lock
+mkdir -p $HOME/.bundle
 
 MAILTO=
 if [ "$BUNDLE_EMAIL" != "" ]; then

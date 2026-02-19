@@ -21,10 +21,10 @@ set UPLOADOWNER=firemodels
 if "x%IS_RELEASE%" == "x1" set UPLOADOWNER=%username%
 if "x%UPLOAD_BUNDLE%" == "x2" set UPLOADOWNER=%username%
 
-if "x%stopscript%" == "x" goto endif2
+if "x%STOPSCRIPT%" == "x" goto endif1
   set STOPSCRIPT=
   exit /b 1
-:endif2
+:endif1
 
 set NIGHTLY=yes
 if "x%IS_RELEASE%" == "x1" set NIGHTLY=no
@@ -37,19 +37,19 @@ cd %REPOROOT%\bot
 set BOTREPO=%CD%
 set GAWK=%BOTREPO%\scripts\bin\gawk.exe
 
-if exist %REPOROOT%\webpages goto endif4
+if exist %REPOROOT%\webpages goto endif2
   echo ***error: the webpages repo does not exist
   cd %BUNDLESCRIPTDIR%
   exit /b 1
-:endif4
+:endif2
 
 set EMAIL=%BOTREPO%\Scripts\email_insert.bat
 set EMAILEXE=%userprofile%\bin\mailsend.exe
-if "x%EMAILTO%" == "x" goto endif5
-  if exist %EMAILEXE% goto endif5
+if "x%EMAILTO%" == "x" goto endif3
+  if exist %EMAILEXE% goto endif3
     echo ***warning: email program %EMAILEXE% does not exist
     set EMAILTO=
-:endif5
+:endif3
 
 if %ONLY_INSTALLER% == 1 goto skip1
 :: bring the webpages and wiki repos up to date
@@ -64,7 +64,7 @@ cd %BUNDLESCRIPTDIR%
 
 :: create the bundle
 
-if "x%IS_RELEASE%" == "x" goto else1
+if "x%IS_RELEASE%" == "x" goto else4
 :: this is a release bundle - hash and revisions obtained from config.bat (invoked in BuildRelease.bat)
   set FDS_HASH_BUNDLER=%BUNDLE_FDS_HASH%
   set SMV_HASH_BUNDLER=%BUNDLE_SMV_HASH%
@@ -72,8 +72,8 @@ if "x%IS_RELEASE%" == "x" goto else1
   set FDS_TAG=%BUNDLE_FDS_TAG%
   set SMV_REVISION_BUNDLER=%BUNDLE_SMV_TAG%
   set SMV_TAG=%BUNDLE_SMV_TAG%
-  goto endif1
-:else1
+  goto endif4
+:else4
 :: this is a nightly bundle - hash and revisions obtained from latest firebot pass
   call get_hash_revisions.bat %USE_CURRENT% || exit /b 1
   set /p FDS_HASH_BUNDLER=<output\FDS_HASH
@@ -84,7 +84,7 @@ if "x%IS_RELEASE%" == "x" goto else1
   erase output\SMV_HASH
   erase output\FDS_REVISION
   erase output\SMV_REVISION
-:endif1
+:endif4
 
 echo.                                                         > %LOGFILE%
 echo ***building bundle using:                               >> %LOGFILE%
@@ -181,9 +181,9 @@ if "x%UPLOAD_BUNDLE%" == "x" goto skip_upload
        gh release upload FDS_TEST %BNCURDIR%\output\%basename%_manifest.html -R github.com/%UPLOADOWNER%/test_bundles --clobber
 :skip_upload
 
-if "x%EMAILTO%" == "x" goto endif6
+if "x%EMAILTO%" == "x" goto endif5
   call %EMAIL% %EMAILTO% "PC bundle %FDS_REVISION_BUNDLER% %SMV_REVISION_BUNDLER% created on %COMPUTERNAME%" %LOGFILE%
-:endif6
+:endif5
 
 goto eof
 
