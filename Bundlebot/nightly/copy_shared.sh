@@ -49,12 +49,15 @@ for file in $FILES; do
   fi
 done
 if [ "`uname`" == "Darwin" ]; then
-  echo "*** copying shared mpirun files to $TOBINDIR"
+  echo "*** copying shared mpirun files to $TOLIBDIR"
   FILES=`otool -L $OPENMPI_BIN/mpirun  | grep homebrew | grep -v mpirun | awk '{print $1 }'`
+  FILES="$FILES /opt/homebrew/opt/gcc/lib/gcc/current/libgfortran.5.dylib"
+  FILES="$FILES /opt/homebrew/opt/gcc/lib/gcc/current/libquadmath.0.dylib"
+  FILES="$FILES /opt/homebrew/Cellar/gcc/15.2.0/lib/gcc/current/libgcc_s.1.1.dylib"
   for file in $FILES; do
     if [ -e $file ]; then
       echo "*** copying $file"
-      cp $file $TOBINDIR/.
+      cp $file $TOLIBDIR/.
     else
       echo "***error: shared library: $file does not exist"
     fi
