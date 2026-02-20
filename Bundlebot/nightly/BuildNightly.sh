@@ -49,6 +49,7 @@ echo "Options:"
 echo "-B - install bundle after it is built"
 echo "-c - bundle without warning about cloning/erasing fds and smv repos"
 echo "-C - build apps using current revision"
+echo "-d - build debug version of smokeview"
 echo "-f - force this script to run"
 echo "-h - display this message"
 echo "-I - only build installer, assume repos are already cloned and apps are already built"
@@ -204,10 +205,11 @@ USE_CURRENT=
 ONLY_INSTALLER=
 PIDFILE=$SCRIPTDIR/BuildNightly.pid
 SCAN_BUNDLE=1
+SMVDBG=
 
 #*** parse parameters
 
-while getopts 'BcCfhkIm:no:r:RTuU' OPTION
+while getopts 'BcCdfhkIm:no:r:RTuU' OPTION
 do
 case $OPTION  in
   B)
@@ -218,6 +220,9 @@ case $OPTION  in
    ;;
   C)
    USE_CURRENT=1
+   ;;
+  d)
+   SMVDBG=_db
    ;;
   f)
    FORCE="-f"
@@ -399,7 +404,7 @@ if [ "$ONLY_INSTALLER" == "" ]; then
     wait $pid_cloneall
     echo all repos clone complete
   fi
-  ./make_smvapps.sh $MPI_TYPE &
+  ./make_smvapps.sh $SMVDBG &
   pid_smvapps=$!
 
   if [ "$pid_clonehypre" != "" ]; then
