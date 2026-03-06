@@ -1,14 +1,9 @@
 #!/bin/bash
 NEW_DIR=$1
 DIFF_DIR=$2
-ERROR_DIR=$3
-TOLERANCE=$4
+TOLERANCE=$3
 
 CURDIR=`pwd`
-
-if [ ! -e $ERROR_DIR ]; then
-  mkdir $ERROR_DIR
-fi
 
 BASEDIR=`basename $CURDIR`
 if [ "$BASEDIR" == "Firebot" ]; then
@@ -98,15 +93,6 @@ if [ "$NEW_DIR" == "" ]; then
   cd $NEW_DIR
   NEW_DIR=`pwd`
   cd $CURDIR
-fi
-
-if [ "$ERROR_DIR" == "" ]; then
-  ERROR_DIR=../../$BOT_SUMMARY/diffs/errors/
-  if [ ! -d $ERROR_DIR ]; then
-    mkdir $ERROR_DIR
-  fi
-  cd $ERROR_DIR
-  ERROR_DIR=`pwd`
 fi
 if [ "$DIFF_DIR" == "" ]; then
   DIFF_DIR=../../$BOT_SUMMARY/diffs/images/
@@ -199,9 +185,6 @@ echo "  $REFERENCE_DIR "
 echo "  $NEW_DIR/$SUBDIR"
 echo ""
 
-ERROR_SUBDIR=$ERROR_DIR/$SUBDIR
-rm -r -f $ERROR_SUBDIR
-mkdir $ERROR_SUBDIR
 DIFFS=0
 IMAGE_ERRORS=0
 rm -f $NEW_DIR/$SUBDIR/blur*.png
@@ -266,7 +249,6 @@ for f in $NEW_DIR/$SUBDIR/*.png; do
         echo "***$FYI: The image $base has changed. $METRIC error=$diff > $TOLERANCE"
         touch $diff_file_changed
         IMAGE_ERRORS=$((IMAGE_ERRORS + 1))
-        cp $f $ERROR_SUBDIR/.
       fi
     fi
     if [[ "$diff" != "0" ]]; then
@@ -281,7 +263,8 @@ done
 if [ "$SUBDIR" == "user" ]; then
   HAVE_USER_DIFFS=$DIFFS
   HAVE_USER_ERRORS=$IMAGE_ERRORS
-else
+fi
+if [ "$SUBDIR" == "verification" ]; then
   HAVE_VER_DIFFS=$DIFFS
   HAVE_VER_ERRORS=$IMAGE_ERRORS
 fi
