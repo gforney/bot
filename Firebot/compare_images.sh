@@ -1,7 +1,8 @@
 #!/bin/bash
-NEW_DIR=$1
-DIFF_DIR=$2
-TOLERANCE=$3
+REFERENCE_DIR=$!
+NEW_DIR=$2
+DIFF_DIR=$3
+TOLERANCE=$4
 
 CURDIR=`pwd`
 
@@ -59,19 +60,7 @@ fi
 #*** setup directories
 
 CURDIR=`pwd`
-if [ "$BOT_TYPE" == "firebot" ]; then
-  REFERENCE_DIR=../../fig/fds/Reference_Figures
-else
-  if [ "$SMOKEBOT_COMPARE" == "other" ]; then
-    REFERENCE_DIR=../../fig/smv/Reference_Figures/Other
-  else
-    REFERENCE_DIR=../../fig/smv/Reference_Figures/Default
-  fi
-fi
-cd $REFERENCE_DIR
-REFERENCE_DIR=`pwd`
 
-cd $CURDIR
 REPO=../..
 cd $REPO
 REPO=`pwd`

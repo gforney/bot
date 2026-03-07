@@ -10,4 +10,9 @@ export OUTPUT_DIR=`pwd`
 export TOLERANCE=0.1
 cd $CURDIR
 
-./compare_images.sh $FDS_SUMMARY_DIR/images $FDS_SUMMARY_DIR/diffs/images
+cd ../../fig/fds/Reference_Figures
+REFDIR=`pwd`
+cd $CURDIR
+
+./compare_images.sh $REFDIR $FDS_SUMMARY_DIR/images $FDS_SUMMARY_DIR/diffs/images
+ 

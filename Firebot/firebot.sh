@@ -1652,8 +1652,10 @@ make_fds_summary()
 # compare images
 
     CURDIR=`pwd`
+    cd ../../fig/fds/Reference_Figures
+    REFDIR=`pwd`
     cd $botrepo/Firebot
-    ./compare_images.sh $FDS_SUMMARY_DIR/images $FDS_SUMMARY_DIR/diffs/images >& $OUTPUT_DIR/stage5_image_compare
+    ./compare_images.sh $REFDIR $FDS_SUMMARY_DIR/images $FDS_SUMMARY_DIR/diffs/images >& $OUTPUT_DIR/stage5_image_compare
 
 # look for fyis
     if [[ `grep '***fyi:' $OUTPUT_DIR/stage5_image_compare` == "" ]]
