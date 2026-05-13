@@ -92,7 +92,7 @@ echo                  >> $output
 rm -f $SCANSUMMARY
 #copy virus logs 
 if [[ "$OSX_BUNDLE_HOST" != "" ]] && [[ "$OSX_BOT_HOME" != "" ]]; then
-  scp -q $OSX_BUNDLE_HOST:$OSX_BOT_HOME/Bundlebot/nightly/output/scanlog output/scanlog_osx  > /dev/null
+  scp -q $OSX_BUNDLE_HOST:$OSX_BOT_HOME/Bundlebot/fdssmv/output/scanlog output/scanlog_osx  > /dev/null
   SCANVIRUSLOG OSX output/scanlog_osx
 fi
 cp output/scanlog output/scanlog_linux

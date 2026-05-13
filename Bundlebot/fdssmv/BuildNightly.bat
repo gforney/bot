@@ -203,7 +203,7 @@ echo -C - build apps using current revision
 echo -h - display this message
 echo -I - only build installer, assume repos are already cloned and apps are already built
 echo -m mailtto - send email to mailto
-echo -R - create a release bundle using settings in ..\release\config.bat
+echo -R - create a release bundle using settings in config.bat
 echo -u - upload bundle to github.com/%username%/test_bundles/releases/tag/FDS_TEST
 echo -U - upload bundle to github.com/firemodels/test_bundles/releases/tag/FDS_TEST
 exit /b 0

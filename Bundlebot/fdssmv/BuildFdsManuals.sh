@@ -58,9 +58,7 @@ cd $CURDIR
 echo ***clean files
 cd $CURDIR/../../Firebot
 git clean -dxf >& /dev/null
-cd $CURDIR/output
-git clean -dxf >& /dev/null
-cd $CURDIR/../nightly
+cd $CURDIR
 git clean -dxf >& /dev/null
 
 echo ***clone repos

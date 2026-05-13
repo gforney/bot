@@ -70,7 +70,7 @@ echo *** bundling smokeview
 Title Building Smokeview bundle
 
 set scan_smv_bundle=1
-cd %CURDIR%\..\release
+cd %CURDIR%\..\smv
 call make_smv_bundle %BUNDLE_SMV_TAG% %scan_smv_bundle%
 
 cd %CURDIR%

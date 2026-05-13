@@ -46,7 +46,7 @@ done
 shift $(($OPTIND-1))
 
 
-source $REPOROOT/bot/Bundlebot/release/config.sh
+source $REPOROOT/bot/Bundlebot/fdssmv/config.sh
 
 cd $REPOROOT/bot/Scripts
 

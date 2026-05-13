@@ -298,7 +298,7 @@ if [ "$BUNDLETYPE" == "nightly" ]; then
   FDS_TAG=
   SMV_TAG=
   if [ "$USE_CURRENT" == "" ]; then
-    $GITROOT/bot/Bundlebot/nightly/getGHfile.sh FDS_INFO.txt
+    $GITROOT/bot/Bundlebot/fdssmv/getGHfile.sh FDS_INFO.txt
   else
     $SCRIPTDIR/make_info.sh  >      FDS_INFO.txt
   fi
@@ -450,10 +450,10 @@ if [ "$BUNDLETYPE" != "nightly" ]; then
   SMV_TAG="-Y $BUNDLE_SMV_TAG"
 fi
 
-echo $FDS_HASH     > $GITROOT/bot/Bundlebot/nightly/apps/FDS_HASH
-echo $SMV_HASH     > $GITROOT/bot/Bundlebot/nightly/apps/SMV_HASH
-echo $FDS_REVISION > $GITROOT/bot/Bundlebot/nightly/apps/FDS_REVISION
-echo $SMV_REVISION > $GITROOT/bot/Bundlebot/nightly/apps/SMV_REVISION
+echo $FDS_HASH     > $GITROOT/bot/Bundlebot/fdssmv/apps/FDS_HASH
+echo $SMV_HASH     > $GITROOT/bot/Bundlebot/fdssmv/apps/SMV_HASH
+echo $FDS_REVISION > $GITROOT/bot/Bundlebot/fdssmv/apps/FDS_REVISION
+echo $SMV_REVISION > $GITROOT/bot/Bundlebot/fdssmv/apps/SMV_REVISION
 
 cd $CURDIR
 
@@ -583,7 +583,7 @@ if [ -e ${BUNDLEBASE}.sh ]; then
   rm -f  $LATESTBUNDLE
   ln -s ${BUNDLEBASE}.sh $LATESTBUNDLE
 fi
-cp $REPO_ROOT/bot/Bundlebot/nightly/autoinstall.txt $BUNDLEDIR/.
+cp $REPO_ROOT/bot/Bundlebot/fdssmv/autoinstall.txt $BUNDLEDIR/.
 #don't remove bundle directory
 if [ "$INSTALL" != "" ]; then
   cd $BUNDLEDIR

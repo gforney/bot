@@ -12,7 +12,6 @@ set UPLOADBUNDLE=-u
 :: set UPLOADBUNDLE=
 
 cd %CURDIR%
-cd ..\nightly
 call BuildNightly -R %UPLOADBUNDLE%
 cd %CURDIR%
 

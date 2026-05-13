@@ -199,7 +199,7 @@ smvbindir=$bundledir/smvbin
 fdsbindir=$bundledir/bin
 
 webpagesdir=$REPO_ROOT/webpages
-fds_bundle=$REPO_ROOT/bot/Bundlebot/nightly/fds_forbundle
+fds_bundle=$REPO_ROOT/bot/Bundlebot/fdssmv/fds_forbundle
 smv_bundle=$REPO_ROOT/smv/Build/for_bundle
 smvscriptdir=$REPO_ROOT/smv/scripts
 utilscriptdir=$REPO_ROOT/smv/Utilities/Scripts
@@ -207,13 +207,13 @@ botscriptdir=$REPO_ROOT/bot/Scripts
 
 colorbarsdir=$smv_bundle/colorbars
 texturedir=$smv_bundle/textures
-MAKEINSTALLER=$REPO_ROOT/bot/Bundlebot/nightly/make_installer.sh
+MAKEINSTALLER=$REPO_ROOT/bot/Bundlebot/fdssmv/make_installer.sh
 
 fds_cases=$REPO_ROOT/fds/Verification/FDS_Cases.sh
 fds_benchmark_cases=$REPO_ROOT/fds/Verification/FDS_Benchmark_Cases.sh
 smv_cases=$REPO_ROOT/smv/Verification/scripts/SMV_Cases.sh
-copyfdscase=$REPO_ROOT/bot/Bundlebot/nightly/copyfdscase.sh
-copycfastcase=$REPO_ROOT/bot/Bundlebot/nightly/copycfastcase.sh
+copyfdscase=$REPO_ROOT/bot/Bundlebot/fdssmv/copyfdscase.sh
+copycfastcase=$REPO_ROOT/bot/Bundlebot/fdssmv/copycfastcase.sh
 FDSExamplesDirectory=$REPO_ROOT/fds/Verification
 SMVExamplesDirectory=$REPO_ROOT/smv/Verification
 

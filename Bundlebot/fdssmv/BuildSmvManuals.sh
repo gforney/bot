@@ -53,9 +53,7 @@ CURDIR=`pwd`
 echo ***clean files
 cd $CURDIR/../../Smokebot
 git clean -dxf >& /dev/null
-cd $CURDIR/output
-git clean -dxf >& /dev/null
-cd $CURDIR/../nightly/output
+cd $CURDIR
 git clean -dxf >& /dev/null
 
 echo ***cloning repos
