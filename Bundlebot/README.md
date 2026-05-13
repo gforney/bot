@@ -3,9 +3,9 @@
 
 ### Overview
 
-The directory [bot/Bundlebot/release](https://github.com/firemodels/bot/tree/master/Bundlebot/release) contains scripts for building FDS/Smokeview and Smokeview bundles for Windows, Linux and Macintosh computers. These scripts clone fresh copies of the repos used to build the bundles. Do not run them in repos where you do regular work.
+The directory [bot/Bundlebot/](https://github.com/firemodels/bot/tree/master/Bundlebot/) contains scripts for building FDS/Smokeview, and Smokeview bundles for Windows, Linux and Macintosh computers and scripts for building CFAST bundles on Windows computers. These scripts clone fresh copies of the repos used to build the bundles. Do not run them in repos where you do regular work.
 
-The steps for bulding bundles are: 
+The steps for building bundles are: 
  
   1. Modify tags and revisions in the configuration scripts,  `config.sh` and `config.bat`,
   2. Run the script `BuildFdsManuals.sh` to build FDS manuals (this runs firebot) and the script `BuildSmvManuals.sh` to build Smokeview manuals (this runs smokebot).
