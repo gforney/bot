@@ -33,7 +33,7 @@ CURDIR=`pwd`
 CONFIG=$CURDIR/config.sh
 
 echo ***clean files
-cd ../../../Cfastbot
+cd ../../Cfastbot
 git clean -dxf >& /dev/null
 
 ./run_cfastbot.sh -f -c -b -q firebot $MAILTO $OWNER -U -F $CONFIG

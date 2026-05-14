@@ -21,7 +21,7 @@ if NOT EXIST %fullfile% exit /b 1
 echo ***Uploading %fullfile% to GitHub
 
 set CURDIR=%CD%
-cd ..\..\..\..
+cd ..\..\..
 set GITROOT=%CD%
 
 cd %CURDIR%\

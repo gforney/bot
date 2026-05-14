@@ -6,7 +6,7 @@ set BUILDLIB=%CURDIR%\build_smv_lib.bat
 set OPTS=i
 set STARTOPT=/MIN
 
-cd ..\..\..\..\smv
+cd ..\..\..\smv
 set smvrepo=%CD%
 
 cd %smvrepo%\build\libs\intel_win

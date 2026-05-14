@@ -7,7 +7,7 @@ set cfast_tag=%4
 set smv_tag=%5
 
 set CURDIR=%CD%
-cd ..\..\..\..
+cd ..\..\..
 set ROOTDIR=%CD%
 cd %CURDIR%
 

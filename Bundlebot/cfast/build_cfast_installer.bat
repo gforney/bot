@@ -15,7 +15,7 @@ set distname=cfast7
 :: VVVVVVVVVVVVVVVVV shouldn't need to change anything below VVVVVVVVVVVVVVV
 
 set CURDIR=%CD%
-cd ..\..\..\..
+cd ..\..\..
 set GITROOT=%CD%
 
 set stage3out=%THISDIR%\out\stage3_bundle

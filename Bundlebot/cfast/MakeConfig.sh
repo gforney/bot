@@ -49,7 +49,7 @@ export HEAD COMMENT EXPORT
 
 repos="bot cfast exp smv"
 CURDIR=`pwd`
-gitroot=$CURDIR/../../../..
+gitroot=$CURDIR/../../..
 cd $gitroot
 gitroot=`pwd`
 cd $CURDIR

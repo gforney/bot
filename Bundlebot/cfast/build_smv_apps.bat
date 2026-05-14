@@ -4,7 +4,7 @@ set CURDIR=%CD%
 
 :: batch file to build smokeview utility programs on Windows, Linux or OSX platforms
 
-cd ..\..\..\..\smv
+cd ..\..\..\smv
 set smvrepo=%CD%
 
 call %smvrepo%\Utilities\Scripts\setup_intel_compilers.bat

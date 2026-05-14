@@ -3,7 +3,7 @@ setlocal
 
 set cfastbundledir=%CD%
 
-cd ..\..\..\..\cfast
+cd ..\..\..\cfast
 set cfastrepo=%CD%
 set manuals=%cfastrepo%\Manuals
 set PDFS=%userprofile%\.cfast\PDFS
