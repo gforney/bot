@@ -86,7 +86,7 @@ CALL :COPY  %forbundle%\.smokeview_bin                %smvdir%\.
 
 if "%scan_bundle%" == "0" goto endifscan
 call :IS_FILE_INSTALLED clamscan
-set nightlydir=%reporoot%\bot\Bundlebot\fdssmv
+set nightlydir=%reporoot%\bot\Bundlebot\fds
 set logdir=%nightlydir%\output
 if not exist %bundles%\%zipbase% error ***error: %bundles%\%zipbase% does not exist
 if %ERRORLEVEL% == 1 goto elsescan

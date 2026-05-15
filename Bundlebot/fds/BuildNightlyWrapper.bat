@@ -1,6 +1,6 @@
 @echo off
 setlocal
-set outfile=%userprofile%\.bundle\bundle_fdssmv_nightly.out
+set outfile=%userprofile%\.bundle\bundle_fds_nightly.out
 
 :: the windows task scheduler which builds bundles every day call this script to make sure 
 :: the bot repo (ie the BuildNightly.bat script) is up to date.  A wrapper script is necessary

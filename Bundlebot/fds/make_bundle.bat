@@ -87,7 +87,7 @@ set wui_casesbat=%GITROOT%\smv\Verification\scripts\WUI_Cases.bat
 set copyFDScases=%GITROOT%\bot\Bundlebot\fds\scripts\copyFDScases.bat
 set copyCFASTcases=%GITROOT%\bot\Bundlebot\fds\scripts\copyCFASTcases.bat
 
-set fds_forbundle=%GITROOT%\bot\Bundlebot\fdssmv\fds_forbundle
+set fds_forbundle=%GITROOT%\bot\Bundlebot\fds\fds_forbundle
 
 :: erase the temporary bundle directory if it already exists
 

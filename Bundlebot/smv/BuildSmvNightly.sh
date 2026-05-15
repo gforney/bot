@@ -115,8 +115,8 @@ GITROOT=`pwd`
 GITROOTBASE=`basename $GITROOT`
 
 if [ "$BUNDLETYPE" == "nightly" ]; then
-  mkdir -p $GITROOT/bot/Bundlebot/fdssmv/output
-  cd $GITROOT/bot/Bundlebot/fdssmv/output
+  mkdir -p $GITROOT/bot/Bundlebot/fds/output
+  cd $GITROOT/bot/Bundlebot/fds/output
   outputdir=`pwd`
   if [ "$GHOWNER" == "" ]; then
     GHOWNER=firemodels
@@ -158,7 +158,7 @@ fi
 
 echo "*** get smv repo revision"
 if [ "$BUNDLETYPE" == "nightly" ]; then
-  cd $GITROOT/bot/Bundlebot/fdssmv
+  cd $GITROOT/bot/Bundlebot/fds
   ./get_hash_revisions.sh $outputdir $USE_CURRENT >& $outputdir/stage1_hash
   smv_hash=`head -1 $outputdir/SMV_HASH`
 else
@@ -179,7 +179,7 @@ fi
 
 #*** cloning smv repo
 
-cd $GITROOT/bot/Bundlebot/fdssmv
+cd $GITROOT/bot/Bundlebot/fds
 echo "*** cloning smv repo"
 ./clone_smvrepo.sh $smv_hash $BUNDLETYPE >& $outputdir/stage2_clone
 cd $GITROOT/smv
@@ -212,13 +212,13 @@ fi
 
 #*** build apps
 
-cd $GITROOT/bot/Bundlebot/fdssmv
+cd $GITROOT/bot/Bundlebot/fds
 ./make_smvapps.sh
 
 #*** make bundle
 
 echo "*** bundling smokeview"
-$GITROOT/bot/Bundlebot/fdssmv/assemble_smvbundle.sh $smv_revision $GITROOTBASE $PLATFORMLABEL $SCAN_BUNDLE
+$GITROOT/bot/Bundlebot/fds/assemble_smvbundle.sh $smv_revision $GITROOTBASE $PLATFORMLABEL $SCAN_BUNDLE
 
 uploaddir=$HOME/.bundle/bundles
 if [ ! -e $uploaddir/${smv_revision}_${PLATFORMLABEL}.sh ]; then
@@ -235,8 +235,8 @@ if [ "$UPLOADBUNDLE" != "" ]; then
     gh release delete-asset SMOKEVIEW_TEST $file -R github.com/$GHOWNER/test_bundles -y
   done
 
-  $GITROOT/bot/Bundlebot/fdssmv/upload_smvbundle.sh $uploaddir ${smv_revision}_${PLATFORMLABEL}.sh                $GITROOTBASE/bot/Bundlebot/fdssmv $GHOWNER
-  $GITROOT/bot/Bundlebot/fdssmv/upload_smvbundle.sh $uploaddir ${smv_revision}_${PLATFORMLABEL}_manifest.html     $GITROOTBASE/bot/Bundlebot/fdssmv $GHOWNER
+  $GITROOT/bot/Bundlebot/fds/upload_smvbundle.sh $uploaddir ${smv_revision}_${PLATFORMLABEL}.sh                $GITROOTBASE/bot/Bundlebot/fds $GHOWNER
+  $GITROOT/bot/Bundlebot/fds/upload_smvbundle.sh $uploaddir ${smv_revision}_${PLATFORMLABEL}_manifest.html     $GITROOTBASE/bot/Bundlebot/fds $GHOWNER
 
   echo "*** upload complete"
 fi

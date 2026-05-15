@@ -56,9 +56,9 @@ shift $(($OPTIND-1))
 
 SCANERRORLOG=scan_errors.txt
 SCANSUMMARY=scan_summary.txt
-uploads=fdssmv_uploads.txt
-errors=fdssmv_errors.txt
-output=output_fdssmv.txt
+uploads=fds_uploads.txt
+errors=fds_errors.txt
+output=output_fds.txt
 INFO=FDS_INFO.txt
 rm -f $uploads
 rm -f $SCANERRORLOG
@@ -92,7 +92,7 @@ echo                  >> $output
 rm -f $SCANSUMMARY
 #copy virus logs 
 if [[ "$OSX_BUNDLE_HOST" != "" ]] && [[ "$OSX_BOT_HOME" != "" ]]; then
-  scp -q $OSX_BUNDLE_HOST:$OSX_BOT_HOME/Bundlebot/fdssmv/output/scanlog output/scanlog_osx  > /dev/null
+  scp -q $OSX_BUNDLE_HOST:$OSX_BOT_HOME/Bundlebot/fds/output/scanlog output/scanlog_osx  > /dev/null
   SCANVIRUSLOG OSX output/scanlog_osx
 fi
 cp output/scanlog output/scanlog_linux
