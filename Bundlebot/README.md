@@ -18,7 +18,7 @@ These steps are given in more detail below.
 
    1. cd to bot/Scripts and run the script `./update_repos.sh -m` to update the repos .  The option `-m` makes sure each repo is set to the master branch before updating.
    2. For each repo, checkout the desired revision if the latest revision is not the revision you want to use to make the bundle.
-   3. cd to bot/Bundlebot/release and run the script `MakeConfig.sh` . This script updates the two configuration scripts `config.sh` and `config.bat` by using
+   3. cd to bot/Bundlebot/fds and run the script `MakeConfig.sh` . This script updates the two configuration scripts `config.sh` and `config.bat` by using
       
       `./MakeConfig.sh x.y.z`
       
@@ -31,7 +31,7 @@ where `x.y.z is the version number of the release to be built, for example 6.10.
 The manuals are built using the firebot account.
 
    1. Type: `sudo su - firebot` on the computer that runs firebot (spark at Nist) to switch to the firebot user account.
-   2. cd to `FireModels_bundle/bot/Bundlebot/release`
+   2. cd to `FireModels_bundle/bot/Bundlebot/fds
    3. Update the bot repo to ensure that the build manuals scripts use the correct `config.sh` script.
    4. To build the FDS manuals, type: `./BuildFdsManuals.sh -o owner -m email@address` .  After this step completes, about 3 hours, continue to the next step
    5. To build Smokeview manuals, type: `./BuildSmvManuals.sh -o owner -m email@address` . After this step completes, about 20 minutes, start building the bundles.
@@ -45,20 +45,20 @@ Note `owner` in `-o owner` is the github owner where the manuals will be placed 
 Linux (spark at NIST) and Macintosh (wildfire at NIST) bundles are built using the firebot account. 
 
    1. Switch to the firebot account using `sudo su - firebot` .
-   2. cd to the `FireModels_bundle/bot/Bundlebot/release` directory
+   2. cd to the `FireModels_bundle/bot/Bundlebot/fds` directory
    3. Update the bot repo.
    4. Type : `./BuildRelease.sh -o owner -m email@address`
    
 #### Windows bundles
 
-   1. cd to the `FireModels_bundle\bot\Bundlebot\release` directory
+   1. cd to the `FireModels_bundle\bot\Bundlebot\fds` directory
    2. Update the bot repo
    3. Type: `BuildRelease `
 
 ### Testing
 
-   1. Type: `GetBundles.sh` when the bundles are ready to be published to download the bundles to the `bot/Bundlebot/build/bundles` directory .  Type `GetBundles.bat` if on a PC .
-   2. Examine PDF files to ensure the correct version is displayed on the cover page and perform any other checks needed.
+   1. Type: `./GetReleases.sh` when the bundles are ready to be published to download the bundles to the `bot/Bundlebot/fds/bundles` directory .  Type `GetReleases.bat`on a PC .
+   2. Examine PDF files to ensure the correct version string is displayed on the cover page and perform any other checks needed.
    3. Install bundles on each platform and ensure fds and smokeview apps have the correct version string.
    4. Run a simple test case and view with ssmokeview.
       
