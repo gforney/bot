@@ -32,9 +32,12 @@ echo ***cleaning bot repo
 cd $CURDIR/../../Firebot
 git clean -dxf  >& /dev/null
 
-cd $CURDIR
+cd $CURDIR/output
 git clean -dxf  >& /dev/null
-./BuildNightly.sh -c -f -R -o $OWNER -r test_bundles
+
+cd $CURDIR/../nightly
+git clean -dxf  >& /dev/null
+./BuildNightly.sh -c -f -R -o $OWNER -r test_bundles -u
 
 TITLE="Bundle Test - $BUNDLE_FDS_TAG/$BUNDLE_FDS_HASH - $BUNDLE_SMV_TAG/$BUNDLE_SMV_HASH"
 gh release edit FDS_TEST  -t "$TITLE" -R github.com/$OWNER/test_bundles
