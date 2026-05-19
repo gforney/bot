@@ -23,7 +23,7 @@ CHECK_BUILDFDS()
     echo "***error: The program fds_impi_intel_linux${type} failed to build"
     echo "***error: The program fds_impi_intel_linux failed to build"  >> $ERRORLOG 2>&1
   else
-    echo $fdsrepo/Build/impi_intel_linux/fds_impi_intel_linux$type built
+    echo fds_impi_intel_linux$type built
   fi
 }
 
