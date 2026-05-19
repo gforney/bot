@@ -937,7 +937,7 @@ if [ "$CONFIG" == "" ]; then
     fdsbranch=current
   else
     cd $reporoot/bot/Scripts
-    ./setup_repos.sh -B
+    ./setup_repos.sh -c -e
     CFASTBRANCH=master
     SMVBRANCH=master
     expbranch=master

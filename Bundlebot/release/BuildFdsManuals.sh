@@ -65,8 +65,8 @@ git clean -dxf >& /dev/null
 
 echo ***clone repos
 cd $REPOROOT/bot/Scripts
-./setup_repos.sh -F -D
-./update_repos.sh -w
+./setup_repos.sh -f -e -D
+./setup_repos.sh -w -e
 cd $CURDIR
 
 # setup branches and tags
