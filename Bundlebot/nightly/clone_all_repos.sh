@@ -35,7 +35,7 @@ cd $REPOROOT/bot/Scripts
 
 echo cloning fds-smv
 ./setup_repos.sh    -B $BUNDLETYPE -K fds-smv >& $OUTDIR/clone_fds-smv &
-pid_fds-smv=$!
+pid_fds_smv=$!
 
 echo cloning test_bundles
 ./setup_repos.sh    -B $BUNDLETYPE -K exp >& $OUTDIR/clone_test_bundles &
@@ -65,11 +65,11 @@ echo cloning smv
 ./setup_repos.sh -b -B $BUNDLETYPE -K smv -D >& $OUTDIR/clone_smv &
 pid_smv=$!
 
-wait $pid_fds-smv
+wait $pid_fds_smv
 echo "*** fds-smv cloned"
 
-wait $pid_test-bundles
-echo "*** test-bundles cloned"
+wait $pid_test_bundles
+echo "*** test_bundles cloned"
 
 wait $pid_cad
 echo "*** cad cloned"
