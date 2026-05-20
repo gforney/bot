@@ -221,11 +221,10 @@ USE_CURRENT=
 ONLY_INSTALLER=
 PIDFILE=$SCRIPTDIR/BuildNightly.pid
 SCAN_BUNDLE=1
-SMVDBG=
 
 #*** parse parameters
 
-while getopts 'BcCdfhkIm:no:r:RTuU' OPTION
+while getopts 'BcCfhkIm:no:r:RTuU' OPTION
 do
 case $OPTION  in
   B)
@@ -236,9 +235,6 @@ case $OPTION  in
    ;;
   C)
    USE_CURRENT=1
-   ;;
-  d)
-   SMVDBG=_db
    ;;
   f)
    FORCE="-f"
@@ -399,12 +395,24 @@ if [ "$ONLY_INSTALLER" == "" ]; then
 #*** a nightly bundle - clone fds and smv repos
 
       echo "*** cloning fds"
-      ./clone_repo.sh -F -N -r $FDS_HASH > $OUTPUTDIR/clone_fds 2&>1 &
+       
+      cd $CURDIR/../../Scripts
+      ./setup_repos.sh -K fds -e > $OUTPUTDIR/clone_fds 2&>1 &
       pid_clonefds=$!
 
       echo "*** cloning smv"
-      ./clone_repo.sh -S -N -r $SMV_HASH > $OUTPUTDIR/clone_smv 2&>1 &
+      ./setup_repos.sh -K smv -e > $OUTPUTDIR/clone_fds 2&>1 &
       pid_clonesmv=$!
+      
+      wait $pid_clonefds
+      cd $GITROOT/fds
+      git checkout $FDS_HASH -b nightly
+      echo "*** fds cloned" 
+
+      wait $pid_clonesmv
+      cd $GITROOT/smv
+      git checkout $SMV_HASH -b nightly
+      echo "*** smv cloned"
     fi
   else
 
@@ -423,7 +431,7 @@ if [ "$ONLY_INSTALLER" == "" ]; then
     wait $pid_cloneall
     echo all repos clone complete
   fi
-  ./make_smvapps.sh $SMVDBG &
+  ./make_smvapps.sh &
   pid_smvapps=$!
 
   if [ "$pid_clonehypre" != "" ]; then
