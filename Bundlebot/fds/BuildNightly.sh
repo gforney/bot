@@ -386,6 +386,7 @@ if [ "$ONLY_INSTALLER" == "" ]; then
     echo "*** cloning sundials"
     ./setup_repos.sh -K sundials > $OUTPUTDIR/clone_sundials 2&>1 &
     pid_clonesundials=$!
+    rm -rf $GITROOT/libs
   fi
 
   cd $CURDIR
@@ -410,7 +411,7 @@ if [ "$ONLY_INSTALLER" == "" ]; then
 #*** a release bundle - clone all repos except for bot
 
     echo "*** cloning all repos "
-    ./clone_all_repos.sh  $OUTPUTDIR > $OUTPUTDIR/clone_all 2&>1 &
+    ./clone_all_repos.sh  $OUTPUTDIR $BUNDLETYPE > $OUTPUTDIR/clone_all 2&>1 &
     pid_cloneall=$!
   fi
 

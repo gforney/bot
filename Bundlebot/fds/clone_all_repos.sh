@@ -1,10 +1,15 @@
 #!/bin/bash
 OUTDIR=$1
+BUNDLETYPE=$2
 SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 CURDIR=`pwd`
 cd $SCRIPTDIR/../../..
 REPOROOT=`pwd`
 cd $SCRIPTDIR
+
+if [ "$BUNDLETYPE" == "" ]; then
+  BUNDLETYPE=master
+fi
 
 # ------------------- usage -----------------------------
 
@@ -16,25 +21,6 @@ echo "-h - display this message"
 exit 0
 }
 
-# ------------------- TAG_REPO -----------------------------
-
-TAG_REPO(){
-  repo=$1
-  repohash=$2
-  repotag=$3
-
-  cd $REPOROOT/$repo
-  git checkout -b release $repohash >& /dev/null
-  git tag -a $repotag -m "repo: $repo tag: $repotag"
-  git describe --abbrev=7 --dirty --long
-}
-
-releaseornightly="release"
-base_branch="master"
-repo_revision=
-repo_tag=
-fdsorsmv="fds"
-
 while getopts 'h' OPTION
 do
 case $OPTION  in
@@ -45,40 +31,51 @@ esac
 done
 shift $(($OPTIND-1))
 
-
-source $REPOROOT/bot/Bundlebot/fds/config.sh
-
 cd $REPOROOT/bot/Scripts
 
+echo cloning fds-smv
+./setup_repos.sh    -B $BUNDLETYPE -K fds-smv >& $OUTDIR/clone_fds-smv &
+pid_fds-smv=$!
+
+echo cloning test_bundles
+./setup_repos.sh    -B $BUNDLETYPE -K exp >& $OUTDIR/clone_test_bundles &
+pid_test_bundles=$!
+
 echo cloning cad
-./setup_repos.sh -K cad >& $OUTDIR/clone_cad &
+./setup_repos.sh -b -B $BUNDLETYPE -K cad -D >& $OUTDIR/clone_cad &
 pid_cad=$!
 
 echo cloning exp
-./setup_repos.sh -K exp >& $OUTDIR/clone_exp &
+./setup_repos.sh -b -B $BUNDLETYPE -K exp -D >& $OUTDIR/clone_exp &
 pid_exp=$!
 
 echo cloning fds
-./setup_repos.sh -K fds >& $OUTDIR/clone_fds &
+./setup_repos.sh -b -B $BUNDLETYPE -K fds -D >& $OUTDIR/clone_fds &
 pid_fds=$!
 
 echo cloning fig
-./setup_repos.sh -K fig >& $OUTDIR/clone_fig &
+./setup_repos.sh -b -B $BUNDLETYPE -K fig -D >& $OUTDIR/clone_fig &
 pid_fig=$!
 
 echo cloning out
-./setup_repos.sh -K out >& $OUTDIR/clone_out &
+./setup_repos.sh -b -B $BUNDLETYPE -K out -D >& $OUTDIR/clone_out &
 pid_out=$!
 
 echo cloning smv
-./setup_repos.sh -K smv >& $OUTDIR/clone_smv &
+./setup_repos.sh -b -B $BUNDLETYPE -K smv -D >& $OUTDIR/clone_smv &
 pid_smv=$!
+
+wait $pid_fds-smv
+echo "*** fds-smv cloned"
+
+wait $pid_test-bundles
+echo "*** test-bundles cloned"
 
 wait $pid_cad
 echo "*** cad cloned"
 
 wait $pid_exp
-echo "*** cad cloned"
+echo "*** exp cloned"
 
 wait $pid_fds
 echo "*** fds cloned"
@@ -91,10 +88,3 @@ echo "*** out cloned"
 
 wait $pid_smv
 echo "*** smv cloned"
-
-TAG_REPO cad  $BUNDLE_CAD_HASH $BUNDLE_CAD_TAG
-TAG_REPO exp  $BUNDLE_EXP_HASH $BUNDLE_EXP_TAG
-TAG_REPO fds  $BUNDLE_FDS_HASH $BUNDLE_FDS_TAG
-TAG_REPO fig  $BUNDLE_FIG_HASH $BUNDLE_FIG_TAG
-TAG_REPO out  $BUNDLE_OUT_HASH $BUNDLE_OUT_TAG
-TAG_REPO smv  $BUNDLE_SMV_HASH $BUNDLE_SMV_TAG

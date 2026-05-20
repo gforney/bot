@@ -12,7 +12,7 @@ cd ../../..
 REPOROOT=`pwd`
 
 cd $REPOROOT/bot/Scripts
-./setup_repos.sh -U
+./setup_repos.sh -s -e
 
 cd $REPOROOT/smv
 

@@ -1,41 +1,19 @@
 #!/bin/bash
-SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-CURDIR=`pwd`
-cd $SCRIPTDIR/../../bot
-BOTREPO=`pwd`
-cd $CURDIR
-
 function usage {
 echo "Create repos used by cfast, fds and/or smokview"
 echo ""
 echo "Options:"
-echo "-3 - setup 3rd party repos:"
-echo "    $thirdpartyrepos"
-echo "-a - setup all available repos: "
-echo "    $allrepos"
-echo "-A - setup all available repos (erase each repo first): "
-echo "    $allrepos"
-echo "-B - setup repos used by cfast (erase each repo first): "
-echo "    $cfastrepos"
-echo "-c - setup repos used by cfastbot: "
-echo "    $cfastbotrepos"
+echo "-3 - setup 3rd party repos: $thirdpartyrepos"
+echo "-b - use config.sh to checkout and tag repos"
+echo "-a - setup all available repos: $allrepos"
+echo "-c - setup repos used by cfastbot:  $cfastbotrepos"
 echo "-D - enable access to firemodels (ie allow git push)"
-echo "-f - setup repos used by firebot: "
-echo "    $fdsrepos"
-echo "-F - setup repos used by firebot (erase each repo first): "
-echo "    $firebotrepos"
-echo "-G - only clone fds repo (erase first)"
-echo "-H repo - only clone repo (erase first)"
+echo "-e - erase repos first"
+echo "-f - setup repos used by firebot:  $fdsrepos"
+echo "-F - setup freeglut"
 echo "-h - display this message"
 echo "-K repo - clone repo named repo, erase first"
-echo "-R - erase repos first"
-echo "-s - setup repos used by smokebot: "
-echo "    $smvrepos"
-echo "-S - setup repos used by smokebot (erase each repo first): "
-echo "    $smvrepos"
-echo "-t - append test to repo name, do not erase if repo exists"
-echo "-T - only setup fds and smv repos (erase each repo first)"
-echo "-U - only setup smv repo (erase each repo first)"
+echo "-s - setup repos used by smokebot: $smvrepos"
 echo "-w - setup wiki and webpage repos cloned from firemodels"
 exit
 }
@@ -88,25 +66,20 @@ SETUP_REMOTE ()
 
 #------------------- start of script ---------------------------
 
+SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 CURDIR=`pwd`
 
-configrepos="cad exp fds fig out smv"
-fdsrepos="cad exp fds fig out smv test_bundles"
-thirdpartyrepos="hypre sundials freeglut"
-#thirdpartyrepos="hypre sundials ompi"
-fdssmvrepos="fds smv"
-smvonlyrepos="smv"
-fdsonlyrepos="fds"
-firebotrepos="cad exp fds fds-smv fig out smv test_bundles"
-smvrepos="cfast fds fig smv test_bundles"
-cfastbotrepos="cfast exp fig smv test_bundles"
-cfastrepos="cfast exp fds smv"
 allrepos="cad cfast cor exp fds fig out radcal smv test_bundles"
+cfastbotrepos="cfast exp fig smv test_bundles"
+firebotrepos="cad exp fds fds-smv fig out smv test_bundles"
+freeglutrepo="freeglut"
+smokebotrepos="cfast fds fig smv test_bundles"
+thirdpartyrepos="hypre sundials"
 wikiwebrepos="fds.wiki fds-smv"
-repos=$fdsrepos
+
+repos=$firebotrepos
 eraserepos=
 FORCECLONE=
-APPENDTEST=
 DISABLEPUSH=1
 
 FMROOT=
@@ -118,8 +91,7 @@ else
    echo "***Error: this script must be run from the bot/Scripts directory"
    exit
 fi
-
-while getopts '3aABbcCDefFGH:hK:sRStTUVw' OPTION
+while getopts '3abB:cDefFhK:swy' OPTION
 do
 case $OPTION  in
   3)
@@ -128,24 +100,15 @@ case $OPTION  in
   a)
    repos=$allrepos;
    ;;
-  A)
-   repos=$allrepos;
-   eraserepos=1
-   ;;
   b)
-   repos=$configrepos
    eraserepos=1
    CONFIG_REPOS=1
    ;;
   B)
-   repos=$cfastrepos;
-   eraserepos=1
+   REPO_BRANCH="$OPTARG";
    ;;
   c)
    repos=$cfastbotrepos;
-   ;;
-  C)
-   FORCECLONE=1;
    ;;
   D)
    DISABLEPUSH=
@@ -154,22 +117,10 @@ case $OPTION  in
    eraserepos=1
    ;;
   f)
-   repos=$fdsrepos;
+   repos=$firebotrepos;
    ;;
   F)
-   repos=$firebotrepos;
-   eraserepos=1
-   ;;
-  G)
-   repos=fds;
-   eraserepos=1;
-   ;;
-  H)
-   repos="$OPTARG";
-   if [ "$repos" != "smv" ]; then
-     repos="fds"
-   fi
-   eraserepos=1;
+   repos=$freeglutrepo;
    ;;
   h)
    usage;
@@ -178,41 +129,19 @@ case $OPTION  in
    repos="$OPTARG";
    eraserepos=1;
    ;;
-  R)
-   eraserepos=1
-   ;;
   s)
-   repos=$smvrepos;
-   ;;
-  S)
-   repos=$smvrepos;
-   ;;
-  t)
-   APPENDTEST=_test
-   eraserepos=
-   ;;
-  T)
-   repos=$fdssmvrepos;
-   eraserepos=1
-   ;;
-  U)
-   repos=$smvonlyrepos;
-   eraserepos=1
-   ;;
-  V)
-   repos=$fdsonlyrepos;
-   eraserepos=1
+   repos=$smokebotrepos;
    ;;
   w)
    repos=$wikiwebrepos;
+   ;;
+  y)
+   FORCECLONE=1;
    ;;
 esac
 done
 shift $(($OPTIND-1))
 
-if [ "$APPENDTEST" != "" ]; then
-  eraserepos=
-fi
 if [ "$CONFIG_REPOS" != "" ]; then
   source $BOTREPO/Bundlebot/fds/config.sh
 fi
@@ -249,7 +178,7 @@ fi
 for repo in $repos
 do 
   echo
-  repo_out=$repo$APPENDTEST
+  repo_out=$repo
   WIKIWEB=
 
   cd $FMROOT
@@ -323,6 +252,8 @@ do
     fi
   fi
   if [ "$CONFIG_REPOS" != "" ]; then
+    TAG=
+    HASH=
     if [ "$repo" == "cad" ]; then
       TAG=$BUNDLE_CAD_TAG
       HASH=$BUNDLE_CAD_HASH
@@ -347,15 +278,12 @@ do
       TAG=$BUNDLE_SMV_TAG
       HASH=$BUNDLE_SMV_HASH
     fi
-#    REPO="${repo^^}"
-    if [[ "$TAG" != "" ]] && [[ "$HASH" != "" ]] && [[ -d $repo_out ]]; then
+    if [[ "$TAG" != "" ]] && [[ "$HASH" != "" ]] && [[ -d $repo_out ]] && [[ "$REPO_BRANCH" != "" ]]; then
       cd $repo_out
-      echo git checkout -b release $HASH
-      git checkout -b release $HASH
+      git checkout -b ${REPO_BRANCH} $HASH
       echo git tag -a $TAG -m "tag for $TAG"
       git tag -a $TAG -m "tag for $TAG"
     fi
   fi
   SETUP_REMOTE $repo_dir
 done
-cd $CURDIR

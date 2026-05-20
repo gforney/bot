@@ -59,8 +59,10 @@ git clean -dxf >& /dev/null
 echo ***cloning repos
 cd $CURDIR/../../Scripts
 echo "setting up repos"
-./setup_repos.sh -D -A
-./update_repos.sh -w
+./setup_repos.sh -s -e -b -B release -D
+./setup_repos.sh -3 -e
+rm -rf $CURDIR/../../../libs
+./setup_repos.sh -w -e
 
 cd $CURDIR/../../Smokebot
-./run_smokebot.sh -C -c -u -J -f -q firebot $MAILTO -x $BUNDLE_FDS_HASH -X $BUNDLE_FDS_TAG -y $BUNDLE_SMV_HASH -Y $BUNDLE_SMV_TAG $OWNER -r test_bundles -U -R release
+./run_smokebot.sh -C -f -q firebot $MAILTO  -r test_bundles -U

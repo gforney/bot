@@ -1491,7 +1491,7 @@ if [[ "$CLONE_REPOS" != "" ]]; then
     DISABLEPUSH="-D"
   fi
    # clone all repos
-    ./setup_repos.sh -C -F > $OUTPUT_DIR/stage1_clone 2>&1
+    ./setup_repos.sh -f -e -y > $OUTPUT_DIR/stage1_clone 2>&1
   if [ "$BUILD_3RD_PARTY" != "" ]; then
     echo removing hypre repo    >>   $OUTPUT_DIR/stage1_clone
     rm -rf $hyprerepo           >>   $OUTPUT_DIR/stage1_clone 2>&1
@@ -1499,7 +1499,7 @@ if [[ "$CLONE_REPOS" != "" ]]; then
     rm -rf $sundialsrepo        >>   $OUTPUT_DIR/stage1_clone 2>&1
     echo removing libsdir       >>   $OUTPUT_DIR/stage1_clone
     rm -rf $libsdir             >>   $OUTPUT_DIR/stage1_clone 2>&1
-    ./setup_repos.sh -C -3      >>   $OUTPUT_DIR/stage1_clone 2>&1
+    ./setup_repos.sh -3 -e      >>   $OUTPUT_DIR/stage1_clone 2>&1
   fi
   if [ "$CLONE_REPOS" != "master" ]; then
     FDSBRANCH=$CLONE_REPOS
