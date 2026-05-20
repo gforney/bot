@@ -91,7 +91,7 @@ else
    echo "***Error: this script must be run from the bot/Scripts directory"
    exit
 fi
-while getopts '3ab:cDefFhK:swy' OPTION
+while getopts '3abB:cDefFhK:swy' OPTION
 do
 case $OPTION  in
   3)
@@ -103,6 +103,9 @@ case $OPTION  in
   b)
    eraserepos=1
    CONFIG_REPOS=1
+   REPO_BRANCH="$OPTARG";
+   ;;
+  B)
    REPO_BRANCH="$OPTARG";
    ;;
   c)
@@ -141,7 +144,7 @@ done
 shift $(($OPTIND-1))
 
 if [ "$CONFIG_REPOS" != "" ]; then
-  source $FMROOT/bot/release/config.sh
+  source $FMROOT/bot/Bundlebot/release/config.sh
 fi
 
 cd $FMROOT/bot

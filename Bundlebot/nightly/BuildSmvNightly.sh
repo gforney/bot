@@ -114,17 +114,14 @@ cd ../../..
 GITROOT=`pwd`
 GITROOTBASE=`basename $GITROOT`
 
+mkdir -p $GITROOT/bot/Bundlebot/$BUNDLETYPE/output
+cd $GITROOT/bot/Bundlebot/$BUNDLETYPE/output
+outputdir=`pwd`
 if [ "$BUNDLETYPE" == "nightly" ]; then
-  mkdir -p $GITROOT/bot/Bundlebot/nightly/output
-  cd $GITROOT/bot/Bundlebot/nightly/output
-  outputdir=`pwd`
   if [ "$GHOWNER" == "" ]; then
     GHOWNER=firemodels
   fi
 else
-  mkdir -p $GITROOT/bot/Bundlebot/release/output
-  cd $GITROOT/bot/Bundlebot/release/output
-  outputdir=`pwd`
   GHOWNER=`whoami`
 fi
 if [ "$OUTPUT_USAGE" != "" ]; then
