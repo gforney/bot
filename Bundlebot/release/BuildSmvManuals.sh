@@ -61,7 +61,7 @@ git clean -dxf >& /dev/null
 echo ***cloning repos
 cd $CURDIR/../../Scripts
 echo "setting up repos"
-./setup_repos.sh -D -a -e
+./setup_repos.sh -s -e -D
 ./setup_repos.sh -w -e
 
 cd $CURDIR/../../Smokebot
