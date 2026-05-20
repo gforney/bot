@@ -221,11 +221,10 @@ USE_CURRENT=
 ONLY_INSTALLER=
 PIDFILE=$SCRIPTDIR/BuildNightly.pid
 SCAN_BUNDLE=1
-SMVDBG=
 
 #*** parse parameters
 
-while getopts 'BcCdfhkIm:no:r:RTuU' OPTION
+while getopts 'BcCfhkIm:no:r:RTuU' OPTION
 do
 case $OPTION  in
   B)
@@ -236,9 +235,6 @@ case $OPTION  in
    ;;
   C)
    USE_CURRENT=1
-   ;;
-  d)
-   SMVDBG=_db
    ;;
   f)
    FORCE="-f"
@@ -435,7 +431,7 @@ if [ "$ONLY_INSTALLER" == "" ]; then
     wait $pid_cloneall
     echo all repos clone complete
   fi
-  ./make_smvapps.sh $SMVDBG &
+  ./make_smvapps.sh &
   pid_smvapps=$!
 
   if [ "$pid_clonehypre" != "" ]; then
