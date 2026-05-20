@@ -64,8 +64,9 @@ cd $CURDIR/../nightly
 git clean -dxf >& /dev/null
 
 echo ***clone repos
+cd $REPOROOT/bot/Bundlebot/nightly
+./clone_all_repos.sh $REPOROOT/bot/Bundlebot/nightly/output release
 cd $REPOROOT/bot/Scripts
-./setup_repos.sh -f -b -B release -e -D
 ./setup_repos.sh -3 -e
 rm -rf $REPOROOT/libs
 ./setup_repos.sh -w -e

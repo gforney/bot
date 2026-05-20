@@ -103,7 +103,6 @@ case $OPTION  in
   b)
    eraserepos=1
    CONFIG_REPOS=1
-   REPO_BRANCH="$OPTARG";
    ;;
   B)
    REPO_BRANCH="$OPTARG";

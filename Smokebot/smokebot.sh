@@ -1108,25 +1108,18 @@ if [[ "$CLONE_REPO_BRANCH" != "" ]]; then
   echo Cloning repos
   cd $botrepo/Scripts
 
-  ./setup_repos.sh -K cfast             > $OUTPUT_DIR/stage1_clone_repos 2>&1
-  CFASTBRANCH=$CLONE_REPO_BRANCH
-  cd $cfastrepo
-  git checkout -b $CFASTBRANCH         >> $OUTPUT_DIR/stage1_clone_repos 2>&1
-
-  ./setup_repos.sh -K fds              >> $OUTPUT_DIR/stage1_clone_repos 2>&1
-  FDSBRANCH=$CLONE_REPO_BRANCH
-  cd $fdsrepo
-  git checkout -b $FDSBRANCH           >> $OUTPUT_DIR/stage1_clone_repos 2>&1
-
-  ./setup_repos.sh -K fig              >> $OUTPUT_DIR/stage1_clone_repos 2>&1
-  FIGBRANCH=$CLONE_REPO_BRANCH
-  cd $figrepo
-  git checkout -b $FIGBRANCH           >> $OUTPUT_DIR/stage1_clone_repos 2>&1
-
-  ./setup_repos.sh -K smv              >> $OUTPUT_DIR/stage1_clone_repos 2>&1
-  SMVBRANCH=$CLONE_REPO_BRANCH
-  cd $smvrepo
-  git checkout -b $SMVBRANCH           >> $OUTPUT_DIR/stage1_clone_repos 2>&1
+  ./setup_repos.sh -K cfast -B $CLONE_REPO_BRANCH  > $OUTPUT_DIR/stage1_clone_repos 2>&1 &
+  pid_cfast=$!
+  ./setup_repos.sh -K fds   -B $CLONE_REPO_BRANCH >> $OUTPUT_DIR/stage1_clone_repos 2>&1 &
+  pid_fds=$!
+  ./setup_repos.sh -K fig   -B $CLONE_REPO_BRANCH >> $OUTPUT_DIR/stage1_clone_repos 2>&1 &
+  pid_fig=$!
+  ./setup_repos.sh -K smv   -B $CLONE_REPO_BRANCH >> $OUTPUT_DIR/stage1_clone_repos 2>&1 &
+  pid_$smv=$!
+  wait $pid_cfast
+  wait $pid_fds
+  wait $pid_fig
+  wait $pid_smv
 fi
 
 #*** make sure repos exist

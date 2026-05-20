@@ -33,29 +33,43 @@ shift $(($OPTIND-1))
 
 cd $REPOROOT/bot/Scripts
 
+echo cloning fds-smv
+./setup_repos.sh    -B $BUNDLETYPE -K fds-smv >& $OUTDIR/clone_fds-smv &
+pid_fds-smv=$!
+
+echo cloning test_bundles
+./setup_repos.sh    -B $BUNDLETYPE -K exp >& $OUTDIR/clone_test_bundles &
+pid_test_bundles=$!
+
 echo cloning cad
-./setup_repos.sh -b -B $BUNDLETYPE-K cad >& $OUTDIR/clone_cad &
+./setup_repos.sh -b -B $BUNDLETYPE -K cad -D >& $OUTDIR/clone_cad &
 pid_cad=$!
 
 echo cloning exp
-./setup_repos.sh -b -B $BUNDLETYPE-K exp >& $OUTDIR/clone_exp &
+./setup_repos.sh -b -B $BUNDLETYPE -K exp -D >& $OUTDIR/clone_exp &
 pid_exp=$!
 
 echo cloning fds
-./setup_repos.sh -b -B $BUNDLETYPE-K fds >& $OUTDIR/clone_fds &
+./setup_repos.sh -b -B $BUNDLETYPE -K fds -D >& $OUTDIR/clone_fds &
 pid_fds=$!
 
 echo cloning fig
-./setup_repos.sh -b -B $BUNDLETYPE-K fig >& $OUTDIR/clone_fig &
+./setup_repos.sh -b -B $BUNDLETYPE -K fig -D >& $OUTDIR/clone_fig &
 pid_fig=$!
 
 echo cloning out
-./setup_repos.sh -b -B $BUNDLETYPE-K out >& $OUTDIR/clone_out &
+./setup_repos.sh -b -B $BUNDLETYPE -K out -D >& $OUTDIR/clone_out &
 pid_out=$!
 
 echo cloning smv
-./setup_repos.sh -b -B $BUNDLETYPE-K smv >& $OUTDIR/clone_smv &
+./setup_repos.sh -b -B $BUNDLETYPE -K smv -D >& $OUTDIR/clone_smv &
 pid_smv=$!
+
+wait $pid_fds-smv
+echo "*** fds-smv cloned"
+
+wait $pid_test-bundles
+echo "*** test-bundles cloned"
 
 wait $pid_cad
 echo "*** cad cloned"
