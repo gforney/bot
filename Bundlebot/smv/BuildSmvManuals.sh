@@ -31,7 +31,7 @@ done
 shift $(($OPTIND-1))
 
 # this script runs smokebot to build smokeview manuals using revision and tags defined in config.sh
-source config.sh
+source ../fds/config.sh
 
 echo Smokeview manuals will be built using:
 echo "     OWNER: $OWNER"
