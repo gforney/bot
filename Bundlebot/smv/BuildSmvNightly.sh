@@ -176,7 +176,7 @@ fi
 
 #*** cloning smv repo
 
-cd $GITROOT/bot/Bundlebot/fds
+cd $GITROOT/bot/Bundlebot/smv
 echo "*** cloning smv repo"
 ./clone_smvrepo.sh $smv_hash $BUNDLETYPE >& $outputdir/stage2_clone
 cd $GITROOT/smv
@@ -215,7 +215,7 @@ cd $GITROOT/bot/Bundlebot/fds
 #*** make bundle
 
 echo "*** bundling smokeview"
-$GITROOT/bot/Bundlebot/fds/assemble_smvbundle.sh $smv_revision $GITROOTBASE $PLATFORMLABEL $SCAN_BUNDLE
+$GITROOT/bot/Bundlebot/smv/assemble_smvbundle.sh $smv_revision $GITROOTBASE $PLATFORMLABEL $SCAN_BUNDLE
 
 uploaddir=$HOME/.bundle/bundles
 if [ ! -e $uploaddir/${smv_revision}_${PLATFORMLABEL}.sh ]; then

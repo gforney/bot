@@ -93,7 +93,7 @@ FORBUNDLE=$GITROOT/smv/Build/for_bundle
 SMVSCRIPTDIR=$GITROOT/smv/scripts
 UTILSCRIPTDIR=$GITROOT/smv/Utilities/Scripts
 PLATFORMDIR=$revision\_${LABEL}
-MAKEINSTALLER=$GITROOT/bot/Bundlebot/nightly/make_smv_installer.sh
+MAKEINSTALLER=$GITROOT/bot/Bundlebot/smv/make_smv_installer.sh
 UPLOADDIR=$HOME/.bundle/bundles
 flushfile=$GITROOT/smv/Build/flush/${COMPILER}_${platform}/flush_${platform}
 
