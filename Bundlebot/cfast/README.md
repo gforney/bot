@@ -3,7 +3,7 @@
 This directory contains scripts for building cfast bundles.
 
 ### Building a nightly bundle
-1. cd into `FireModels_cbundle\bot\Bundlebot\cfast\nightly
+1. cd into `FireModels_cbundle\bot\Bundlebot\cfast
 2. type: `BuildCfastNightly.bat`
 
 This builds a cfast bundle using repo revision from the lastest cfastbot pass.
@@ -11,7 +11,7 @@ This builds a cfast bundle using repo revision from the lastest cfastbot pass.
 
 
 ### Building a release bundle
-1. cd into `FireModels_cbundle\bot\Bundlebot\cfast\release`
+1. cd into `FireModels_cbundle\bot\Bundlebot\cfast
 2. Edit the files `config.bat` and `config.sh` .  They contains repo revisions and tags
    for the bundle to be created.  `config.sh` is used on a Linux computer to build the manuals.  `config.bat` is used on a Windows computer to build the release.
 ```
