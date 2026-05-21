@@ -13,7 +13,6 @@ echo "Verification testing script for smokeview"
 echo ""
 echo "Options:"
 echo ""
-echo "-C - force clone"
 echo "-f - force smokebot to run"
 echo "-h - display most commonly used options"
 echo "-k - kill smokebot if it is running"
@@ -28,6 +27,7 @@ echo "   fds and smv repos will be checked out with a branch named"
 echo "   master, release or test [default: master]"
 echo ""
 echo "Misc options:"
+echo "-F Build - use fds apps from fds build directory Build"
 echo "-o - specify GH_OWNER when uploading manuals. [default: $GH_OWNER]"
 echo "-r - specify GH_REPO when uploading manuals. [default: $GH_REPO]"
 echo "-M - make movies"
@@ -94,6 +94,7 @@ FORCECLONE=
 CLONE_REPOS=
 WEB_DIR=
 USE_BOT_QFDS=
+FOPT=
 CPUS_PER_TASK=
 
 WEB_ROOT=/opt/www/html
@@ -115,14 +116,14 @@ fi
 
 #*** parse command line options
 
-while getopts 'CfhJkm:Mo:q:r:R:s:T:Uw:W:' OPTION
+while getopts 'fF:hJkm:Mo:q:r:R:s:T:Uw:W:' OPTION
 do
 case $OPTION  in
-  C)
-   FORCECLONE="-C"
-   ;;
   f)
    FORCE=1
+   ;;
+  F)
+   FOPT="-F $OPTARG"
    ;;
   h)
    usage
@@ -265,7 +266,7 @@ fi
 #*** run smokebot
 
 touch $smokebot_pid
-./smokebot.sh $SIZE $CPuS_PER_TASK $CLONE_REPOS $FORCECLONE $WEB_DIR $WEB_ROOT $QUEUE $UPLOAD $EMAIL $MOVIE "$@"
+./smokebot.sh $SIZE $CPuS_PER_TASK $CLONE_REPOS $FOPT $FORCECLONE $WEB_DIR $WEB_ROOT $QUEUE $UPLOAD $EMAIL $MOVIE "$@"
 if [ -e $smokebot_pid ]; then
   rm $smokebot_pid
 fi

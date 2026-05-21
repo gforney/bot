@@ -63,11 +63,21 @@ git clean -dxf >& /dev/null
 
 echo ***clone repos
 cd $REPOROOT/bot/Bundlebot/nightly
-./clone_all_repos.sh $REPOROOT/bot/Bundlebot/nightly/output release
+./clone_all_repos.sh $REPOROOT/bot/Bundlebot/nightly/output release >& /dev/null &
+pid_all=$1
+
 cd $REPOROOT/bot/Scripts
-./setup_repos.sh -3 -e
+./setup_repos.sh -3 -e >& /dev/null &
+pid_3rd=$1
 rm -rf $REPOROOT/libs
-./setup_repos.sh -w -e
+
+./setup_repos.sh -w -e >& /dev/null &
+pid_wiki=$1
+
+wait $pid_all
+wait $pid_3rd
+wait $pid_wiki
+echo ***repos cloned
 
 # build manuals
 cd $REPOROOT/bot/Firebot

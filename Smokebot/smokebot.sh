@@ -124,6 +124,30 @@ clean_smokebot_history()
 }
 
 #---------------------------------------------
+#                   BUILDFDSLIBS
+#---------------------------------------------
+
+BUILDFDSLIBS()
+{
+# setup compilers
+  export FDS_BUILD_TARGET=intel
+  echo setting up compilers
+  source $repo/fds/Build/Scripts/set_compilers.sh >& /dev/null
+
+  echo building hypre
+  source $repo/fds/Build/Scripts/HYPRE/build_hypre.sh confmake.sh true >& /dev/null &
+  pid_hypre=$!
+
+  echo building sundials
+  source $repo/fds/Build/Scripts/SUNDIALS/build_sundials.sh confmake.sh true >& /dev/null &
+  pid_sundials=$1
+  wait $pid_hypre
+  echo hypre built
+  wait $pid_sundials
+  echo sundials built
+}
+
+#---------------------------------------------
 #                   compile_cfast
 #---------------------------------------------
 
@@ -132,7 +156,7 @@ compile_cfast()
    cd $SMOKEBOT_HOME_DIR
 
     # Build CFAST
-    echo "   release cfast"
+    echo "building cfast"
     cd $cfastrepo/Build/CFAST/intel_linux
     rm -f cfast7_linux
     make --makefile ../makefile clean &> /dev/null
@@ -256,7 +280,7 @@ run_verification_cases_debug()
    #  = Run all SMV cases =
    #  =====================
 
-   echo "   run cases using debug FDS"
+   echo "running cases using debug fds"
    cd $smvrepo/Verification_dbg/scripts
 
    # Submit SMV verification cases and wait for them to start
@@ -317,7 +341,7 @@ check_compile_fds_mpi()
    cd $FDSDIR
    if [ -e $FDSEXE ]
    then
-      stage_ver_release_success=true
+      stage_fds_success=true
       cp $FDSEXE $LATESTAPPS_DIR/fds
    else
       echo "Errors from Stage 1c$MPTYPE - Compile FDS MPI$MPYPE release:" >> $ERROR_LOG
@@ -420,7 +444,7 @@ run_verification_cases_release()
    #  = Remove .stop files =
    #  ======================
 
-   echo "   run cases using release FDS"
+   echo "running cases using release fds"
    # Start running all SMV verification cases
    cd $smvrepo/Verification/scripts
    echo 'Running SMV verification cases:' >> $OUTPUT_DIR/stage3_run_release 2>&1
@@ -477,8 +501,7 @@ check_verification_cases_release()
 make_smv_pictures()
 {
    # Run Make SMV Pictures script (release mode)
-   echo Generating
-   echo "   images"
+   echo "generating images"
    cd $smvrepo/Verification/scripts
    ./Make_SMV_Pictures.sh $CPUS_PER_TASK -q $QUEUE -j SMV_ $USEINSTALL 2>&1 &> $OUTPUT_DIR/stage4_make_picts
    grep -v FreeFontPath $OUTPUT_DIR/stage4_make_picts | grep -v libpng &> $OUTPUT_DIR/stage4_check_picts
@@ -494,7 +517,7 @@ check_smv_pictures()
    grep -I -E -i Segmentation $smvrepo/Verification/Visualization/*.err >> $OUTPUT_DIR/stage4_check_picts
    grep -I -E -i Segmentation $smvrepo/Verification/WUI/*.err           >> $OUTPUT_DIR/stage4_check_picts
    cd $smokebotdir
-   echo "   checking"
+   echo "checking image generation"
    if [[ `grep -I -E -i "Segmentation|Error" $OUTPUT_DIR/stage4_check_picts` == "" ]]
    then
       stage4_check_picts_smvpics_success=true
@@ -522,7 +545,7 @@ check_smv_pictures()
 
 make_smv_movies()
 {
-   echo "   movies"
+   echo "generating movies"
    cd $smvrepo/Verification
    scripts/Make_SMV_Movies.sh -q $QUEUE 2>&1  &> $OUTPUT_DIR/stage4_make_movies
 }
@@ -534,7 +557,7 @@ make_smv_movies()
 check_smv_movies()
 {
    cd $smokebotdir
-   echo "   checking"
+   echo "checking movie generation"
    if [[ `grep -I -E -i "Segmentation|Error" $OUTPUT_DIR/stage4_make_movies` == "" ]]
    then
       stage4_make_movies_success=true
@@ -564,8 +587,7 @@ check_smv_movies()
 
 generate_timing_stats()
 {
-   echo "Timing stats"
-   echo "   generating"
+   echo "generating timing stats"
    cd $smvrepo/Verification/scripts/
    export QFDS="$smvrepo/Verification/scripts/copyout.sh"
    export RUNCFAST="$smvrepo/Verification/scripts/copyout.sh"
@@ -586,7 +608,7 @@ generate_timing_stats()
 
 archive_timing_stats()
 {
-  echo "   archiving"
+  echo "archiving timing stats"
   cd $smvrepo/Utilities/Scripts
   cp smv_timing_stats.csv          "$HISTORY_DIR_ARCHIVE/${SMV_REVISION}_timing.csv"
   cp smv_benchmarktiming_stats.csv "$HISTORY_DIR_ARCHIVE/${SMV_REVISION}_benchmarktiming.csv"
@@ -1010,6 +1032,7 @@ GITURL=
 HAVEMAIL=`which mail |& grep -v 'no mail'`
 INTEL2="-J"
 CPUS_PER_TASK_ARG=16
+USE_FDS_CACHE=
 
 #*** save pid so -k option (kill smokebot) may be used lateer
 
@@ -1017,11 +1040,11 @@ echo $$ > $PID_FILE
 
 #*** parse command line options
 
-while getopts 'Cm:Mq:R:ST:Uw:W:' OPTION
+while getopts 'F:m:Mq:R:ST:Uw:W:' OPTION
 do
 case $OPTION in
-  C)
-   FORCECLONE="-C"
+  F)
+   FDSCACHEDIR="$OPTARG"
    ;;
   m)
    mailTo="$OPTARG"
@@ -1053,6 +1076,17 @@ done
 shift $(($OPTIND-1))
 
 CPUS_PER_TASK="-T $CPUS_PER_TASK_ARG"
+
+if [ "$FDSCACHEDIR" != "" ]; then
+  USE_FDS_CACHE=1
+  FDSDEBUG=$FDSCACHEDIR/Build/impi_intel_linux_db/fds_impi_intel_linux_db
+  FDSRELEASE=$FDSCACHEDIR/Build/impi_intel_linux/fds_impi_intel_linux
+  if [[ ! -x $FDSDEBUG || ! -x $FDSRELEASE ]]; then
+    FDSDEBUG=
+    FDSRELEASE=
+    USE_FDS_CACHE=
+  fi
+fi
 
 #*** make sure smokebot is running in the right directory
 
@@ -1353,21 +1387,31 @@ BUILDSOFTWARE_beg=`GET_TIME`
 #*** stage 2 - build cfast
 echo "Building"
 
+cd $botrepo/Smokebot
 pid_fds_mpi_db=
 pid_fds_mpi=
-cd $botrepo/Smokebot
-if [ "$FDSDEBUG" != "" ]; then
+if [ "$USE_FDS_CACHE" != "" ]; then
   cp $FDSDEBUG $fdsrepo/Build/impi_intel_linux_db/fds_impi_intel_linux_db
-else
-  ./make_fdsapps.sh debug   &
-  pid_fds_mpi_db=$!
-fi
-
-cd $botrepo/Smokebot
-if [ "$FDSRELEASE" != "" ]; then
   cp $FDSRELEASE $fdsrepo/Build/impi_intel_linux/fds_impi_intel_linux
 else
-  ./make_fdsapps.sh release &
+  if [ -z "${FIREMODELS}" ]; then
+    export FIREMODELS=$REPOROOT
+  fi 
+
+# build fds apps
+
+  BUILDFDSLIBS
+
+  echo building debug fds
+  cd $repo/fds/Build/impi_intel_linux_db
+  git clean -dxf >& /dev/null
+  ./make_fds.sh bot  > $OUTPUT_DIR/compile_fdsdb.log 2>&1 &
+  pid_fds_mpi_db=$!
+
+  echo building release fds
+  cd $repo/fds/Build/impi_intel_linux
+  git clean -dxf >& /dev/null
+  ./make_fds.sh bot  > $OUTPUT_DIR/compile_fds.log 2>&1 &
   pid_fds_mpi=$!
 fi
 
@@ -1388,26 +1432,17 @@ RUN_CASES=
 wait $pid_cfast
 check_compile_cfast
 
+#*** stage 3 - run debug cases
 if [ "$pid_fds_mpi_db" != "" ]; then
   wait $pid_fds_mpi_db
+  echo "debug fds built"
+fi
+if [ "$FDSDEBUG" == "" ]; then
   check_compile_fds_mpi_db  $FDS_DB_DIR        $FDS_DB_EXE
 fi
-if [ "$FDSDEBUG" != "" ]; then
-  check_compile_fds_mpi_db  $FDS_DB_DIR        $FDS_DB_EXE
-fi
-
-#*** stage 3 - run debug cases
-if [[ $stage_fdsdb_success ]]; then
+if [[ $stage_fdsdb_success || "$FDSDEBUG" != "" ]]; then
   run_verification_cases_debug
   RUN_CASES=1
-fi
-
-if [ "$pid_fds_mpi" != "" ]; then
-  wait $pid_fds_mpi
-  check_compile_fds_mpi     $FDS_DIR           $FDS_EXE
-fi
-if [ "$FDSRELEASE" != "" ]; then
-  check_compile_fds_mpi     $FDS_DIR           $FDS_EXE
 fi
 
 BUILDSOFTWARE_end=`GET_TIME`
@@ -1425,7 +1460,14 @@ fi
 RUN_CASES_beg=`GET_TIME`
 
 #*** stage 3 - run release cases
-if [[ $stage_ver_release_success ]]; then
+if [ "$pid_fds_mpi" != "" ]; then
+  wait $pid_fds_mpi
+  echo "release fds built"
+fi
+if [ "$FDSRELEASE" == "" ]; then
+  check_compile_fds_mpi     $FDS_DIR           $FDS_EXE
+fi
+if [[ $stage_fds_success || "$FDSRELEASE" != "" ]]; then
   run_verification_cases_release
   RUN_CASES=1
 fi
@@ -1440,10 +1482,10 @@ if [ "$RUN_CASES" != "" ]; then
   fi
 fi
 
-if [ $stage_fdsdb_success ]; then
+if [[ $stage_fdsdb_success || "$FDSDEBUG" != "" ]]; then
    check_verification_cases_debug
 fi
-if [[ $stage_ver_release_success ]]; then
+if [[ $stage_fds_success || "$FDSRELEASE" != "" ]]; then
   check_verification_cases_release
 fi
 
@@ -1458,8 +1500,9 @@ echo "Run cases: $DIFF_RUN_CASES" >> $STAGE_STATUS
 wait $pid_smvapps
 check_compile_smvapps
 
+build_man_pics=1
 MAKEPICTURES_beg=`GET_TIME`
-if [[ $stage_ver_release_success ]] ; then
+if [[ "$build_man_pics" == "1" ]] ; then
   make_smv_pictures
   check_smv_pictures
 fi
@@ -1480,13 +1523,13 @@ if [ "$MAKEMOVIES" == "1" ]; then
   echo "Make movies: $DIFF_MAKEMOVIES" >> $STAGE_STATUS
 fi
 
-if [[ $stage_ver_release_success ]] ; then
+if [[ "$build_man_pics" == "1" ]] ; then
   generate_timing_stats
 fi
 
 #*** stage 5 - build manuals
 
-if [[ $stage_ver_release_success ]] ; then
+if [[ "$build_man_pics" == "1" ]] ; then
    MAKEGUIDES_beg=`GET_TIME`
    echo Making guides
 
@@ -1590,7 +1633,7 @@ set_files_world_readable || exit 1
 save_build_status
 
 save_manuals_dir
-if [[ $stage_ver_release_success ]] ; then
+if [[ "$build_man_pics" == "1" ]] ; then
   archive_timing_stats
 fi
 if [ "$HAVEMAIL" != "" ]; then
