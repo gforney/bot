@@ -1356,8 +1356,7 @@ cd $botrepo/Smokebot
 if [ "$FDSDEBUG" != "" ]; then
   cp $FDSDEBUG $fdsrepo/Build/impi_intel_linux_db/fds_impi_intel_linux_db
 else
-  ./make_fdsapps.sh debug   &
-  pid_fds_mpi_db=$!
+  ./make_fdsapps.sh debug
 fi
 
 cd $botrepo/Smokebot
