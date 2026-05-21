@@ -341,7 +341,7 @@ check_compile_fds_mpi()
    cd $FDSDIR
    if [ -e $FDSEXE ]
    then
-      stage_ver_release_success=true
+      stage_fds_success=true
       cp $FDSEXE $LATESTAPPS_DIR/fds
    else
       echo "Errors from Stage 1c$MPTYPE - Compile FDS MPI$MPYPE release:" >> $ERROR_LOG
@@ -1469,7 +1469,7 @@ fi
 if [ "$FDSRELEASE" == "" ]; then
   check_compile_fds_mpi     $FDS_DIR           $FDS_EXE
 fi
-if [[ $stage_ver_release_success || "$FDSRELEASE" != ""  ]]; then
+if [[ $stage_fds_success || "$FDSRELEASE" != "" ]]; then
   run_verification_cases_release
   RUN_CASES=1
 fi
@@ -1484,10 +1484,10 @@ if [ "$RUN_CASES" != "" ]; then
   fi
 fi
 
-if [ $stage_fdsdb_success ]; then
+if [[ $stage_fdsdb_success || "$FDSDEBUG" != "" ]]; then
    check_verification_cases_debug
 fi
-if [[ $stage_ver_release_success ]]; then
+if [[ $stage_fds_success || "$FDSRELEASE" != "" ]]; then
   check_verification_cases_release
 fi
 
@@ -1502,8 +1502,9 @@ echo "Run cases: $DIFF_RUN_CASES" >> $STAGE_STATUS
 wait $pid_smvapps
 check_compile_smvapps
 
+build_man_pics=1
 MAKEPICTURES_beg=`GET_TIME`
-if [[ $stage_ver_release_success ]] ; then
+if [[ "$build_man_pics" == "1" ]] ; then
   make_smv_pictures
   check_smv_pictures
 fi
@@ -1524,13 +1525,13 @@ if [ "$MAKEMOVIES" == "1" ]; then
   echo "Make movies: $DIFF_MAKEMOVIES" >> $STAGE_STATUS
 fi
 
-if [[ $stage_ver_release_success ]] ; then
+if [[ "$build_man_pics" == "1" ]] ; then
   generate_timing_stats
 fi
 
 #*** stage 5 - build manuals
 
-if [[ $stage_ver_release_success ]] ; then
+if [[ "$build_man_pics" == "1" ]] ; then
    MAKEGUIDES_beg=`GET_TIME`
    echo Making guides
 
@@ -1634,7 +1635,7 @@ set_files_world_readable || exit 1
 save_build_status
 
 save_manuals_dir
-if [[ $stage_ver_release_success ]] ; then
+if [[ "$build_man_pics" == "1" ]] ; then
   archive_timing_stats
 fi
 if [ "$HAVEMAIL" != "" ]; then
