@@ -13,7 +13,6 @@ echo "Verification testing script for smokeview"
 echo ""
 echo "Options:"
 echo ""
-echo "-C - force clone"
 echo "-f - force smokebot to run"
 echo "-h - display most commonly used options"
 echo "-k - kill smokebot if it is running"
@@ -115,12 +114,9 @@ fi
 
 #*** parse command line options
 
-while getopts 'CfhJkm:Mo:q:r:R:s:T:Uw:W:' OPTION
+while getopts 'fhJkm:Mo:q:r:R:s:T:Uw:W:' OPTION
 do
 case $OPTION  in
-  C)
-   FORCECLONE="-C"
-   ;;
   f)
    FORCE=1
    ;;

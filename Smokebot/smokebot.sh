@@ -1017,12 +1017,9 @@ echo $$ > $PID_FILE
 
 #*** parse command line options
 
-while getopts 'Cm:Mq:R:ST:Uw:W:' OPTION
+while getopts 'm:Mq:R:ST:Uw:W:' OPTION
 do
 case $OPTION in
-  C)
-   FORCECLONE="-C"
-   ;;
   m)
    mailTo="$OPTARG"
    mailToArg="$OPTARG"

@@ -58,13 +58,28 @@ git clean -dxf >& /dev/null
 cd $CURDIR/../nightly/output
 git clean -dxf >& /dev/null
 
-echo ***cloning repos
 cd $CURDIR/../../Scripts
-echo "setting up repos"
-./setup_repos.sh -s -e -b -B release -D
-./setup_repos.sh -3 -e
+echo "cloning smokebot repos"
+./setup_repos.sh -s -e -b -B release -D >& /dev/null &
+pid_smvrepos=$!
+
+echo "cloning hypre and sundials repos"
+./setup_repos.sh -3 -e  >& /dev/null &
+pid_third=$!
 rm -rf $CURDIR/../../../libs
-./setup_repos.sh -w -e
+
+echo "cloning wiki and web pages repos"
+./setup_repos.sh -w -e >& /dev/null &
+pid_www=$!
+
+wait $pid_smvrepos
+echo "smokebot repos built"
+
+wait $pid_third
+echo "hypre and sundials repos built"
+
+wait $pid_www
+echo "wiki and web pages repos built"
 
 cd $CURDIR/../../Smokebot
-./run_smokebot.sh -C -f -q firebot $MAILTO  -r test_bundles -U
+./run_smokebot.sh -f -q firebot $MAILTO  -r test_bundles -U
