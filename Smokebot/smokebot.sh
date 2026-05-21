@@ -124,6 +124,30 @@ clean_smokebot_history()
 }
 
 #---------------------------------------------
+#                   BUILDFDSLIBS
+#---------------------------------------------
+
+BUILDFDSLIBS()
+{
+# setup compilers
+  export FDS_BUILD_TARGET=intel
+  echo setting up compilers
+  source $repo/fds/Build/Scripts/set_compilers.sh >& /dev/null
+
+  echo building hypre
+  source $repo/fds/Build/Scripts/HYPRE/build_hypre.sh confmake.sh true >& /dev/null &
+  pid_hypre=$!
+
+  echo building sundials
+  source $repo/fds/Build/Scripts/SUNDIALS/build_sundials.sh confmake.sh true >& /dev/null &
+  pid_sundials=$1
+  wait $pid_hypre
+  echo hypre built
+  wait $pid_sundials
+  echo sundials built
+}
+
+#---------------------------------------------
 #                   compile_cfast
 #---------------------------------------------
 
@@ -132,7 +156,7 @@ compile_cfast()
    cd $SMOKEBOT_HOME_DIR
 
     # Build CFAST
-    echo "   release cfast"
+    echo "building cfast"
     cd $cfastrepo/Build/CFAST/intel_linux
     rm -f cfast7_linux
     make --makefile ../makefile clean &> /dev/null
@@ -256,7 +280,7 @@ run_verification_cases_debug()
    #  = Run all SMV cases =
    #  =====================
 
-   echo "   run cases using debug FDS"
+   echo "run cases using debug fds"
    cd $smvrepo/Verification_dbg/scripts
 
    # Submit SMV verification cases and wait for them to start
@@ -420,7 +444,7 @@ run_verification_cases_release()
    #  = Remove .stop files =
    #  ======================
 
-   echo "   run cases using release FDS"
+   echo "run cases using release fds"
    # Start running all SMV verification cases
    cd $smvrepo/Verification/scripts
    echo 'Running SMV verification cases:' >> $OUTPUT_DIR/stage3_run_release 2>&1
@@ -1010,6 +1034,7 @@ GITURL=
 HAVEMAIL=`which mail |& grep -v 'no mail'`
 INTEL2="-J"
 CPUS_PER_TASK_ARG=16
+USE_FDS_CACHE=
 
 #*** save pid so -k option (kill smokebot) may be used lateer
 
@@ -1017,9 +1042,12 @@ echo $$ > $PID_FILE
 
 #*** parse command line options
 
-while getopts 'm:Mq:R:ST:Uw:W:' OPTION
+while getopts 'F:m:Mq:R:ST:Uw:W:' OPTION
 do
 case $OPTION in
+  F)
+   FDSCACHEDIR="$OPTARG"
+   ;;
   m)
    mailTo="$OPTARG"
    mailToArg="$OPTARG"
@@ -1050,6 +1078,17 @@ done
 shift $(($OPTIND-1))
 
 CPUS_PER_TASK="-T $CPUS_PER_TASK_ARG"
+
+if [ "$FDSCACHEDIR" != "" ]; then
+  USE_FDS_CACHE=1
+  FDSDEBUG=$FDSCACHEDIR/Build/impi_intel_linux_db/fds_impi_intel_linux_db
+  FDSRELEASE=$FDSCACHEDIR/Build/impi_intel_linux/fds_impi_intel_linux
+  if [[ ! -x $FDSDEBUG || ! -x $FDSRELEASE ]]; then
+    FDSDEBUG=
+    FDSRELEASE=
+    USE_FDS_CACHE=
+  fi
+fi
 
 #*** make sure smokebot is running in the right directory
 
@@ -1350,20 +1389,31 @@ BUILDSOFTWARE_beg=`GET_TIME`
 #*** stage 2 - build cfast
 echo "Building"
 
+cd $botrepo/Smokebot
 pid_fds_mpi_db=
 pid_fds_mpi=
-cd $botrepo/Smokebot
-if [ "$FDSDEBUG" != "" ]; then
+if [ "$USE_FDS_CACHE" != "" ]; then
   cp $FDSDEBUG $fdsrepo/Build/impi_intel_linux_db/fds_impi_intel_linux_db
-else
-  ./make_fdsapps.sh debug
-fi
-
-cd $botrepo/Smokebot
-if [ "$FDSRELEASE" != "" ]; then
   cp $FDSRELEASE $fdsrepo/Build/impi_intel_linux/fds_impi_intel_linux
 else
-  ./make_fdsapps.sh release &
+  if [ -z "${FIREMODELS}" ]; then
+    export FIREMODELS=$REPOROOT
+  fi 
+
+# build fds apps
+
+  BUILDFDSLIBS
+
+  echo building debug fds
+  cd $repo/fds/Build/impi_intel_linux_db
+  git clean -dxf >& /dev/null
+  ./make_fds.sh bot  > $OUTPUT_DIR/compile_fdsdb.log 2>&1 &
+  pid_fds_mpi_db=$!
+
+  echo building release fds
+  cd $repo/fds/Build/impi_intel_linux
+  git clean -dxf >& /dev/null
+  ./make_fds.sh bot  > $OUTPUT_DIR/compile_fds.log 2>&1 &
   pid_fds_mpi=$!
 fi
 
@@ -1384,26 +1434,17 @@ RUN_CASES=
 wait $pid_cfast
 check_compile_cfast
 
+#*** stage 3 - run debug cases
 if [ "$pid_fds_mpi_db" != "" ]; then
   wait $pid_fds_mpi_db
+  echo "debug fds built"
+fi
+if [ "$FDSDEBUG" == "" ]; then
   check_compile_fds_mpi_db  $FDS_DB_DIR        $FDS_DB_EXE
 fi
-if [ "$FDSDEBUG" != "" ]; then
-  check_compile_fds_mpi_db  $FDS_DB_DIR        $FDS_DB_EXE
-fi
-
-#*** stage 3 - run debug cases
-if [[ $stage_fdsdb_success ]]; then
+if [[ $stage_fdsdb_success || "$FDSDEBUG" != "" ]]; then
   run_verification_cases_debug
   RUN_CASES=1
-fi
-
-if [ "$pid_fds_mpi" != "" ]; then
-  wait $pid_fds_mpi
-  check_compile_fds_mpi     $FDS_DIR           $FDS_EXE
-fi
-if [ "$FDSRELEASE" != "" ]; then
-  check_compile_fds_mpi     $FDS_DIR           $FDS_EXE
 fi
 
 BUILDSOFTWARE_end=`GET_TIME`
@@ -1421,7 +1462,14 @@ fi
 RUN_CASES_beg=`GET_TIME`
 
 #*** stage 3 - run release cases
-if [[ $stage_ver_release_success ]]; then
+if [ "$pid_fds_mpi" != "" ]; then
+  wait $pid_fds_mpi
+  echo "release fds built"
+fi
+if [ "$FDSRELEASE" == "" ]; then
+  check_compile_fds_mpi     $FDS_DIR           $FDS_EXE
+fi
+if [[ $stage_ver_release_success || "$FDSRELEASE" != ""  ]]; then
   run_verification_cases_release
   RUN_CASES=1
 fi
