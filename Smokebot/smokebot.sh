@@ -280,7 +280,7 @@ run_verification_cases_debug()
    #  = Run all SMV cases =
    #  =====================
 
-   echo "run cases using debug fds"
+   echo "running cases using debug fds"
    cd $smvrepo/Verification_dbg/scripts
 
    # Submit SMV verification cases and wait for them to start
@@ -444,7 +444,7 @@ run_verification_cases_release()
    #  = Remove .stop files =
    #  ======================
 
-   echo "run cases using release fds"
+   echo "running cases using release fds"
    # Start running all SMV verification cases
    cd $smvrepo/Verification/scripts
    echo 'Running SMV verification cases:' >> $OUTPUT_DIR/stage3_run_release 2>&1
@@ -501,8 +501,7 @@ check_verification_cases_release()
 make_smv_pictures()
 {
    # Run Make SMV Pictures script (release mode)
-   echo Generating
-   echo "   images"
+   echo "generating images"
    cd $smvrepo/Verification/scripts
    ./Make_SMV_Pictures.sh $CPUS_PER_TASK -q $QUEUE -j SMV_ $USEINSTALL 2>&1 &> $OUTPUT_DIR/stage4_make_picts
    grep -v FreeFontPath $OUTPUT_DIR/stage4_make_picts | grep -v libpng &> $OUTPUT_DIR/stage4_check_picts
@@ -518,7 +517,7 @@ check_smv_pictures()
    grep -I -E -i Segmentation $smvrepo/Verification/Visualization/*.err >> $OUTPUT_DIR/stage4_check_picts
    grep -I -E -i Segmentation $smvrepo/Verification/WUI/*.err           >> $OUTPUT_DIR/stage4_check_picts
    cd $smokebotdir
-   echo "   checking"
+   echo "checking image generation"
    if [[ `grep -I -E -i "Segmentation|Error" $OUTPUT_DIR/stage4_check_picts` == "" ]]
    then
       stage4_check_picts_smvpics_success=true
@@ -546,7 +545,7 @@ check_smv_pictures()
 
 make_smv_movies()
 {
-   echo "   movies"
+   echo "generating movies"
    cd $smvrepo/Verification
    scripts/Make_SMV_Movies.sh -q $QUEUE 2>&1  &> $OUTPUT_DIR/stage4_make_movies
 }
@@ -558,7 +557,7 @@ make_smv_movies()
 check_smv_movies()
 {
    cd $smokebotdir
-   echo "   checking"
+   echo "checking movie generation"
    if [[ `grep -I -E -i "Segmentation|Error" $OUTPUT_DIR/stage4_make_movies` == "" ]]
    then
       stage4_make_movies_success=true
@@ -588,8 +587,7 @@ check_smv_movies()
 
 generate_timing_stats()
 {
-   echo "Timing stats"
-   echo "   generating"
+   echo "generating timing stats"
    cd $smvrepo/Verification/scripts/
    export QFDS="$smvrepo/Verification/scripts/copyout.sh"
    export RUNCFAST="$smvrepo/Verification/scripts/copyout.sh"
@@ -610,7 +608,7 @@ generate_timing_stats()
 
 archive_timing_stats()
 {
-  echo "   archiving"
+  echo "archiving timing stats"
   cd $smvrepo/Utilities/Scripts
   cp smv_timing_stats.csv          "$HISTORY_DIR_ARCHIVE/${SMV_REVISION}_timing.csv"
   cp smv_benchmarktiming_stats.csv "$HISTORY_DIR_ARCHIVE/${SMV_REVISION}_benchmarktiming.csv"
