@@ -16,9 +16,7 @@ in=$1
 infile=${in%.*}
 
 cd $dir
-if ! [ -d $OUTDIR/$dir ]; then
-  mkdir $OUTDIR/$dir
-fi
+mkdir -p $OUTDIR/$dir
 
 cp $infile.in $OUTDIR/$dir/.
 if [ -e $infile.ini ]; then

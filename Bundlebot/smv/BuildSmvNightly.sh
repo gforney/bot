@@ -155,7 +155,7 @@ fi
 
 echo "*** get smv repo revision"
 if [ "$BUNDLETYPE" == "nightly" ]; then
-  cd $GITROOT/bot/Bundlebot/fds
+  cd $GITROOT/bot/Bundlebot/smv
   ./get_hash_revisions.sh $outputdir $USE_CURRENT >& $outputdir/stage1_hash
   smv_hash=`head -1 $outputdir/SMV_HASH`
 else
@@ -208,7 +208,7 @@ if [ "$BUNDLETYPE" == "nightly" ]; then
   smv_revision=`git describe --abbrev=7 --dirty --long`
 else
   smv_revision=$BUNDLE_SMV_TAG
-fi
+fiHOME/$SCRIPTDIR/../../../
 
 #*** build apps
 
@@ -235,8 +235,14 @@ if [ "$UPLOADBUNDLE" != "" ]; then
     gh release delete-asset SMOKEVIEW_TEST $file -R github.com/$GHOWNER/test_bundles -y
   done
 
-  $GITROOT/bot/Bundlebot/fds/upload_smvbundle.sh $uploaddir ${smv_revision}_${PLATFORMLABEL}.sh                $GITROOTBASE/bot/Bundlebot/fds $GHOWNER
-  $GITROOT/bot/Bundlebot/fds/upload_smvbundle.sh $uploaddir ${smv_revision}_${PLATFORMLABEL}_manifest.html     $GITROOTBASE/bot/Bundlebot/fds $GHOWNER
+  gh release upload SMOKEVIEW_TEST $uploaddir/${smv_revision}_${PLATFORMLABEL}.sh            -R github.com/$GHOWNER/test_bundles --clobber   
+  gh release upload SMOKEVIEW_TEST $uploaddir/${smv_revision}_${PLATFORMLABEL}_manifest.html -R github.com/$GHOWNER/test_bundles --clobber   
+  if [ "`uname`" != "Darwin" ] ; then
+    cd $GITROOT/smv
+    SMV_SHORT_HASH=`git rev-parse --short HEAD`
+    cd $GITROOT/bot/Bundlebot/fds
+    ./setreleasetitle.sh smv $SMV_SHORT_HASH $GHOWNER
+  fi
 
   echo "*** upload complete"
 fi

@@ -44,15 +44,8 @@ custombase=${fds_version}_${smv_version}
 
 # create upload directory if it doesn't exist
 
-if [ ! -e $UPLOAD_DIR ]; then
-  mkdir $UPLOAD_DIR
-fi
-
-# create apps directory if it doesn't exist
-
-if [ ! -e $APPS_DIR ]; then
-  mkdir $APPS_DIR
-fi
+mkdir -p $UPLOAD_DIR
+mkdir -p $APPS_DIR
 
 # -------------------- CP -------------------
 
@@ -219,7 +212,7 @@ rm -rf $bundlebase
 mkdir -p $bundledir/Documentation
 mkdir -p $bundledir/Examples
 
-mkdir $fdsbindir
+mkdir -p $fdsbindir
 
 mkdir -p $smvbindir/colorbars
 mkdir -p $smvbindir/textures
