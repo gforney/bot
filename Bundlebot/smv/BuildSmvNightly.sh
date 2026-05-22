@@ -134,11 +134,11 @@ fi
 PLATFORM=linux
 PLATFORMLABEL=lnx
 export BUNDLE_SMVCOMPILER=intel
-if [ "`uname`" == "Darwin" ] ; then
+if [ "`uname`" == "Darwin" ]; then
   PLATFORM="osx"
   PLATFORMLABEL="osx"
   BUNDLE_SMVCOMPILER=gnu
-  if [ "`uname -m`" == "arm64" ] ; then
+  if [ "`uname -m`" == "arm64" ]; then
     PLATFORMLABEL="osx_arm"
   fi
 fi
@@ -237,7 +237,7 @@ if [ "$UPLOADBUNDLE" != "" ]; then
 
   gh release upload SMOKEVIEW_TEST $uploaddir/${smv_revision}_${PLATFORMLABEL}.sh            -R github.com/$GHOWNER/test_bundles --clobber   
   gh release upload SMOKEVIEW_TEST $uploaddir/${smv_revision}_${PLATFORMLABEL}_manifest.html -R github.com/$GHOWNER/test_bundles --clobber   
-  if [ "`uname`" != "Darwin" ] ; then
+  if [ "`uname`" != "Darwin" ]; then
     cd $GITROOT/smv
     SMV_SHORT_HASH=`git rev-parse --short HEAD`
     cd $GITROOT/bot/Bundlebot/fds
