@@ -176,11 +176,14 @@ fi
 
 #*** cloning smv repo
 
-cd $GITROOT/bot/Bundlebot/smv
+cd $GITROOT/bot/Scripts
 echo "*** cloning smv repo"
-./clone_smvrepo.sh $smv_hash $BUNDLETYPE >& $outputdir/stage2_clone
+./setup_repos.sh    -B $BUNDLETYPE -K smv >& $outputdir/stage2_clone
 cd $GITROOT/smv
-git tag -a $BUNDLE_SMV_TAG -m "tag for smokeview release" >> $outputdir/stage2_clone 2>&1
+git checkout $smv_hash
+if [ "$BUNDLE_SMV_TAG" != "" ]; then
+  git tag -a $BUNDLE_SMV_TAG -m "tag for smokeview release" >> $outputdir/stage2_clone 2>&1
+fi
 
 #*** get branch names
 
