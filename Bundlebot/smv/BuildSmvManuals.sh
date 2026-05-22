@@ -25,7 +25,12 @@ case $OPTION  in
    ;;
   o)
    OWNER="-o $OPTARG"
-   ;;
+   ;;wait $pid_third
+echo "hypre and sundials repos built"
+
+wait $pid_www
+echo "wiki and web pages repos built"
+
 esac
 done
 shift $(($OPTIND-1))
@@ -49,6 +54,8 @@ echo "Type $0 -h for other options"
 read val
 
 CURDIR=`pwd`
+cd ../../..
+REPOROOT=`pwd`
 
 echo ***clean files
 cd $CURDIR/../../Smokebot
@@ -57,27 +64,58 @@ cd $CURDIR
 git clean -dxf >& /dev/null
 
 cd $CURDIR/../../Scripts
-echo "cloning smokebot repos"
-./setup_repos.sh -s -e -b -B release -D >& /dev/null &
-pid_smvrepos=$!
+OUTDIR=$REPOROOT/bot/Bundlebot/smv/output
+BUNDLETYPE=release
 
-echo "cloning hypre and sundials repos"
+echo "cloning hypre and sundials"
 ./setup_repos.sh -3 -e  >& /dev/null &
 pid_third=$!
 rm -rf $CURDIR/../../../libs
 
-echo "cloning wiki and web pages repos"
+echo "cloning wiki and webpages"
 ./setup_repos.sh -w -e >& /dev/null &
 pid_www=$!
 
-wait $pid_smvrepos
-echo "smokebot repos built"
+echo cloning cfast
+./setup_repos.sh -b -B $BUNDLETYPE -K cfast -D >& $OUTDIR/clone_cfast &
+pid_cfast=$!
+
+echo cloning fds
+./setup_repos.sh -b -B $BUNDLETYPE -K fds -D >& $OUTDIR/clone_fds &
+pid_fds=$!
+
+echo cloning fig
+./setup_repos.sh -b -B $BUNDLETYPE -K fig -D >& $OUTDIR/clone_fig &
+pid_fig=$!
+
+echo cloning smv
+./setup_repos.sh -b -B $BUNDLETYPE -K smv -D >& $OUTDIR/clone_smv &
+pid_smv=$!
+
+echo cloning test_bundles
+./setup_repos.sh    -B $BUNDLETYPE -K test_bundles >& $OUTDIR/clone_test_bundles &
+pid_test_bundles=$!
 
 wait $pid_third
 echo "hypre and sundials repos built"
 
 wait $pid_www
 echo "wiki and web pages repos built"
+
+wait $pid_cfast
+echo cfast cloned
+
+wait $pid_fds
+echo fds cloned
+
+wait $pid_fig
+echo fig cloned
+
+wait $pid_smv
+echo smv cloned
+
+wait $pid_test_bundles
+echo test_bundles cloned
 
 cd $CURDIR/../../Smokebot
 ./run_smokebot.sh -f -q firebot $MAILTO  -r test_bundles -U
