@@ -25,12 +25,7 @@ case $OPTION  in
    ;;
   o)
    OWNER="-o $OPTARG"
-   ;;wait $pid_third
-echo "hypre and sundials repos built"
-
-wait $pid_www
-echo "wiki and web pages repos built"
-
+   ;;
 esac
 done
 shift $(($OPTIND-1))
