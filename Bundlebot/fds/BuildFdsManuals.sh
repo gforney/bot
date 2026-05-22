@@ -69,7 +69,7 @@ echo cloning fds-smv
 pid_fds_smv=$!
 
 echo cloning test_bundles
-./setup_repos.sh    -B $BUNDLETYPE -K exp >& $OUTDIR/clone_test_bundles &
+./setup_repos.sh    -B $BUNDLETYPE -K test_bundles >& $OUTDIR/clone_test_bundles &
 pid_test_bundles=$!
 
 echo cloning cad
