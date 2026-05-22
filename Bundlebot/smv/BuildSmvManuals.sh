@@ -92,10 +92,10 @@ echo cloning test_bundles
 pid_test_bundles=$!
 
 wait $pid_third
-echo "hypre and sundials repos built"
+echo "hypre and sundials repos cloned"
 
 wait $pid_www
-echo "wiki and web pages repos built"
+echo "wiki and web pages repos cloned"
 
 wait $pid_cfast
 echo cfast cloned
