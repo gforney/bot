@@ -7,7 +7,7 @@ BUILDFDSUTIL()
   prog=$1
   builddir=$2
 
-  cd $fdsrepo/Utilities/$prog/$builddir
+  cd $REPOROOT/fds/Utilities/$prog/$builddir
   ./make_${prog}.sh bot >> $outputdir/compile_$prog.log 2>&1
 }
 
@@ -18,12 +18,12 @@ CHECK_BUILDFDSUTIL()
   prog=$1
   builddir=$2
 
-  if [ ! -e $fdsrepo/Utilities/$prog/$builddir/${prog}_$builddir ]; then
+  if [ ! -e $REPOROOT/fds/Utilities/$prog/$builddir/${prog}_$builddir ]; then
     echo "***error: The program ${prog}_$builddir failed to build"
     echo "***error: The program ${prog}_$builddir failed to build"   >> $errorlog 2>&1
   else
     echo "*** ${prog}_$builddir built"
-    cp $fdsrepo/Utilities/$prog/$builddir/${prog}_$builddir  $CURDIR/apps/$prog
+    cp $REPOROOT/fds/Utilities/$prog/$builddir/${prog}_$builddir  $CURDIR/apps/$prog
   fi
 }
 
@@ -31,25 +31,25 @@ CHECK_BUILDFDSUTIL()
 
 CHECK_BUILDTESTMPI()
 {
-  if [ ! -e $fdsrepo/Utilities/test_mpi/${mpitype}_${BUNDLE_FDSCOMPILER}_$platform/test_mpi ]; then
+  if [ ! -e $REPOROOT/fds/Utilities/test_mpi/${mpitype}_${BUNDLE_FDSCOMPILER}_$platform/test_mpi ]; then
     echo "***error: The program test_mpi failed to build"
     echo "***error: The program test_mpi failed to build"  >> $errorlog 2>&1
   else
     echo "*** test_mpi built"
-    cp $fdsrepo/Utilities/test_mpi/${mpitype}_${BUNDLE_FDSCOMPILER}_$platform/test_mpi  $CURDIR/apps/test_mpi
+    cp $REPOROOT/fds/Utilities/test_mpi/${mpitype}_${BUNDLE_FDSCOMPILER}_$platform/test_mpi  $CURDIR/apps/test_mpi
   fi
 }
 # -------------------------------------------------------------
 
 BUILDFDS()
 {
-  cd $fdsrepo/Build/${mpitype}_${BUNDLE_FDSCOMPILER}_${platform}
+  cd $REPOROOT/fds/Build/${mpitype}_${BUNDLE_FDSCOMPILER}_${platform}
   ./make_fds.sh bot  >> $outputdir/compile_fds.log 2>&1
 }
 
 BUILDFDSOPENMP()
 {
-  cd $fdsrepo/Build/${mpitype}_${BUNDLE_FDSCOMPILER}_${platform}_openmp
+  cd $REPOROOT/fds/Build/${mpitype}_${BUNDLE_FDSCOMPILER}_${platform}_openmp
   cp make_fds.sh make_fds_openmp.sh
   ./make_fds_openmp.sh bot >> $outputdir/compile_fdsopenmp.log 2>&1
 }
@@ -58,12 +58,12 @@ BUILDFDSOPENMP()
 
 CHECK_BUILDFDS()
 {
-  if [ ! -e $fdsrepo/Build/${mpitype}_${BUNDLE_FDSCOMPILER}_${platform}/fds_${mpitype}_${BUNDLE_FDSCOMPILER}_${platform} ]; then
+  if [ ! -e $REPOROOT/fds/Build/${mpitype}_${BUNDLE_FDSCOMPILER}_${platform}/fds_${mpitype}_${BUNDLE_FDSCOMPILER}_${platform} ]; then
     echo "***error: The program fds_${mpitype}_${BUNDLE_FDSCOMPILER}_${platform} failed to build"
     echo "***error: The program fds_${mpitype}_${BUNDLE_FDSCOMPILER}_${platform} failed to build"  >> $errorlog 2>&1
   else
     echo "*** fds_${mpitype}_${BUNDLE_FDSCOMPILER}_${platform} built"
-    cp $fdsrepo/Build/${mpitype}_${BUNDLE_FDSCOMPILER}_${platform}/fds_${mpitype}_${BUNDLE_FDSCOMPILER}_${platform} $CURDIR/apps/fds
+    cp $REPOROOT/fds/Build/${mpitype}_${BUNDLE_FDSCOMPILER}_${platform}/fds_${mpitype}_${BUNDLE_FDSCOMPILER}_${platform} $CURDIR/apps/fds
   fi
 }
 
@@ -71,27 +71,23 @@ CHECK_BUILDFDS()
 
 CHECK_BUILDFDSOPENMP()
 {
-  if [ ! -e $fdsrepo/Build/${mpitype}_${BUNDLE_FDSCOMPILER}_${platform}_openmp/fds_${mpitype}_${BUNDLE_FDSCOMPILER}_${platform}_openmp ]; then
+  if [ ! -e $REPOROOT/fds/Build/${mpitype}_${BUNDLE_FDSCOMPILER}_${platform}_openmp/fds_${mpitype}_${BUNDLE_FDSCOMPILER}_${platform}_openmp ]; then
     echo "***error: The program fds_${mpitype}_${BUNDLE_FDSCOMPILER}_${platform}_openmp failed to build"
     echo "***error: The program fds_${mpitype}_${BUNDLE_FDSCOMPILER}_${platform}_openmp failed to build"   >> $errorlog 2>&1
   else
     echo "*** fds_${mpitype}_${BUNDLE_FDSCOMPILER}_${platform}_openmp built"
-    cp  $fdsrepo/Build/${mpitype}_${BUNDLE_FDSCOMPILER}_${platform}_openmp/fds_${mpitype}_${BUNDLE_FDSCOMPILER}_${platform}_openmp $CURDIR/apps/fds_openmp
+    cp  $REPOROOT/fds/Build/${mpitype}_${BUNDLE_FDSCOMPILER}_${platform}_openmp/fds_${mpitype}_${BUNDLE_FDSCOMPILER}_${platform}_openmp $CURDIR/apps/fds_openmp
   fi
-}
-
-# -------------------------------------------------------------
-
-BUILDFDSLIB()
-{
-  FDSLIB=$1
-  cdir=`pwd`
-  source ./build_fdslib.sh $FDSLIB >> $outputdir/compile_$FDSLIB.log 2>&1
-  cd $cdir
 }
 
 #--------------------- start of script -------------------------------
 
+if [ "$BUNDLE_FDSCOMPILER" == "" ]; then
+  BUNDLE_FDSCOMPILER=intel
+fi
+if [ "${BUNDLE_MPITYPE}" == "" ]; then
+  BUNDLE_MPITYPE=INTELMPI
+fi
 if [ "${BUNDLE_MPITYPE}" == "INTELMPI" ]; then
   mpitype=impi
 else
@@ -116,21 +112,12 @@ echo > $errorlog
 cd ../../..
 REPOROOT=`pwd`
 
-cd $REPOROOT/smv
-smvrepo=`pwd`
-
-cd $REPOROOT/fds
-fdsrepo=`pwd`
-
-cd $REPOROOT/bot
-botrepo=`pwd`
-
-cd $fdsrepo/Utilities
-echo "*** cleaning $fdsrepo/Utilities"
+cd $REPOROOT/fds/Utilities
+echo "*** cleaning $REPOROOT/fds/Utilities"
 git clean -dxf  >> $cleanlog 2>&1 
 
-cd $fdsrepo/Build
-echo "*** cleaning $fdsrepo/Build"
+cd $REPOROOT/fds/Build
+echo "*** cleaning $REPOROOT/fds/Build"
 git clean -dxf  >> $cleanlog 2>&1 
 
 cd $CURDIR
@@ -143,13 +130,19 @@ echo "*** building fds2ascii"
 BUILDFDSUTIL fds2ascii ${BUNDLE_FDSCOMPILER}_$platform               &
 pid_fds2ascii=$!
 
-# build hypre library
+source $REPOROOT/fds/Build/Scripts/set_compilers.sh >& /dev/null
+# Set FIREMODELS environment variable if it is not already exists.
+cd $REPOROOT/fds/Build/Scripts
+if [ -z "${FIREMODELS}" ]; then
+  export FIREMODELS="$(readlink -f "$(pwd)/../../../")"
+fi
+
 echo "*** building hypre"
-BUILDFDSLIB hypre &
+source ../Scripts/HYPRE/build_hypre.sh confmake.sh true   > $outputdir/compile_hypre.log 2>&1    &
 pid_hypre=$!
 
 echo "*** building sundials"
-BUILDFDSLIB sundials &
+source ../Scripts/SUNDIALS/build_sundials.sh confmake.sh true > $outputdir/sundials_hypre.log 2>&1    &
 pid_sundials=$!
 
 wait $pid_hypre
@@ -158,25 +151,18 @@ echo "*** hypre built"
 wait $pid_sundials
 echo "*** sundials built"
 
-# build fds apps
 echo "*** building fds"
 BUILDFDS                                                      &
 pid_fds=$!
 
 if [ "${BUNDLE_FDSCOMPILER}" == "intel" ]; then
   echo "*** building fds openmp"
-  BUILDFDSOPENMP                                                &
-  pid_fdsopenmp=$!
+  BUILDFDSOPENMP
+  CHECK_BUILDFDSOPENMP
 fi
 
 wait $pid_fds
 CHECK_BUILDFDS
-
-
-if [ "${BUNDLE_FDSCOMPILER}" == "intel" ]; then
-  wait $pid_fdsopenmp
-  CHECK_BUILDFDSOPENMP
-fi
 
 wait $pid_fds2ascii
 CHECK_BUILDFDSUTIL    fds2ascii ${BUNDLE_FDSCOMPILER}_$platform
