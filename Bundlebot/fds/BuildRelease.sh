@@ -35,7 +35,7 @@ git clean -dxf  >& /dev/null
 cd $CURDIR/output
 git clean -dxf  >& /dev/null
 
-cd $CURDIR/../nightly
+cd $CURDIR/../fds
 git clean -dxf  >& /dev/null
 ./BuildNightly.sh -c -f -R -o $OWNER -r test_bundles -u
 
