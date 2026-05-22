@@ -25,16 +25,13 @@ call :downloadfile SMV_Verification_Guide.pdf
 call :downloadfile SMV_Technical_Reference_Guide.pdf
 
 call :downloadfile %BUNDLE_BASE%lnx.sh
-call :downloadfile %BUNDLE_BASE%lnx.tar.gz
-call :downloadfile %BUNDLE_BASE%lnx.sha1
+call :downloadfile %BUNDLE_BASE%lnx_manifest.html
 
 call :downloadfile %BUNDLE_BASE%osx.sh
-call :downloadfile %BUNDLE_BASE%osx.tar.gz
-call :downloadfile %BUNDLE_BASE%osx.sha1
+call :downloadfile %BUNDLE_BASE%osx_manifest.html
 
 call :downloadfile %BUNDLE_BASE%win.exe
-call :downloadfile %BUNDLE_BASE%win.zip
-call :downloadfile %BUNDLE_BASE%win.sha1
+call :downloadfile %BUNDLE_BASE%win_manifest.html
 echo ***files downloaded to %BUNDLEDIR%
 cd %CURDIR%
 goto eof
@@ -44,7 +41,7 @@ goto eof
 ::----------------------------------------------------------
 set ffile=%1
   echo downloading %ffile%
-  gh release download FDS_TEST -p %ffile% -D %BUNDLEDIR%  -R github.com/firemodels/test_bundles
+  gh release download FDS_TEST -p %ffile% -D %BUNDLEDIR%  -R github.com/%username%/test_bundles
   exit /b 0
 
 :eof
