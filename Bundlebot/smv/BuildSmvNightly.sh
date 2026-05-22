@@ -208,7 +208,7 @@ if [ "$BUNDLETYPE" == "nightly" ]; then
   smv_revision=`git describe --abbrev=7 --dirty --long`
 else
   smv_revision=$BUNDLE_SMV_TAG
-fiHOME/$SCRIPTDIR/../../../
+fi
 
 #*** build apps
 
