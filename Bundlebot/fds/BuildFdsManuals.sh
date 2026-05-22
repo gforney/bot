@@ -55,30 +55,87 @@ cd ../../..
 REPOROOT=`pwd`
 cd $CURDIR
 
-echo ***clean files
+echo clean files
 cd $CURDIR/../../Firebot
 git clean -dxf >& /dev/null
 cd $CURDIR
 git clean -dxf >& /dev/null
 
-echo ***clone repos
 cd $REPOROOT/bot/Bundlebot/nightly
-./clone_all_repos.sh $REPOROOT/bot/Bundlebot/nightly/output release >& /dev/null &
-pid_all=$1
+OUTDIR=$REPOROOT/bot/Bundlebot/output
+BUNDLETYPE=release
+echo cloning fds-smv
+./setup_repos.sh    -B $BUNDLETYPE -K fds-smv >& $OUTDIR/clone_fds-smv &
+pid_fds_smv=$!
+
+echo cloning test_bundles
+./setup_repos.sh    -B $BUNDLETYPE -K exp >& $OUTDIR/clone_test_bundles &
+pid_test_bundles=$!
+
+echo cloning cad
+./setup_repos.sh -b -B $BUNDLETYPE -K cad -D >& $OUTDIR/clone_cad &
+pid_cad=$!
+
+echo cloning exp
+./setup_repos.sh -b -B $BUNDLETYPE -K exp -D >& $OUTDIR/clone_exp &
+pid_exp=$!
+
+echo cloning fds
+./setup_repos.sh -b -B $BUNDLETYPE -K fds -D >& $OUTDIR/clone_fds &
+pid_fds=$!
+
+echo cloning fig
+./setup_repos.sh -b -B $BUNDLETYPE -K fig -D >& $OUTDIR/clone_fig &
+pid_fig=$!
+
+echo cloning out
+./setup_repos.sh -b -B $BUNDLETYPE -K out -D >& $OUTDIR/clone_out &
+pid_out=$!
+
+echo cloning smv
+./setup_repos.sh -b -B $BUNDLETYPE -K smv -D >& $OUTDIR/clone_smv &
+pid_smv=$!
 
 cd $REPOROOT/bot/Scripts
+echo cloning hypre and sundials
 ./setup_repos.sh -3 -e >& /dev/null &
 pid_3rd=$1
 rm -rf $REPOROOT/libs
 
+echo cloning wikis and webpages
 ./setup_repos.sh -w -e >& /dev/null &
 pid_wiki=$1
 
-wait $pid_all
 wait $pid_3rd
-wait $pid_wiki
-echo ***repos cloned
+echo hypre and sundials cloned
 
+wait $pid_wiki
+echo wikis and webpages cloned
+
+wait $pid_fds_smv
+echo fds_smv cloned
+
+wait $pid_test_bundles
+echo test_bundles cloned
+
+wait $pid_cad
+echo cad cloned
+
+wait $pid_exp
+echo exp cloned
+
+wait $pid_fds
+echo fds cloned
+
+wait $pid_fig
+echo fig cloned
+
+wait $pid_out
+echo out cloned
+
+wait $pid_smv
+echo smv cloned
+echo all repos cloned
 # build manuals
 cd $REPOROOT/bot/Firebot
 ./run_firebot.sh -q firebot $MAILTO -U -r test_bundles $OWNER
