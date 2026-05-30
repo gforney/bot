@@ -8,7 +8,7 @@ The directory [bot/Bundlebot/](https://github.com/firemodels/bot/tree/master/Bun
 The steps for building bundles are: 
  
   1. Modify tags and revisions in the configuration scripts,  `config.sh` and `config.bat`,
-  2. Run the script `BuildFdsManuals.sh` to build FDS manuals (this runs firebot) and the script `BuildSmvManuals.sh` to build Smokeview manuals (this runs smokebot).
+  2. Run the script `BuildFdsManuals.sh` to build FDS manuals (this runs fdsbot) and the script `BuildSmvManuals.sh` to build Smokeview manuals (this runs smokebot).
   3. Run the script `BuildRelease.sh` to build FDS/Smokeview bundles, and the script `BuildSmvRelease.sh` to build Smokeview bundles,
   4. After the bundles are verified to be correct, push up tags to the central repo and define a release.
   
@@ -30,7 +30,7 @@ where `x.y.z is the version number of the release to be built, for example 6.10.
 
 The manuals are built using the firebot account.
 
-   1. Type: `sudo su - firebot` on the computer that runs firebot (spark at Nist) to switch to the firebot user account.
+   1. Type: `sudo su - firebot` on the computer that runs fdsbot (spark at Nist) to switch to the firebot user account.
    2. cd to `FireModels_bundle/bot/Bundlebot/fds
    3. Update the bot repo to ensure that the build manuals scripts use the correct `config.sh` script.
    4. To build the FDS manuals, type: `./BuildFdsManuals.sh -o owner -m email@address` .  After this step completes, about 3 hours, continue to the next step

@@ -1,8 +1,8 @@
-# Firebot: A Continuous Integration Tool for FDS
+# Fdsbot: A Continuous Integration Tool for FDS
 
-Firebot is a script that can be run at regular intervals as part of a continuous integration program. At NIST, this script is run by a user named `firebot` on a linux cluster each night. The user `firebot` clones the various repositories in the GitHub project named `firemodels`, builds FDS and Smokeview, runs the verification cases, checks the results for accuracy, and builds all of the manuals. The entire process takes a few hours to complete.
+Fdsbot is a script that can be run at regular intervals as part of a continuous integration program. At NIST, this script is run by a user named `firebot` on a linux cluster each night. The user `firebot` clones the various repositories in the GitHub project named `firemodels`, builds FDS and Smokeview, runs the verification cases, checks the results for accuracy, and builds all of the manuals. The entire process takes a few hours to complete.
 
-Any developer can also run Firebot to test branches or new features. Instructions are below.
+Any developer can also run Fdsbot to test branches or new features. Instructions are below.
 
 ## Set-Up
 
@@ -17,7 +17,7 @@ The following steps need only be done once. The exact phrasing of the commands m
     * Python
     * Slurm
 
-3. Firebot uses email notifications for build status updates. Ensure that outbound emails can be sent using the `mail` command.
+3. Fdsbot uses email notifications for build status updates. Ensure that outbound emails can be sent using the `mail` command.
 
 4. Install libraries for Smokeview. On CentOS, you can use the following command:
    ```
@@ -61,7 +61,7 @@ To kill fdsbot, cd to the directory containing fdsbot.sh and type:
 ```
 You can run fdsbot regularly using a `crontab` file by adding an entry like the following using the `crontab -e` command:
 ```
-PATH=/bin:/usr/bin:/usr/local/bin:/home/<username>/firemodels/bot/Firebot:$PATH
+PATH=/bin:/usr/bin:/usr/local/bin:/home/<username>/firemodels/bot/Fdsbot:$PATH
 MAILTO=""
 # Run fdsbot at 11:32 PM every night
 56 21 * * * cd ~/<username>/firemodels/bot/Fdsbot ; bash -lc "./run_fdsbot.sh <options>"
