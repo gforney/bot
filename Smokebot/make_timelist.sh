@@ -1,7 +1,7 @@
 #!/bin/bash
 curdir=`pwd`
-cpufrom=$HOME/.firebot/fds_times.csv
-historydir=$HOME/.firebot/history
+cpufrom=$HOME/.fdsbot/fds_times.csv
+historydir=$HOME/.fdsbot/history
 FILELIST="*benchmark*csv"
 tempfile=/tmp/filelist.$$
 # The offset below is computed by substituting

@@ -50,7 +50,7 @@ fi
 
 export FIREMODELS_ROOT
 
-# the following is kept so older versions of firebot won't crash (ie firebot's that call this script using the -r parameter)
+# the following is kept so older versions of fdsbot won't crash (ie fdsbot's that call this script using the -r parameter)
 while getopts 'r:' OPTION
 do
 case $OPTION  in

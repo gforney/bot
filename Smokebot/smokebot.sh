@@ -1135,7 +1135,7 @@ FDS_EXE=fds_impi_intel_linux
 
 clean_smokebot_history
 
-#*** write out file when firebot first starts
+#*** write out file when fdsbot first starts
 date > $OUTPUT_DIR/stage0_start 2>&1
 
 if [[ "$CLONE_REPO_BRANCH" != "" ]]; then

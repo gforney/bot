@@ -49,8 +49,8 @@ smvrepo=`pwd`
 FDS_HASH_FILE=/tmp/FDS_HASH.$$
 SMV_HASH_FILE=/tmp/SMV_HASH.$$
 
-eval CP \$acct/.firebot/apps FDS_HASH $FDS_HASH_FILE || exit 1
-eval CP \$acct/.firebot/apps SMV_HASH $SMV_HASH_FILE || exit 1
+eval CP \$acct/.fdsbot/apps FDS_HASH $FDS_HASH_FILE || exit 1
+eval CP \$acct/.fdsbot/apps SMV_HASH $SMV_HASH_FILE || exit 1
 
 FDS_HASH=`cat $FDS_HASH_FILE`
 SMV_HASH=`cat $SMV_HASH_FILE`

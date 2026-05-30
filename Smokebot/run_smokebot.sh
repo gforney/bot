@@ -183,7 +183,7 @@ if [ "$WEB_ROOT" == "" ]; then
   WEB_DIR=
 fi
 
-# sync fds and smv repos with the the repos used in the last successful firebot run
+# sync fds and smv repos with the the repos used in the last successful fdsbot run
 
 # warn user (if not the smokebot user) if using the clone option
 
@@ -247,7 +247,7 @@ fi
 
 if [ "$FORCE" == "" ]; then
   if [ -e $smokebot_pid ] ; then
-    echo Smokebot or firebot are running.
+    echo Smokebot or fdsbot are running.
     echo "If this is not the case, -f option."
     if [ -e $EMAIL_LIST ]; then
       source $EMAIL_LIST

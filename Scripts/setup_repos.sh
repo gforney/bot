@@ -10,7 +10,7 @@ echo "-a - setup all available repos: $allrepos"
 echo "-c - setup repos used by cfastbot:  $cfastbotrepos"
 echo "-D - enable access to firemodels (ie allow git push)"
 echo "-e - erase repos first"
-echo "-f - setup repos used by firebot:  $fdsrepos"
+echo "-f - setup repos used by fdsbot:  $fdsrepos"
 echo "-F - setup freeglut"
 echo "-h - display this message"
 echo "-K repo - clone repo named repo, erase first"
@@ -72,13 +72,13 @@ CURDIR=`pwd`
 
 allrepos="cad cfast cor exp fds fig out radcal smv test_bundles"
 cfastbotrepos="cfast exp fig smv test_bundles"
-firebotrepos="cad exp fds fds-smv fig out smv test_bundles"
+fdsbotrepos="cad exp fds fds-smv fig out smv test_bundles"
 freeglutrepo="freeglut"
 smokebotrepos="cfast fds fig smv test_bundles"
 thirdpartyrepos="hypre sundials"
 wikiwebrepos="fds.wiki fds-smv"
 
-repos=$firebotrepos
+repos=$fdsbotrepos
 eraserepos=
 FORCECLONE=
 DISABLEPUSH=1
@@ -118,7 +118,7 @@ case $OPTION  in
    eraserepos=1
    ;;
   f)
-   repos=$firebotrepos;
+   repos=$fdsbotrepos;
    ;;
   F)
    repos=$freeglutrepo;

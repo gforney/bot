@@ -817,8 +817,8 @@ if [ -e .cfast_git ]; then
   reporoot=`pwd`
   cd $cfastbotdir
 else
-  echo "***error: firebot not running in the bot/Firebot directory"
-  echo "          Aborting firebot"
+  echo "***error: cfastbot not running in the bot/Cfastbot directory"
+  echo "          Aborting cfastbot"
   exit
 fi
 

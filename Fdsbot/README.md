@@ -1,6 +1,6 @@
 # Firebot: A Continuous Integration Tool for FDS
 
-Firebot is a script that can be run at regular intervals as part of a continuous integration program. At NIST, this script is run by a pseudo-user named `firebot` on a linux cluster each night. The pseudo-user `firebot` clones the various repositories in the GitHub project named `firemodels`, builds FDS and Smokeview, runs the verification cases, checks the results for accuracy, and builds all of the manuals. The entire process takes a few hours to complete.
+Firebot is a script that can be run at regular intervals as part of a continuous integration program. At NIST, this script is run by a user named `firebot` on a linux cluster each night. The user `firebot` clones the various repositories in the GitHub project named `firemodels`, builds FDS and Smokeview, runs the verification cases, checks the results for accuracy, and builds all of the manuals. The entire process takes a few hours to complete.
 
 Any developer can also run Firebot to test branches or new features. Instructions are below.
 
@@ -8,7 +8,7 @@ Any developer can also run Firebot to test branches or new features. Instruction
 
 The following steps need only be done once. The exact phrasing of the commands might different with different flavors of linux.
 
-1. Clone the `bot` repository included in the GitHub organization named `firemodels`.  Other repositories needed by firebot include `fds`, `smv`, `out`, `exp`, `fig`, and `cad`. If these are not already cloned, they will be by firebot. If you are running `firebot` yourself in your own space, clone and update these repositories yourself. 
+1. Clone the `bot` repository included in the GitHub organization named `firemodels`.  Other repositories needed by fdsbot include `fds`, `smv`, `out`, `exp`, `fig`, and `cad`. If these are not already cloned, they will be by fdsbot. If you are running `fdsbot` yourself in your own space, clone and update these repositories yourself. 
 
 2. Ensure that the following software packages are installed on the system:
 
@@ -30,47 +30,47 @@ The following steps need only be done once. The exact phrasing of the commands m
 
 7. Ensure that the Slurm queuing system is working.
 
-8. By default, firebot sends email to the email address configured for your bot repo (output of command `git config user.email` ) .  If you wish email to go to different email addresses, create a file named $HOME/.firebot/firebot_email_list.sh for some `user1` and `user2` (or more) that looks like:
+8. By default, fdsbot sends email to the email address configured for your bot repo (output of command `git config user.email` ) .  If you wish email to go to different email addresses, create a file named $HOME/.fdsbot/firebot_email_list.sh for some `user1` and `user2` (or more) that looks like:
 
    ```
    #!/bin/bash
    mailToFDS="user1@host1.com, user2@host2.com"
    ```
 
-## Running firebot
+## Running fdsbot
 
-The script `firebot.sh` is run using the wrapper script `run_firebot.sh`. This script uses a locking file that ensures multiple instances of firebot do not run at the same time, which would cause file conflicts. To see the various options associated with running firebot, type
+The script `fdsbot.sh` is run using the wrapper script `run_fdsbot.sh`. This script uses a locking file that ensures multiple instances of fdsbot do not run at the same time, which would cause file conflicts. To see the various options associated with running fdsbot, type
 ```
-./run_firebot.sh -h
+./run_fdsbot.sh -h
 ```
-To run `firebot` to test local changes in your own space 
+To run `fdsbot` to test local changes in your own space 
 ```
-nohup ./run_firebot.sh -m user@host.com &
+nohup ./run_fdsbot.sh -m user@host.com &
 ```
-This will run firebot without updating your repos or cleaning/erasing files. Use `-q <partition>` to specify a particular queue. 
+This will run fdsbot without updating your repos or cleaning/erasing files. Use `-q <partition>` to specify a particular queue. 
 
-Each night, the pseudo-user named firebot runs the firebot script using the command:
+Each night, the user named firebot runs the fdsbot script using the command:
 ```
-bash -lc "./run_firebot.sh -y -q firebot -R nightly  -U -W /opt/www/html -w firebot/clone  > $HOME/.firebot/firebot_test1.out"
+bash -lc "./run_fdsbot.sh -y -q firebot -R nightly  -U -W /opt/www/html -w fdsbot/clone  > $HOME/.fdsbot/fdsbot_test1.out"
 ```
-The `-y` option causes firebot to run without pausing, `-q` specifies the Slurm queue to run cases in, `-R nightly` renames branches that are cloned to nightly. The other options, `-U`, `-W` and `-w` are used to upload results to a web site and to Github. 
+The `-y` option causes fdsbot to run without pausing, `-q` specifies the Slurm queue to run cases in, `-R nightly` renames branches that are cloned to nightly. The other options, `-U`, `-W` and `-w` are used to upload results to a web site and to Github. 
 
-To kill firebot, cd to the directory containing firebot.sh and type:
+To kill fdsbot, cd to the directory containing fdsbot.sh and type:
 ```
-./run_firebot.sh -k
+./run_fdsbot.sh -k
 ```
-You can run firebot regularly using a `crontab` file by adding an entry like the following using the `crontab -e` command:
+You can run fdsbot regularly using a `crontab` file by adding an entry like the following using the `crontab -e` command:
 ```
 PATH=/bin:/usr/bin:/usr/local/bin:/home/<username>/firemodels/bot/Firebot:$PATH
 MAILTO=""
-# Run firebot at 9:56 PM every night
-56 21 * * * cd ~/<username>/firemodels/bot/Firebot ; bash -lc "./run_firebot.sh <options>"
+# Run fdsbot at 11:32 PM every night
+56 21 * * * cd ~/<username>/firemodels/bot/Fdsbot ; bash -lc "./run_fdsbot.sh <options>"
 ```
-The output from firebot is written into the directory called `output` which is in the same directory as the `firebot.sh` script itself. When firebot completes, email should be sent to the specified list of addresses. The `fds/Manuals` directory in the `fds` repository containing manuals and figures is copied to the directdory `$HOME/.firebot/Manuals`.
+The output from fdsbot is written into the directory called `output` which is in the same directory as the `fdsbot.sh` script itself. When fdsbot completes, email should be sent to the specified list of addresses. The `fds/Manuals` directory in the `fds` repository containing manuals and figures is copied to the directdory `$HOME/.fdsbot/Manuals`.
 
 ## Updating Timing
 
-Firebot compares timings for cases it runs with a corresponding set of base timings located in the fig repo at `fig/fds/Reference_Times/base_times.csv` .
+Fdsbot compares timings for cases it runs with a corresponding set of base timings located in the fig repo at `fig/fds/Reference_Times/base_times.csv` .
 To update the base timings on a Linux or Mac computer:
 
 Assume bot, fig and fds repos etc are under `$HOME/FireModels_fork`
@@ -85,14 +85,14 @@ Assume bot, fig and fds repos etc are under `$HOME/FireModels_fork`
 ```
 2. add updated timings to the fig repo
 
-Each time firebot runs it outputs a timing spreadsheet file (file with .csv extention) to
-`$HOME/.firebot/history` where `$HOME` is home directory of the account that ran firebot. 
+Each time fdsbot runs it outputs a timing spreadsheet file (file with .csv extention) to
+`$HOME/.fdsbot/history` where `$HOME` is home directory of the account that ran fdsbot. 
 The timing file will have a name like `FDS6.7.9-1277-g43cd84dc2_timing.csv` .
 To update the reference timing file in the fig repo:
 
-   *  Copy the desired timing.csv file from .firebot/history (usually the latest) to the `fig/fds/Reference_Times` directory and
+   *  Copy the desired timing.csv file from .fdsbot/history (usually the latest) to the `fig/fds/Reference_Times` directory and
 rename the file base_times.csv
-   * cd into the `fds` repo where `firebot` was run and type `git describe --dirty --local` .  Copy the output of this 
+   * cd into the `fds` repo where `fdsbot` was run and type `git describe --dirty --local` .  Copy the output of this 
    command to `fig/fds/Reference_Times/FDS_REVISION`
 
 `FDS_REVISION` is also copied into the fig repo so we know what version of fds produced the base reference times.

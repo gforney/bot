@@ -13,8 +13,8 @@ fi
 BASEDIR=`basename $CURDIR`
 if [ "$BASEDIR" == "Firebot" ]; then
   BOT_SUMMARY=fds/Manuals/FDS_Summary
-  BOT_TYPE=firebot
-  BOT_TITLE=Firebot
+  BOT_TYPE=fdsbot
+  BOT_TITLE=Fdsbot
   PROG=fds
 fi
 if [ "$BASEDIR" == "Smokebot" ]; then
@@ -64,7 +64,7 @@ fi
 #*** setup directories
 
 CURDIR=`pwd`
-if [ "$BOT_TYPE" == "firebot" ]; then
+if [ "$BOT_TYPE" == "fdsbot" ]; then
   REFERENCE_DIR=../../fig/fds/Reference_Figures
 else
   if [ "$SMOKEBOT_COMPARE" == "other" ]; then
