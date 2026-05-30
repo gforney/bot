@@ -17,7 +17,7 @@ SMVREPO=`pwd`
 UPLOADINFO ()
 {
   FDSINFO=FDS_INFO$.txt
-  DIR=$HOME/.firebot
+  DIR=$HOME/.fdsbot
   echo ***Uploading $FDSINFO
   cd $FDSREPO
   F_HASH=`git rev-parse --short HEAD`
@@ -50,7 +50,7 @@ UPLOADFIGURES ()
   DIRECTORY=$1
   FILE=$2
 
-  TARHOME=$HOME/.firebot
+  TARHOME=$HOME/.fdsbot
   mkdir -p $TARHOME
   cd $MANDIR/$DIRECTORY/SCRIPT_FIGURES
   tarfile=${FILE}_figures.tar

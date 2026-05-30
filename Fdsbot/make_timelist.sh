@@ -1,7 +1,7 @@
 #!/bin/bash
 curdir=`pwd`
-cpufrom=~firebot/.firebot/fds_times.csv
-historydir=~firebot/.firebot/history
+cpufrom=~firebot/.fdsbot/fds_times.csv
+historydir=~firebot/.fdsbot/history
 tempfile=/tmp/filelist.$$
 # The offset below is computed by substituting
 # Jan 1, 2016 5 UTC (12 AM EST) into a web form

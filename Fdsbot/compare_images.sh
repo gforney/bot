@@ -50,11 +50,11 @@ RAWFILES=
 BLURRING=on
 BASEDIR=`basename $CURDIR`
 SUMMARY_DIR=Summary
-if [ "$BASEDIR" == "Firebot" ]; then
+if [ "$BASEDIR" == "fdsbot" ]; then
   INREPO=1
-  SUMMARY_DIR=$HOME/.firebot/FDS_Summary
-  BOT_TYPE=firebot
-  BOT_TITLE=Firebot
+  SUMMARY_DIR=$HOME/.fdsbot/FDS_Summary
+  BOT_TYPE=fdsbot
+  BOT_TITLE=fdsbot
   PROG=fds
   REFERENCE_DIR=../../fig/fds/Reference_Figures
   NEW_DIR=$SUMMARY_DIR/images

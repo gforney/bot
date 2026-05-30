@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# The Firebot script is part of an automated continuous integration system.
+# The Fdsbot script is part of an automated continuous integration system.
 # Consult the FDS Config Management Plan for more information.
 
 #---------------------------------------------
@@ -11,27 +11,27 @@ function usage {
 echo "Verification and validation testing script for FDS"
 echo ""
 echo "Example usage:"
-echo "./run_firebot.sh    - run firebot using existing repos and branches."
-echo "./run_firebot.sh -C - Clones repos with branches named master before"
-echo "                      running firebot. This option should NEVER be run"
+echo "./run_fdsbot.sh    - run fdsbot using existing repos and branches."
+echo "./run_fdsbot.sh -C - Clones repos with branches named master before"
+echo "                      running fdsbot. This option should NEVER be run"
 echo "                      in repos where you do your regular work. Repos are"
 echo "                      erased before cloning."
 echo "Options:"
 echo "-C - clone repos (same as -R master)."
-echo "-f - force firebot run."
+echo "-f - force fdsbot run."
 echo "-h - display this message."
-echo "-k - kill currently running firebot and all processes and jobs it started."
-echo "-m email_address - email firebot results to email_address."
+echo "-k - kill currently running fdsbot and all processes and jobs it started."
+echo "-m email_address - email fdsbot results to email_address."
 echo "-q queue - specify queue [default: $QUEUE]."
 echo "-R branch_name - clone repos using branches named branch_name."
 echo "-y - answer yes when asked to proceed (used when running from crontab)."
 
-#*** these options are only used by the firebot account to upload manuals and repo info to github
+#*** these options are only used by the fdsbot account to upload manuals and repo info to github
 #    comments for reference
 #echo "Upload Options:"
 #echo "-o owner - specify the github relase owner when uploading manuals. [default: $GH_OWNER]"
 #echo "-r repo - specify the github repo name when uploading manuals. [default: $GH_REPO]"
-#echo "-U - upload guides (only by user firebot)"
+#echo "-U - upload guides (only by user fdsbot)"
 #echo "-w webdir - copy image comparisons to webroot/webdir"
 #echo "-W webroot - root directory where web pages are stored"
 exit 0
@@ -78,31 +78,31 @@ LIST_DESCENDANTS ()
 }
 
 #VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV
-#                             beginning of run_firebot.sh
+#                             beginning of run_fdsbot.sh
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-#*** location of firebot processor id
+#*** location of fdsbot processor id
 
-mkdir -p ~/.firebot
-firebot_pid=~/.firebot/firesmokebot_pid
+mkdir -p ~/.fdsbot
+fdsbot_pid=~/.fdsbot/firesmokebot_pid
 
 CURDIR=`pwd`
 
-#*** make sure firebot is started in the right location
+#*** make sure fdsbot is started in the right location
 
 if [ -e .fds_git ]; then
   cd ../..
   repo=`pwd`
   cd $CURDIR
 else
-  echo "***error: firebot not running in the bot/Firebot directory"
+  echo "***error: fdsbot not running in the bot/Fdsbot directory"
   exit 1
 fi
 if [ "$FIREMODELS" != "" ]; then
   export FIREMODELS=$repo
 fi
 
-echo $0 $* > command.firebot
+echo $0 $* > command.fdsbot
 
 if [ "`uname`" == "Darwin" ] ; then
   echo "***error: Mac not supported"
@@ -183,7 +183,7 @@ case $OPTION  in
    ;;
   w)
    WEB_DIR="$OPTARG"
-   FDSSUMMARY="-s $HOME/.firebot/FDS_Summary"
+   FDSSUMMARY="-s $HOME/.fdsbot/FDS_Summary"
    ;;
   W)
    WEB_ROOT="$OPTARG"
@@ -192,7 +192,7 @@ case $OPTION  in
    PROCEED=1
    ;;
   \?)
-  echo "***error: unknown option entered. aborting firebot"
+  echo "***error: unknown option entered. aborting fdsbot"
   exit 1
   ;;
 esac
@@ -218,38 +218,38 @@ if [ "$CLONE_REPOS" != "" ]; then
   CLONE_REPOS="-R $CLONE_REPOS"
 fi
 
-#*** kill firebot
+#*** kill fdsbot
 
 if [ "$KILL_FIREBOT" == "1" ]; then
-  if [ -e $firebot_pid ] ; then
-    PID=`head -1 $firebot_pid`
+  if [ -e $fdsbot_pid ] ; then
+    PID=`head -1 $fdsbot_pid`
 
     JOBS=$(LIST_DESCENDANTS $PID)
     if [ "$JOBS" != "" ]; then
-      echo killing processes invoked by firebot: $JOBS
+      echo killing processes invoked by fdsbot: $JOBS
       kill -9 $JOBS
     fi
 
     JOBIDS=`squeue | grep $PREFIX | awk -v user="$USER" '{if($4==user){print $1}}' | awk -F'.' '{print $1}'`
     if [ "$JOBIDS" != "" ]; then
-      echo killing firebot jobs with Id:$JOBIDS
+      echo killing fdsbot jobs with Id:$JOBIDS
       qdel $JOBIDS
     fi
 
-    echo "killing firebot (PID=$PID)"
+    echo "killing fdsbot (PID=$PID)"
     kill -9 $PID
-    echo firebot process $PID killed
-    rm -f $firebot_pid
+    echo fdsbot process $PID killed
+    rm -f $fdsbot_pid
   else
-    echo firebot is not running
+    echo fdsbot is not running
   fi
   exit 0
 fi
 
-#*** abort if firebot is already running
+#*** abort if fdsbot is already running
 
-if [[ -e $firebot_pid ]] && [[ "$FORCE" == "" ]] ; then
-  echo Firebot or smokebot are already running. If this
+if [[ -e $fdsbot_pid ]] && [[ "$FORCE" == "" ]] ; then
+  echo Fdsbot or smokebot are already running. If this
   echo "is not the case re-run using the -f option."
   exit 1
 fi
@@ -261,7 +261,7 @@ fi
 cd $CURDIR
 echo ""
 if [ "$PROCEED" == "" ]; then
-  echo "firebot about to run using:"
+  echo "fdsbot about to run using:"
 fi
 echo "           Queue: $QUEUE"
 if [ "$BOTBRANCH" != "" ]; then
@@ -304,9 +304,9 @@ fi
 BRANCH="-b $BRANCH"
 QUEUE="-q $QUEUE"
 
-touch $firebot_pid
-firebot_status=0
-./firebot.sh -p $firebot_pid $BRANCH $UPLOADGUIDES $QUEUE $CLONE_REPOS $FDSSUMMARY $CLONEFILE $EMAIL $WEB_ROOT $WEB_DIR "$@"
-firebot_status=$?
-rm -f $firebot_pid
-exit $firebot_status
+touch $fdsbot_pid
+fdsbot_status=0
+./fdsbot.sh -p $fdsbot_pid $BRANCH $UPLOADGUIDES $QUEUE $CLONE_REPOS $FDSSUMMARY $CLONEFILE $EMAIL $WEB_ROOT $WEB_DIR "$@"
+fdsbot_status=$?
+rm -f $fdsbot_pid
+exit $fdsbot_status

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# The Firebot script is part of an automated continuous integration system.
+# The fdsbot script is part of an automated continuous integration system.
 # Consult the FDS Config Management Plan for more information.
 
 # stage 0 - start
@@ -27,7 +27,7 @@ check_time_limit()
 
       if [ $ELAPSED_TIME -gt $TIME_LIMIT ]
       then
-         echo -e "Firebot has been running for more than 12 hours in Stage ${TIME_LIMIT_STAGE}. \n\nPlease ensure that there are no problems. \n\nThis is a notification only and does not terminate Firebot." | mail -s "[Firebot@$hostname] Notice: Firebot has been running for more than 12 hours." $mailToFDS > /dev/null
+         echo -e "fdsbot has been running for more than 12 hours in Stage ${TIME_LIMIT_STAGE}. \n\nPlease ensure that there are no problems. \n\nThis is a notification only and does not terminate fdsbot." | mail -s "[fdsbot@$hostname] Notice: fdsbot has been running for more than 12 hours." $mailToFDS > /dev/null
          TIME_LIMIT_EMAIL_NOTIFICATION="sent"
       fi
    fi
@@ -494,14 +494,14 @@ wait_cases_release_end()
       TIME_LIMIT_STAGE="5"
       check_time_limit
       sleep 60
-      # look for cases that took too long to run (but don't look again until firebot
+      # look for cases that took too long to run (but don't look again until fdsbot
       #                                           wraps up if a problem case is found)
       if [[ "$timing_error" == "" ]] && [[ "$HAVE_MAIL" == "1" ]]; then
         cd $botrepo/Scripts
         ./compare_fds_timings.sh >& /dev/null
         if [ -e $TIMING_ERRORS ]; then
           timing_error=1
-          cat $TIMING_ERRORS | mail -s "***error: one or more firebot case runtimes > 2x reference values" $mailToFDS > /dev/null
+          cat $TIMING_ERRORS | mail -s "***error: one or more fdsbot case runtimes > 2x reference values" $mailToFDS > /dev/null
         fi
         cd $current_wait_dir
       fi
@@ -655,7 +655,7 @@ run_python_setup()
 {
    echo Python
    echo "   setup environment"
-   cd $botrepo/Firebot/
+   cd $botrepo/fdsbot/
    source ./setup_python.sh > $OUTPUT_DIR/stage4_python_setup 2>&1
 }
 
@@ -826,7 +826,7 @@ archive_validation_stats()
 
    if [ -e ${CURRENT_STATS_FILE} ]
    then
-      # Archive stats to Firebot history
+      # Archive stats to fdsbot history
       cp ${CURRENT_STATS_FILE} "$HISTORY_DIR/${FDS_REVISION}_${STATS_FILE_BASENAME}.csv"
 
    else
@@ -858,7 +858,7 @@ archive_timing_stats()
    cp fds_timing_stats.csv "$HISTORY_DIR/${FDS_REVISION}_timing.csv"
    sort -r -k 2 -t  ',' -n fds_timing_stats.csv | head -10 | awk -F',' '{print $1":", $2}' > $OUTPUT_DIR/slow_cases
 
-# output firebot timing info
+# output fdsbot timing info
 # The offset below is computed by substituting
 # Jan 1, 2016 5 UTC (12 AM EST) into a web form
 # found at: http://www.unixtimestamp.com/
@@ -870,20 +870,20 @@ archive_timing_stats()
    gitdate=`echo "scale=5; $gitdate/86400 " | bc`
    cd $CURRENTDIR
 
-   if [ ! -e $HISTORY_DIR/firebot_times.csv ]; then
-     echo "day,date,revision,pass/fail,clone,setup,build,debug,release,zero,vv,manuals,total" > $HISTORY_DIR/firebot_times.csv
-     echo ",,,,s,s,s,s,s,s,s,s,s" >> $HISTORY_DIR/firebot_times.csv
+   if [ ! -e $HISTORY_DIR/fdsbot_times.csv ]; then
+     echo "day,date,revision,pass/fail,clone,setup,build,debug,release,zero,vv,manuals,total" > $HISTORY_DIR/fdsbot_times.csv
+     echo ",,,,s,s,s,s,s,s,s,s,s" >> $HISTORY_DIR/fdsbot_times.csv
    fi
    if [ -s $ERROR_LOG ]; then
-     firebot_success=0
+     fdsbot_success=0
    else
-     firebot_success=1
+     fdsbot_success=1
    fi
-   echo $gitdate,$FDS_DATE,$FDS_REVISION,$firebot_success,$CLONE_DELTA,$SETUP_DELTA,$BUILD_DELTA,0.0,$RELEASE_DELTA,0.0,$VV_DELTA,$MANUALS_DELTA,$SCRIPT_DELTA >> $HISTORY_DIR/firebot_times.csv
+   echo $gitdate,$FDS_DATE,$FDS_REVISION,$fdsbot_success,$CLONE_DELTA,$SETUP_DELTA,$BUILD_DELTA,0.0,$RELEASE_DELTA,0.0,$VV_DELTA,$MANUALS_DELTA,$SCRIPT_DELTA >> $HISTORY_DIR/fdsbot_times.csv
 
    if [ "$UPLOADGUIDES" == "1" ]; then
-     if [ "$USER" == "firebot" ]; then
-        cd $botrepo/Firebot
+     if [ "$USER" == "fdsbot" ]; then
+        cd $botrepo/fdsbot
        ./status_updatepub.sh $repo/webpages $WEBBRANCH
      fi
   fi
@@ -899,7 +899,7 @@ check_guide()
    local label=$2
 
    # Scan for and report any errors or warnings in build process for guides
-   cd $firebotdir
+   cd $fdsbotdir
    if [[ `grep -I "successfully" $guidelog` == "" ]]
    then
       # There were errors/warnings in the guide build process
@@ -942,7 +942,7 @@ make_fds_user_guide()
    # Check guide for completion
    check_guide $OUTPUT_DIR/stage5_fds_user_guide 'FDS User Guide'
 
-   cd $botrepo/Firebot
+   cd $botrepo/fdsbot
    ./compare_namelists.sh $OUTPUT_DIR stage5 > $OUTPUT_DIR/stage5_namelist_check
 
    NAMELIST_NODOC_LOG=$OUTPUT_DIR/stage5_namelists_nodoc.txt
@@ -1029,7 +1029,7 @@ save_build_status()
    HOST=`hostname -s`
    STOP_TIME=$(date)
    STOP_TIME_INT=$(date +%s)
-   cd $firebotdir
+   cd $fdsbotdir
    # Save status outcome of build to a text file
    if [[ -e $ERROR_LOG ]]
    then
@@ -1039,7 +1039,7 @@ save_build_status()
    # No errors or warnings
    else
       echo "Build success!;$FDS_DATE;$FDS_SHORTHASH;$FDS_LONGHASH;${FDS_REVISION};$FDSBRANCH;$STOP_TIME_INT;1;$TOTAL_FDS_TIMES;$HOST;$SMV_LONGHASH;${SMV_REVISION}" > "$HISTORY_DIR/${FDS_REVISION}.txt"
-      touch $FIREBOT_PASS
+      touch $fdsbot_PASS
       echo $SMVREPO_HASH > $SMVREPO_HASHFILE
       echo $FDSREPO_HASH > $FDSREPO_HASHFILE
    fi
@@ -1054,7 +1054,7 @@ make_fds_summary()
   if [ -d $FDS_SUMMARY_DIR ]; then
 # compare images
     CURDIR=`pwd`
-    cd $botrepo/Firebot
+    cd $botrepo/fdsbot
     ./compare_images.sh >& $OUTPUT_DIR/stage5_image_compare
 
     if [[ "$WEB_DIR" != "" ]] && [[ -d $WEB_DIR ]]; then
@@ -1076,9 +1076,9 @@ make_fds_summary()
 email_build_status()
 
 {
-   cd $firebotdir
+   cd $fdsbotdir
 
-   firebot_status=1
+   fdsbot_status=1
 
    stop_time=`date`
    echo "" > $TIME_LOG
@@ -1118,7 +1118,7 @@ else
    echo "clone repos: $CLONE_DIFF "                         >> $TIME_LOG
 fi
 
-   echo "setup firebot: $SETUP_DIFF "                       >> $TIME_LOG
+   echo "setup fdsbot: $SETUP_DIFF "                       >> $TIME_LOG
    echo "build software: $BUILD_DIFF "                      >> $TIME_LOG
    echo "run cases(debug): $DEBUG_DIFF "                    >> $TIME_LOG
    echo "run cases(release): $RELEASE_DIFF "                >> $TIME_LOG
@@ -1142,7 +1142,7 @@ fi
    fi
 
    if [ "$UPLOADGUIDES" == "1" ]; then
-     echo "status:  https://pages.nist.gov/fds-smv/firebot_status.html" >> $TIME_LOG
+     echo "status:  https://pages.nist.gov/fds-smv/fdsbot_status.html" >> $TIME_LOG
    fi
    if [[ "$WEB_URL" != "" ]] && [[ "$UPDATED_WEB_IMAGES" != "" ]]; then
      echo -n "images: $WEB_URL"  >> $TIME_LOG
@@ -1161,7 +1161,7 @@ fi
    fi
 #  upload guides to github
    is_bot=
-   if [ `whoami` == "firebot" ]; then
+   if [ `whoami` == "fdsbot" ]; then
      is_bot=1
    fi
    if [ `whoami` == "smokebot" ]; then
@@ -1178,7 +1178,7 @@ fi
      UPLOAD=1
    fi
    if [ "$UPLOAD" != "" ]; then
-     cd $firebotdir
+     cd $fdsbotdir
      GITURL=https://github.com/$GH_OWNER/$GH_REPO/releases/tag/$GH_FDS_TAG
      echo "Bundles, Guides, Summary:  $GITURL" >> $TIME_LOG
      $SummaryGH &> $OUTPUT_DIR/stage6_summary_github
@@ -1205,36 +1205,36 @@ fi
    NAMELIST_LOGS="$NAMELIST_NODOC_LOG $NAMELIST_NOSOURCE_LOG"
    LOGS="$TIME_LOG $FYI_LOG $NAMELIST_LOGS"
    if [[ -s $ERROR_LOG ]]; then
-      FIREBOT_SUBJECT="firebot failure."
+      fdsbot_SUBJECT="fdsbot failure."
       LOGS="$ERROR_LOG $LOGS"
-      firebot_status=0
+      fdsbot_status=0
    else
-      FIREBOT_SUBJECT="firebot success!"
-      rm -r $HOME/.firebot/Manuals
-      cp -r $fdsrepo/Manuals $HOME/.firebot/Manuals
+      fdsbot_SUBJECT="fdsbot success!"
+      rm -r $HOME/.fdsbot/Manuals
+      cp -r $fdsrepo/Manuals $HOME/.fdsbot/Manuals
    fi
-   FIREBOT_SUBJECT="$FIREBOT_SUBJECT Version: ${FDS_REVISION}, Branch: $FDSBRANCH"
+   fdsbot_SUBJECT="$fdsbot_SUBJECT Version: ${FDS_REVISION}, Branch: $FDSBRANCH"
    cat $LOGS >& $MAIL_LOG
-   cd $firebotdir
+   cd $fdsbotdir
    if [ "$HAVE_MAIL" == "1" ]; then
-     cat $LOGS | mail -s "$FIREBOT_SUBJECT" $mailToFDS > /dev/null
+     cat $LOGS | mail -s "$fdsbot_SUBJECT" $mailToFDS > /dev/null
    fi
    cp $TIME_LOG "$HISTORY_DIR/${FDS_REVISION}_summary.txt"
 }
 
 #VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV
-#                             beginning of firebot
+#                             beginning of fdsbot
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 #*** setup
 
-echo $0 $* >> command.firebot
+echo $0 $* >> command.fdsbot
 
 
 SCRIPT_beg=`GET_TIME`
 CLONE_beg=`GET_TIME`
 start_time=`date`
-# Start firebot timer
+# Start fdsbot timer
 START_TIME=$(date +%s)
 
 #*** file descriptors
@@ -1253,14 +1253,14 @@ FDS_DIR=
 
 # define run directories
 PID_FILE=~/.fdssmvgit/firesmokebot_pid
-firebotdir=`pwd`
-export SCRIPTFILES=$firebotdir/scriptfiles
-OUTPUT_DIR="$firebotdir/output"
-HISTORY_DIR="$HOME/.firebot/history"
+fdsbotdir=`pwd`
+export SCRIPTFILES=$fdsbotdir/scriptfiles
+OUTPUT_DIR="$fdsbotdir/output"
+HISTORY_DIR="$HOME/.fdsbot/history"
 TIMING_ERRORS=$OUTPUT_DIR/timing_errors
 
-FIREBOT_PASS=$HISTORY_DIR/firebot_pass
-rm -f $FIREBOT_PASS
+fdsbot_PASS=$HISTORY_DIR/fdsbot_pass
+rm -f $fdsbot_PASS
 
 SMVREPO_HASHFILE=$HISTORY_DIR/smv_hash
 rm -f $SMVREPO_HASHFILE
@@ -1273,10 +1273,10 @@ ERROR_LOG=$OUTPUT_DIR/errors
 TIMING_WARNING_LOG=$OUTPUT_DIR/timing_warnings
 MAIL_LOG=$OUTPUT_DIR/mail_log
 FYI_LOG=$OUTPUT_DIR/fyis
-EMAIL_LIST=$HOME/.firebot/firebot_email_list.sh
+EMAIL_LIST=$HOME/.fdsbot/fdsbot_email_list.sh
 CRLF_WARNINGS=$OUTPUT_DIR/stage1_crlf_warnings
 
-mkdir -p $HOME/.firebot
+mkdir -p $HOME/.fdsbot
 
 WEBBRANCH=nist-pages
 FDSBRANCH=master
@@ -1428,15 +1428,15 @@ if [ "$mailToFDS" == "" ]; then
   mailToFDS=`whoami`@`hostname`
 fi
 
-#*** make sure firebot is running in correct directory
+#*** make sure fdsbot is running in correct directory
 
 if [ -e .fds_git ]; then
   cd ../..
   repo=`pwd`
-  cd $firebotdir
+  cd $fdsbotdir
 else
-  echo "***error: firebot not running in the bot/Firebot directory"
-  echo "          Aborting firebot"
+  echo "***error: fdsbot not running in the bot/fdsbot directory"
+  echo "          Aborting fdsbot"
   exit 1
 fi
 
@@ -1475,11 +1475,11 @@ FDS_EXE=fds_${MPI_TYPE}_${COMPILER}_${platform}${size}
 echo "Status"
 echo "------"
   echo Cleaning bot repo
-  cd $firebotdir
+  cd $fdsbotdir
   mkdir -p $HISTORY_DIR &> /dev/null
   rm -rf   $OUTPUT_DIR/*  &> /dev/null
 
-#*** write out file when firebot first starts
+#*** write out file when fdsbot first starts
 date > $OUTPUT_DIR/stage0_start 2>&1
 
 #*** clone repos
@@ -1590,9 +1590,9 @@ echo $SMV_REVISION > $repo/fds/Manuals/SMV_REVISION
 SMV_LONGHASH=`git rev-parse HEAD`
 
 
-#*** save pid in case we want to kill firebot later
+#*** save pid in case we want to kill fdsbot later
 
-cd $firebotdir
+cd $fdsbotdir
 echo $$ > $PID_FILE
 
 #*** check for C/C++ compiler
@@ -1609,8 +1609,8 @@ if [ $notfound -eq 0 ]; then
   C_VERSION="icx version $C_VERSION"
 fi
 
-UploadGuidesGH=$botrepo/Firebot/fds_guides2GH.sh
-SummaryGH=$botrepo/Firebot/summary2GH.sh
+UploadGuidesGH=$botrepo/fdsbot/fds_guides2GH.sh
+SummaryGH=$botrepo/fdsbot/summary2GH.sh
 
 echo ""
 echo "Settings"
@@ -1622,7 +1622,7 @@ echo "     FIG repo/branch: $figrepo/$FIGBRANCH"
 echo "     SMV repo/branch: $smvrepo/$SMVBRANCH"
 echo "     OUT repo/branch: $outrepo/$OUTBRANCH"
 echo ""
-echo "      Run dir: $firebotdir"
+echo "      Run dir: $fdsbotdir"
 if [ "$IFORT_VERSION" != "" ]; then
   echo "      Fortran: $IFORT_VERSION"
 fi
@@ -1719,14 +1719,14 @@ compile_fds_mpi         $FDS_DIR $FDS_EXE
 compile_fds_mpi         $FDS_OPENMP_DIR $FDS_OPENMP_EXE openmp
 check_compile_fds_mpi   $FDS_DIR $FDS_EXE
 check_compile_fds_mpi   $FDS_OPENMP_DIR $FDS_OPENMP_EXE openmp
-cd $firebotdir
+cd $fdsbotdir
 
 ###*** Stage 2 - smv utilities ###
 
 compile_smv_libraries
 compile_smv_utilities
 
-cd $firebotdir
+cd $fdsbotdir
 
 ###*** Stage 2 - debug smokeview ###
 
@@ -1803,8 +1803,8 @@ make_fds_technical_guide
 make_fds_Config_management_plan
 make_fds_verification_guide
 make_fds_validation_guide
-rm -r $HOME/.firebot/Manuals_latest
-cp -r $fdsrepo/Manuals $HOME/.firebot/Manuals_latest
+rm -r $HOME/.fdsbot/Manuals_latest
+cp -r $fdsrepo/Manuals $HOME/.fdsbot/Manuals_latest
 
 ###*** Stage 6 wrapup ###
 
@@ -1827,5 +1827,5 @@ fi
 save_build_status
 archive_timing_stats
 email_build_status
-echo firebot exit status: $firebot_status
-exit $firebot_status
+echo fdsbot exit status: $fdsbot_status
+exit $fdsbot_status

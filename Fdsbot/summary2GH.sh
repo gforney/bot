@@ -9,7 +9,7 @@ fi
 cd ../../fds/Manuals
 MANDIR=`pwd`
 
-DIR=$HOME/.firebot
+DIR=$HOME/.fdsbot
 if [ ! -d $DIR ]; then
   mkdir $DIR
 fi

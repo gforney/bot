@@ -30,7 +30,7 @@ esac
 done
 shift $(($OPTIND-1))
 
-# this script runs firebot to build fds manuals using revision and tags defined in config.sh
+# this script runs fdsbot to build fds manuals using revision and tags defined in config.sh
 source config.sh
 export DISABLEPUSH=1
 
@@ -56,7 +56,7 @@ REPOROOT=`pwd`
 cd $CURDIR
 
 echo clean files
-cd $CURDIR/../../Firebot
+cd $CURDIR/../../Fdsbot
 git clean -dxf >& /dev/null
 cd $CURDIR
 git clean -dxf >& /dev/null
@@ -137,5 +137,5 @@ wait $pid_smv
 echo smv cloned
 echo all repos cloned
 # build manuals
-cd $REPOROOT/bot/Firebot
-./run_firebot.sh -q firebot $MAILTO -U -r test_bundles $OWNER
+cd $REPOROOT/bot/Fdsbot
+./run_fdsbot.sh -q firebot $MAILTO -U -r test_bundles $OWNER

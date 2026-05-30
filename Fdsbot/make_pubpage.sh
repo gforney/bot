@@ -1,5 +1,5 @@
 #!/bin/bash
-historydir=~/.firebot/history
+historydir=~/.fdsbot/history
 BODY=
 TITLE=Firebot
 SOPT=

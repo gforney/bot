@@ -28,10 +28,10 @@ CD_REPO ()
   fi
 }
 
-oldpage=~/.firebot/oldpage
-newpage=~/.firebot/newpage
-olddata=~/.firebot/old_data
-newdata=~/.firebot/fds_times.csv
+oldpage=~/.fdsbot/oldpage
+newpage=~/.fdsbot/newpage
+olddata=~/.fdsbot/old_data
+newdata=~/.fdsbot/fds_times.csv
 running=~/.fdssmvgit/bot_running
 curdir=`pwd`
 EXIT="yes"
@@ -76,11 +76,11 @@ CD_REPO $WEBREPO $WEBBRANCH
 git fetch origin
 git merge origin/$WEBBRANCH
 
-cp $newpage firebot_status.html
+cp $newpage fdsbot_status.html
 
 # disable status web page update we are sure it is working
 
-git add firebot_status.html
-git commit -m "firebot: update firebot status page `date`"
+git add fdsbot_status.html
+git commit -m "fdsbot: update fdsbot status page `date`"
 git push origin $WEBBRANCH
-#cp ~/.firebot/newpage /var/www/html/firebot/clone/new.html
+#cp ~/.fdsbot/newpage /var/www/html/fdsbot/clone/new.html
