@@ -75,7 +75,7 @@ if "x%IS_RELEASE%" == "x" goto else4
   set SMV_TAG=%BUNDLE_SMV_TAG%
   goto endif4
 :else4
-:: this is a nightly bundle - hash and revisions obtained from latest firebot pass
+:: this is a nightly bundle - hash and revisions obtained from latest fdsbot pass
   call get_hash_revisions.bat %USE_CURRENT% || exit /b 1
   set /p FDS_HASH_BUNDLER=<output\FDS_HASH
   set /p SMV_HASH_BUNDLER=<output\SMV_HASH
@@ -154,7 +154,7 @@ call copy_apps smv || exit /b 1
 echo ***copying fds pubs
 
 cd %BUNDLESCRIPTDIR%
-call copy_pubs firebot  %DOWNLOADOWNER% || exit /b 1
+call copy_pubs fdsbot  %DOWNLOADOWNER% || exit /b 1
 
 echo ***copying smv pubs
 
@@ -208,7 +208,7 @@ echo.
 echo BuildNightly usage
 echo.
 echo This script builds FDS and Smokeview apps and generates a bundle using either the
-echo specified fds and smv repo revisions or revisions from the latest firebot pass.
+echo specified fds and smv repo revisions or revisions from the latest fdsbot pass.
 echo.
 echo Options:
 echo -C - build apps using current revision

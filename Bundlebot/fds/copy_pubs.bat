@@ -13,7 +13,7 @@ if NOT exist %pdf_to_dir% mkdir %pdf_to_dir%
 echo.
 echo   To directory: %pdf_to_dir%
 
-if "%bot_type%" == "firebot" (
+if "%bot_type%" == "fdsbot" (
   call :copy_file FDS_TEST FDS_Config_Management_Plan.pdf
   call :copy_file FDS_TEST FDS_Technical_Reference_Guide.pdf
   call :copy_file FDS_TEST FDS_User_Guide.pdf
