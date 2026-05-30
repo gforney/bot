@@ -5,7 +5,7 @@ if [[ "$KEYWORDTYPE" != "ini" ]] && [[ "$KEYWORDTYPE" != "smv" ]]; then
 fi
 
 if [ ! -e .smv_git ]; then
-  echo "***error: the script $0 needs to run in the bot/Firebot directory"
+  echo "***error: the script $0 needs to run in the bot/Fdsbot directory"
   echo "          $0 aborted"
   exit 1
 fi
