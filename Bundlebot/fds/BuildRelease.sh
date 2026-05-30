@@ -29,7 +29,7 @@ OWNER=`whoami`
 CURDIR=`pwd`
 
 echo ***cleaning bot repo
-cd $CURDIR/../../Firebot
+cd $CURDIR/../../Fdsbot
 git clean -dxf  >& /dev/null
 
 cd $CURDIR/output
