@@ -1,7 +1,7 @@
 #!/bin/bash
 historydir=~/.fdsbot/history
 BODY=
-TITLE=Firebot
+TITLE=Fdsbot
 SOPT=
 NHIST=-180
 

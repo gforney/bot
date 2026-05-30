@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [ ! -e .fds_git ]; then
-  echo "***error: the script $0 needs to run in the bot/Firebot directory"
+  echo "***error: the script $0 needs to run in the bot/Fdsbot directory"
   echo "          $0 aborted"
   exit 1
 fi
@@ -132,7 +132,7 @@ sort > $NAMELIST_F90
 #compute difference between tex and f90 namelist/keywords
 git diff --no-index $NAMELIST_F90 $NAMELIST_TEX                                  > $NAMELIST_DIFF
 
-nlines_nodoc=`grep ^-/ $NAMELIST_DIFF | sed 's/^-//g' | grep -v Firebot | wc -l`
+nlines_nodoc=`grep ^-/ $NAMELIST_DIFF | sed 's/^-//g' | grep -v Fdsbot | wc -l`
 echo "undocumented namelist keywords: $nlines_nodoc"                              > $NAMELIST_NODOC
 grep ^- $NAMELIST_DIFF | sed 's/^-//g' | grep -v \\-\\-                         >> $NAMELIST_NODOC
 
