@@ -70,6 +70,17 @@ SETUP_REMOTE ()
 SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 CURDIR=`pwd`
 
+configrepos="cad cfast exp fds fig out smv"
+fdsrepos="cad exp fds fig out smv test_bundles"
+thirdpartyrepos="hypre sundials freeglut"
+#thirdpartyrepos="hypre sundials ompi"
+fdssmvrepos="fds smv"
+smvonlyrepos="smv"
+fdsonlyrepos="fds"
+firebotrepos="cad exp fds fds-smv fig out smv test_bundles"
+smvrepos="cfast fds fig smv test_bundles"
+cfastbotrepos="cfast exp fig smv test_bundles"
+cfastrepos="cfast exp fds smv"
 allrepos="cad cfast cor exp fds fig out radcal smv test_bundles"
 cfastbotrepos="cfast exp fig smv test_bundles"
 fdsbotrepos="cad exp fds fds-smv fig out smv test_bundles"

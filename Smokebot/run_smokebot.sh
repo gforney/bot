@@ -141,6 +141,7 @@ case $OPTION  in
    MOVIE="-M"
    ;;
   o)
+   export UPLOADGIT=1
    export GH_OWNER="$OPTARG"
    ;;
   q)

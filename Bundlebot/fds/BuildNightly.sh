@@ -376,134 +376,40 @@ if [ "$ONLY_INSTALLER" == "" ]; then
   cd $CURDIR/../../Scripts
   if [ "$USE_CURRENT" == "" ]; then
     echo "*** cloning hypre"
-    ./setup_repos.sh -K hypre > $OUTPUTDIR/clone_hypre 2&>1 &
-    pid_clonehypre=$!
+    ./setup_repos.sh -K hypre > $OUTPUTDIR/clone_hypre 2&>1 
+    echo "*** hypre cloned"
 
     echo "*** cloning sundials"
-    ./setup_repos.sh -K sundials > $OUTPUTDIR/clone_sundials 2&>1 &
-    pid_clonesundials=$!
+    ./setup_repos.sh -K sundials > $OUTPUTDIR/clone_sundials 2&>1 
+    echo "*** sundials cloned"
     rm -rf $GITROOT/libs
   fi
 
   cd $CURDIR
-  pid_clonefds=
-  pid_clonesmv=
-  pid_cloneall=
   if [ "$BUNDLETYPE" == "nightly" ]; then
     if [ "$USE_CURRENT" == "" ]; then
 
 #*** a nightly bundle - clone fds and smv repos
 
       echo "*** cloning fds"
-       
-      cd $CURDIR/../../Scripts
-      ./setup_repos.sh -K fds -e > $OUTPUTDIR/clone_fds 2&>1 &
-      pid_clonefds=$!
+      ./setup_repos.sh -K fds  > $OUTPUTDIR/clone_fds 2&>1
+      echo "*** fds cloned"
 
       echo "*** cloning smv"
-      ./setup_repos.sh -K smv -e > $OUTPUTDIR/clone_fds 2&>1 &
-      pid_clonesmv=$!
-      
-      wait $pid_clonefds
-      cd $GITROOT/fds
-      git checkout $FDS_HASH -b nightly
-      echo "*** fds cloned" 
-
-      wait $pid_clonesmv
-      cd $GITROOT/smv
-      git checkout $SMV_HASH -b nightly
+      ./setup_repos.sh -K smv > $OUTPUTDIR/clone_smv 2&>1
       echo "*** smv cloned"
     fi
   else
 
 #*** a release bundle - clone all repos except for bot
 
-    echo cloning fds-smv
-    ./setup_repos.sh    -B $BUNDLETYPE -K fds-smv >& $OUTPUTDIR/clone_fds-smv &
-    pid_fds_smv=$!
-
-    echo cloning test_bundles
-    ./setup_repos.sh    -B $BUNDLETYPE -K exp     >& $OUTPUTDIR/clone_test_bundles &
-    pid_test_bundles=$!
-
-    echo cloning cad
-    ./setup_repos.sh -b -B $BUNDLETYPE -K cad -D  >& $OUTPUTDIR/clone_cad &
-    pid_cad=$!
-
-    echo cloning exp
-    ./setup_repos.sh -b -B $BUNDLETYPE -K exp -D  >& $OUTPUTDIR/clone_exp &
-    pid_exp=$!
-
-    echo cloning fds
-    ./setup_repos.sh -b -B $BUNDLETYPE -K fds -D  >& $OUTPUTDIR/clone_fds &
-    pid_fds=$!
-
-    echo cloning fig
-    ./setup_repos.sh -b -B $BUNDLETYPE -K fig -D  >& $OUTPUTDIR/clone_fig &
-    pid_fig=$!
-
-    echo cloning out
-    ./setup_repos.sh -b -B $BUNDLETYPE -K out -D  >& $OUTPUTDIR/clone_out &
-    pid_out=$!
-
-    echo cloning smv
-    ./setup_repos.sh -b -B $BUNDLETYPE -K smv -D  >& $OUTPUTDIR/clone_smv &
-    pid_smv=$!
-    
-    wait $pid_fds_smv
-    echo fds_smv cloned
-
-    wait $pid_test_bundles
-    echo test_bundles cloned
-
-    wait $pid_cad
-    echo cad cloned
-
-    wait $pid_exp
-    echo exp cloned
-
-    wait $pid_fds
-    echo fds cloned
-
-    wait $pid_fig
-    echo fig cloned
-
-    wait $pid_out
-    echo ouit cloned
-
-    wait $pid_smv
-    echo smv cloned
-  fi
-
-  if [ "$pid_clonesmv" != "" ]; then
-    wait $pid_clonesmv
-    echo "*** smv cloned"
-  fi
-  if [ "$pid_cloneall" != "" ]; then
-    wait $pid_cloneall
+    echo "*** cloning all repos "
+    ./clone_all_repos.sh  $OUTPUTDIR > $OUTPUTDIR/clone_all 2&>1
     echo all repos clone complete
   fi
-  ./make_smvapps.sh &
-  pid_smvapps=$!
 
-  if [ "$pid_clonehypre" != "" ]; then
-    wait $pid_clonehypre
-    echo "*** hypre cloned"
-  fi
-
-  if [ "$pid_clonesundials" != "" ]; then
-    wait $pid_clonesundials
-    echo "*** sundials cloned"
-  fi
-
-  if [ "$pid_clonefds" != "" ]; then
-    wait $pid_clonefds
-    echo "*** fds cloned"
-  fi
-
+  ./make_smvapps.sh $SMVDBG 
   ./make_fdsapps.sh
-
-  wait $pid_smvapps
 fi
 
 if [ "$BUNDLETYPE" != "nightly" ]; then
