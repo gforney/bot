@@ -438,15 +438,6 @@ check_vv_cases_debug()
       THIS_CFAST_FAILED=1
    fi
 
-   #  =====================
-   #  = Remove case files =
-   #  =====================
-
-   cd $cfastrepo/Verification
-   git clean -dxf &> /dev/null
-
-   cd $cfastrepo/Validation
-   git clean -dxf &> /dev/null
    return 0
 }
 
@@ -771,6 +762,7 @@ upload_linux_bundle()
 
    cd "$(dirname "$bundle_script")"
    if "$bundle_script" -U --python "$python_exe" > $bundle_log 2>&1; then
+      echo "CFAST Linux bundle complete"
       return 0
    else
       echo "Errors from Stage 7 - Build/upload CFAST Linux bundle:" >> $ERROR_LOG
@@ -910,7 +902,7 @@ email_build_status()
 
    # No errors or warnings
    else
-      if [[ "$UPLOAD" == "1" ]] && [[ -e $GUIDES2GH ]]; then
+      if [[ "$UPLOAD" == "1" && "$platform" != "linux" ]] && [[ -e $GUIDES2GH ]]; then
          cd $cfastbotdir
          $GUIDES2GH $cfastrepo/Manuals >& $OUTPUT_DIR/stage7_upload
          GITURL=https://github.com/$GH_OWNER/$GH_REPO/releases/tag/$GH_CFAST_TAG
