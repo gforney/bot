@@ -438,15 +438,6 @@ check_vv_cases_debug()
       THIS_CFAST_FAILED=1
    fi
 
-   #  =====================
-   #  = Remove case files =
-   #  =====================
-
-   cd $cfastrepo/Verification
-   git clean -dxf &> /dev/null
-
-   cd $cfastrepo/Validation
-   git clean -dxf &> /dev/null
    return 0
 }
 
