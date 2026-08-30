@@ -290,6 +290,14 @@ esac
 done
 shift $(($OPTIND-1))
 
+# exit script if bundle being built already exists
+if [ "$BUNDLETYPE" == "nightly" ]; then
+  $SCRIPTDIR/TestNightly.sh
+  if [ $? -eq 1 ]; then
+    exit 1
+  fi
+fi
+
 echo $$ > $PIDFILE
 
 #*** define hash and revisions

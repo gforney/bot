@@ -16,6 +16,12 @@ set USE_CURRENT=
 ::*** parse command line arguments
 call :GETOPTS %*
 
+::*** exit script if bundle being built already exists
+if "x%IS_RELEASE%" == "x1" goto skip_test_nightly
+call TestNightly.bat
+if errorlevel 1 exit /b 1
+:skip_test_nightly
+
 set DOWNLOADOWNER=firemodels
 set UPLOADOWNER=firemodels
 if "x%IS_RELEASE%" == "x1" set UPLOADOWNER=%username%
