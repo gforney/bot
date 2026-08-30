@@ -20,7 +20,9 @@ gh release view FDS_TEST -R github.com/firemodels/test_bundles | grep $SUFFIX | 
 
 while IFS= read -r filename; do
   if [[ "$filename" == $BUNDLENAME ]]; then
+    echo $BUNDLENAME exists
     exit 1
   fi
 done < "$TOC"
+echo $BUNDLENAME does not exist
 exit 0
