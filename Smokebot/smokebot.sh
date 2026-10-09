@@ -249,7 +249,6 @@ clean_smokebot_history()
 {
    
    # Clean Smokebot metafiles
-   MKDIR $smokebotdir > /dev/null
    cd $smokebotdir
    MKDIR guides               > /dev/null
    MKDIR $HISTORY_DIR_ARCHIVE > /dev/null
@@ -323,24 +322,24 @@ clean_repo2()
    
    # Check to see if FDS repository exists
    updateclean=
-   if [ -e "$repo" ]
+   if [ -e "$REPOROOT" ]
    then
       if [ "$CLEANREPO" == "1" ]; then
-        CD_REPO $repo/$repodir $branch || return 1
+        CD_REPO $REPOROOT/$repodir $branch || return 1
         git update-index --refresh
         IS_DIRTY=`git describe --abbrev=7 --long --dirty | grep dirty | wc -l`
         if [ "$IS_DIRTY" == "1" ]; then
-          echo "The repo $repo/$repodir has uncommitted changes."
+          echo "The repo $REPOROOT/$repodir has uncommitted changes."
           echo "Commit or revert these changes or re-run"
           echo "smokebot without the -c (clean) option"
           return 1
         fi
-        clean_repo $repo/$repodir || return 1
+        clean_repo $REPOROOT/$repodir || return 1
         updateclean="1"
       fi
    else
-      echo "The repo directory $repo does not exist." >> $OUTPUT_DIR/stage1_clean_update_repos 2>&1
-      echo "Aborting smokebot"                        >> $OUTPUT_DIR/stage1_clean_update_repos 2>&1
+      echo "The repo directory $REPOROOT does not exist." >> $OUTPUT_DIR/stage1_clean_update_repos 2>&1
+      echo "Aborting smokebot"                            >> $OUTPUT_DIR/stage1_clean_update_repos 2>&1
       return 1
    fi
    return 0
@@ -355,7 +354,7 @@ update_repo()
    local reponame=$1
    local branch=$2
    
-   CD_REPO $repo/$reponame $branch || return 1
+   CD_REPO $REPOROOT/$reponame $branch || return 1
    
    if [[ "$reponame" == "smv" ]]; then
       git update-index --refresh
@@ -367,11 +366,11 @@ update_repo()
       git update-index --refresh
    fi
 
-   cd $repo/$reponame
+   cd $REPOROOT/$reponame
    git update-index --refresh
    IS_DIRTY=`git describe --abbrev=7 --long --dirty | grep dirty | wc -l`
    if [ "$IS_DIRTY" == "1" ]; then
-     echo "The repo $repo/$reponame has uncommitted changes."
+     echo "The repo $REPOROOT/$reponame has uncommitted changes."
      echo "Commit or revert these changes or re-run"
      echo "smokebot without the -u (update) option"
      return 1
@@ -827,8 +826,8 @@ archive_timing_stats()
   sort -r -k 2 -t  ',' -n smv_timing_stats.csv | head -10 | awk -F',' '{print $1":", $2}' > $OUTPUT_DIR/slow_cases
   TOTAL_SMV_TIMES=`tail -1 smv_timing_stats.csv`
   if [[ "$UPLOADRESULTS" == "1" ]] && [[ "$USER" == "smokebot" ]]; then
-    cd $botrepo/Smokebot
-    ./smvstatus_updatepub.sh $repo/webpages $WEBBRANCH
+    cd $smvrepo/Smokebot
+    ./smvstatus_updatepub.sh $REPOROOT/webpages $WEBBRANCH
   fi
 }
 
@@ -1019,14 +1018,13 @@ email_build_status()
   echo "----------------------------------------------"      > $TIME_LOG
   echo "host: $hostname"                                    >> $TIME_LOG
   echo "OS: $platform2"                                     >> $TIME_LOG
-  echo "repo: $repo"                                        >> $TIME_LOG
+  echo "repo: $REPOROOT"                                    >> $TIME_LOG
   echo "queue: $QUEUE"                                      >> $TIME_LOG
   echo "cpus per task: $CPUS_PER_TASK_ARG"                  >> $TIME_LOG
   if [ "$ICC_VERSION" != "" ]; then
     echo "C/C++: $ICC_VERSION "                             >> $TIME_LOG
   fi
   echo ""                                                   >> $TIME_LOG
-  echo "$BOT_REVISION/$BOTBRANCH"                           >> $TIME_LOG
   echo "$CFAST_REVISION/$CFASTBRANCH"                       >> $TIME_LOG
   echo "$FDS_REVISION/$FDSBRANCH"                           >> $TIME_LOG
   echo "$FIG_REVISION/$FIGBRANCH"                           >> $TIME_LOG
@@ -1247,7 +1245,6 @@ WEBBRANCH=nist-pages
 FDSBRANCH=master
 SMVBRANCH=master
 CFASTBRANCH=master
-BOTBRANCH=master
 FIGBRANCH=master
 
 QUEUE=smokebot
@@ -1277,6 +1274,7 @@ MPI_TYPE=impi
 INTEL2="-J"
 FDSEXEROOT=
 CPUS_PER_TASK_ARG=16
+REPOROOT=
 
 #*** save pid so -k option (kill smokebot) may be used lateer
 
@@ -1284,7 +1282,7 @@ echo $$ > $PID_FILE
 
 #*** parse command line options
 
-while getopts 'aAb:cCDF:m:Mq:QR:s:ST:uUw:W:x:X:y:Y:' OPTION
+while getopts 'aAb:cCDF:G:m:Mq:QR:s:ST:uUw:W:x:X:y:Y:' OPTION
 do
 case $OPTION in
   a)
@@ -1298,7 +1296,6 @@ case $OPTION in
    if [ "$SMVBRANCH" == "current" ]; then
      FDSBRANCH="current"
      CFASTBRANCH="current"
-     BOTBRANCH="current"
      FIGBRANCH="current"
    fi
    ;;
@@ -1316,6 +1313,9 @@ case $OPTION in
    ;;
   F)
    FDSEXEROOT="$OPTARG"
+   ;;
+  G)
+   REPOROOT=$HOME/"$OPTARG"
    ;;
   m)
    mailTo="$OPTARG"
@@ -1432,12 +1432,14 @@ fi
 
 #*** make sure smokebot is running in the right directory
 
-if [ -e .smv_git ]; then
-  cd ../..
-  repo=`pwd`
-  cd $smokebotdir
+if [ -x run_smokebot.sh ]; then
+  if [ "$REPOROOT" == "" ]; then
+    cd ../..
+    REPOROOT=`pwd`
+    cd $smokebotdir
+  fi
 else
-  echo "***error: smokebot not running in the bot/Smokebot directory"
+  echo "***error: smokebot not running in the smv/Smokebot directory"
   echo "          Aborting smokebot"
   exit 1
 fi
@@ -1456,11 +1458,10 @@ MKDIR $APPS_DIR
 rm -rf $LATESTAPPS_DIR
 MKDIR $LATESTAPPS_DIR
 
-botrepo=$repo/bot
-cfastrepo=$repo/cfast
-fdsrepo=$repo/fds
-smvrepo=$repo/smv
-figrepo=$repo/fig
+cfastrepo=$REPOROOT/cfast
+fdsrepo=$REPOROOT/fds
+smvrepo=$REPOROOT/smv
+figrepo=$REPOROOT/fig
 
 size=
 GNU_MPI=ompi_
@@ -1492,7 +1493,7 @@ date > $OUTPUT_DIR/stage0_start 2>&1
 
 if [[ "$CLONE_REPOS" != "" ]]; then
   echo Cloning repos
-  cd $botrepo/Scripts
+  cd smokebotdir
 
 # only clone fds and smv repos
    # clone all repos
@@ -1515,12 +1516,6 @@ if [[ "$CLONE_REPOS" != "" ]]; then
 fi
 
 #*** make sure repos needed by smokebot exist
-
-CD_REPO $botrepo $BOTBRANCH || exit 1
-if [ "$BOTBRANCH" == "current" ]; then
-  cd $botrepo
-  BOTBRANCH=`git rev-parse --abbrev-ref HEAD`
-fi
 
 CD_REPO $cfastrepo $CFASTBRANCH || exit 1
 if [ "$CFASTBRANCH" == "current" ]; then
@@ -1612,7 +1607,6 @@ fi
 echo ""
 echo "Smokebot Settings"
 echo "-----------------"
-echo "    bot repo;branch: $botrepo;$BOTBRANCH"
 echo "  CFAST repo;branch: $cfastrepo;$CFASTBRANCH"
 echo "    FDS repo;branch: $fdsrepo;$FDSBRANCH"
 echo "    FIG repo;branch: $figrepo;$FIGBRANCH"
@@ -1641,9 +1635,9 @@ cd
 SMV_SUMMARY_DIR=$smvrepo/Manuals/SMV_Summary
 IMAGE_DIFFS=$SMV_SUMMARY_DIR/image_differences
 
-UploadGuidesGH=$botrepo/Smokebot/smv_guides2GH.sh
-UploadSummaryGH=$botrepo/Smokebot/smv_summary2GH.sh
-UploadWEB=$botrepo/Smokebot/smv_web2GD.sh
+UploadGuidesGH=$smvrepo/Smokebot/smv_guides2GH.sh
+UploadSummaryGH=$smvrepo/Smokebot/smv_summary2GH.sh
+UploadWEB=$smvrepo/Smokebot/smv_web2GD.sh
 
 THIS_FDS_AUTHOR=
 THIS_FDS_FAILED=0
@@ -1785,9 +1779,6 @@ FDS_REVISION=`git describe --abbrev=7 --long --dirty`
 cd $figrepo
 FIG_REVISION=`git describe --abbrev=7 --long --dirty`
 
-cd $botrepo
-BOT_REVISION=`git describe --abbrev=7 --long --dirty`
-
 # copy smv revision and hash to the latest pubs and apps directory
 cd $smvrepo
 
@@ -1824,7 +1815,7 @@ echo "Building"
 pid_fds_mpi_db=
 pid_fds_mpi=
 if [ "$CACHE_DIR" == "" ]; then
-  cd $botrepo/Smokebot
+  cd $smvrepo/Smokebot
   if [ "$FDSDEBUG" != "" ]; then
     cp $FDSDEBUG $fdsrepo/Build/impi_intel_linux_db/fds_impi_intel_linux_db
   else
@@ -1832,7 +1823,7 @@ if [ "$CACHE_DIR" == "" ]; then
     pid_fds_mpi_db=$!
   fi
 
-  cd $botrepo/Smokebot
+  cd $smvrepo/Smokebot
   if [ "$FDSRELEASE" != "" ]; then
     cp $FDSRELEASE $fdsrepo/Build/impi_intel_linux/fds_impi_intel_linux
   else
@@ -1858,7 +1849,7 @@ pid_cfast=$!
 
 #*** stage 2 - build smokeview ustilities
 
-cd $botrepo/Smokebot
+cd $smvrepo/Smokebot
 ./make_smvapps.sh &
 pid_smvapps=$!
 
@@ -2005,10 +1996,10 @@ if [[ $stage_ver_release_success ]] ; then
    cp $smvrepo/Manuals/SMV_User_Guide/SCRIPT_FIGURES/*.png                $SMV_SUMMARY_DIR/images/user/.
    cp $smvrepo/Manuals/SMV_Technical_Reference_Guide/SCRIPT_FIGURES/*.png $SMV_SUMMARY_DIR/images/user/.
    cp $smvrepo/Manuals/SMV_Verification_Guide/SCRIPT_FIGURES/*.png        $SMV_SUMMARY_DIR/images/verification/.
-   cd $botrepo/Smokebot
+   cd $smvrepo/Smokebot
    ./remove_images.sh $SMV_SUMMARY_DIR/images
 
-   cd $botrepo/Smokebot
+   cd $smvrepo/Smokebot
    ./compare_keywords.sh >& $OUTPUT_DIR/keyword_compare.log
    if [ ! -e $KEYWORDS_NODOC_LOG ]; then
      echo undocumented script keywords: 0  > $KEYWORDS_NODOC_LOG
@@ -2018,9 +2009,9 @@ if [[ $stage_ver_release_success ]] ; then
    fi
 
 # compare images generated by this smokebot run with a base set in the fig repo
-   cd $botrepo/Smokebot
+   cd $smvrepo/Smokebot
    echo Comparing images
-   ../Firebot/compare_images.sh -t 0.2 >& $OUTPUT_DIR/stage5_compare_images
+   $smokebotdir/compare_images.sh -t 0.2 >& $OUTPUT_DIR/stage5_compare_images
    rm -f $SMV_SUMMARY_DIR/images/*.png
 
    wait $pid_ug
