@@ -1,4 +1,13 @@
 #!/bin/bash
+smokebotdir=$1
+
+CURDIR=`pwd`
+if [ "$smokebotdir" == "" ]; then
+#  cd ../../Smokebot
+  cd ../../../smv/Smokebot
+  smokebotdir=`pwd`
+  cd $CURDIR
+fi
 
 MAILTO=
 if [ "$BUNDLE_EMAIL" != "" ]; then
@@ -48,10 +57,8 @@ echo "Press any key to continue or <CTRL> c to abort."
 echo "Type $0 -h for other options"
 read val
 
-CURDIR=`pwd`
-
 echo ***clean files
-cd $CURDIR/../../Smokebot
+cd $smokebotdir
 git clean -dxf >& /dev/null
 cd $CURDIR/output
 git clean -dxf >& /dev/null
@@ -59,12 +66,11 @@ cd $CURDIR/../nightly/output
 git clean -dxf >& /dev/null
 
 echo ***cloning repos
-cd $CURDIR/../../Scripts
+cd $smokebotdir
 echo "setting up repos"
 ./setup_repos.sh -b -D
 ./update_repos.sh -w
 
-cd $CURDIR/../../Smokebot
-#./run_smokebot.sh -C -c -u -J -f -q firebot $MAILTO -x $BUNDLE_FDS_HASH -X $BUNDLE_FDS_TAG -y $BUNDLE_SMV_HASH -Y $BUNDLE_SMV_TAG $OWNER -r test_bundles -U -R release
-echo ./run_smokebot.sh -f -b -q batch4 $MAILTO $OWNER -r test_bundles -U 
-     ./run_smokebot.sh -f -b -q batch4 $MAILTO $OWNER -r test_bundles -U 
+cd $smokebotdir
+echo ./run_smokebot.sh -f -q batch4 $MAILTO $OWNER -r test_bundles -U 
+     ./run_smokebot.sh -f -q batch4 $MAILTO $OWNER -r test_bundles -U 
