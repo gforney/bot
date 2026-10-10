@@ -131,14 +131,14 @@ BUILDFDSLIBS()
 # setup compilers
   export FDS_BUILD_TARGET=intel
   echo setting up compilers
-  source $repo/fds/Build/Scripts/set_compilers.sh >& /dev/null
+  source $REPOROOT/fds/Build/Scripts/set_compilers.sh >& /dev/null
 
   echo building hypre
-  source $repo/fds/Build/Scripts/HYPRE/build_hypre.sh confmake.sh true >& /dev/null &
+  source $REPOROOTo/fds/Build/Scripts/HYPRE/build_hypre.sh confmake.sh true >& /dev/null &
   pid_hypre=$!
 
   echo building sundials
-  source $repo/fds/Build/Scripts/SUNDIALS/build_sundials.sh confmake.sh true >& /dev/null &
+  source $REPOROOT/fds/Build/Scripts/SUNDIALS/build_sundials.sh confmake.sh true >& /dev/null &
   pid_sundials=$1
   wait $pid_hypre
   echo hypre built
@@ -1399,13 +1399,13 @@ else
   BUILDFDSLIBS
 
   echo building debug fds
-  cd $repo/fds/Build/impi_intel_linux_db
+  cd $REPOROOT/fds/Build/impi_intel_linux_db
   git clean -dxf >& /dev/null
   ./make_fds.sh bot  > $OUTPUT_DIR/compile_fdsdb.log 2>&1 &
   pid_fds_mpi_db=$!
 
   echo building release fds
-  cd $repo/fds/Build/impi_intel_linux
+  cd $REPOROOT/fds/Build/impi_intel_linux
   git clean -dxf >& /dev/null
   ./make_fds.sh bot  > $OUTPUT_DIR/compile_fds.log 2>&1 &
   pid_fds_mpi=$!
