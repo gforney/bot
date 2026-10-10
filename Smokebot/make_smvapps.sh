@@ -29,7 +29,7 @@ CHECK_BUILD()
     echo "***error: The program ${prog}_linux failed to build"
     echo "***error: The program ${prog}_linux failed to build"   >> $errorlog 2>&1
   else
-    echo $smvrepo/Build/$prog/intel_linux/${prog}_linux built
+    echo ${prog}_linux built
   fi
 }
 
@@ -52,6 +52,10 @@ botrepo=`pwd`
 echo building smokeview libraries
 BUILDSMVLIBS &
 pid_smvlibs=$!
+
+echo building flush
+BUILD flush &
+pid_flush=$!
 
 echo building fds2fed
 BUILD fds2fed &
@@ -81,6 +85,9 @@ BUILD smokezip &
 pid_smokezip=$!
 
 # verify smokeview apps were built
+
+wait $pid_flush
+CHECK_BUILD flush
 
 wait $pid_fds2fed
 CHECK_BUILD fds2fed
