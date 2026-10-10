@@ -1383,7 +1383,7 @@ BUILDSOFTWARE_beg=`GET_TIME`
 #*** stage 2 - build cfast
 echo "Building"
 
-cd $botrepo/Smokebot
+cd $smokebotdir
 pid_fds_mpi_db=
 pid_fds_mpi=
 if [ "$USE_FDS_CACHE" != "" ]; then
