@@ -1,5 +1,5 @@
 #!/bin/bash
-
+REPOROOT=$1
 
 # -------------------------------------------------------------
 
@@ -41,9 +41,6 @@ outputdir=$CURDIR/output
 errorlog=$CURDIR/output/smverror.log
 
 echo > $errorlog
-
-cd ../..
-REPOROOT=`pwd`
 
 cd $REPOROOT/smv
 smvrepo=`pwd`

@@ -1819,7 +1819,7 @@ if [ "$CACHE_DIR" == "" ]; then
   if [ "$FDSDEBUG" != "" ]; then
     cp $FDSDEBUG $fdsrepo/Build/impi_intel_linux_db/fds_impi_intel_linux_db
   else
-    ./make_fdsapps.sh debug   &
+    ./make_fdsapps.sh debug $REPOROOT  &
     pid_fds_mpi_db=$!
   fi
 
@@ -1827,7 +1827,7 @@ if [ "$CACHE_DIR" == "" ]; then
   if [ "$FDSRELEASE" != "" ]; then
     cp $FDSRELEASE $fdsrepo/Build/impi_intel_linux/fds_impi_intel_linux
   else
-    ./make_fdsapps.sh release &
+    ./make_fdsapps.sh release $REPOROOT &
     pid_fds_mpi=$!
   fi
 else
@@ -1850,7 +1850,7 @@ pid_cfast=$!
 #*** stage 2 - build smokeview ustilities
 
 cd $smokebotdir
-./make_smvapps.sh &
+./make_smvapps.sh $REPOROOT &
 pid_smvapps=$!
 
 RUN_CASES=

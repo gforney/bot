@@ -1,5 +1,8 @@
 #!/bin/bash
-if [ "$1" == "release" ]; then
+APPTYPE=$1
+REPOROOT=$2
+
+if [ "$APPTYPE" == "release" ]; then
   type=
 else
   type=_db
@@ -36,9 +39,6 @@ ERRORLOG=$CURDIR/output/fdserror.log
 COMPILELOG=$outputdir/compile_fds${type}.log
 
 echo > $COMPILELOG
-
-cd ../..
-REPOROOT=`pwd`
 
 cd $REPOROOT/fds
 fdsrepo=`pwd`
