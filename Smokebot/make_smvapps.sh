@@ -53,10 +53,6 @@ echo building smokeview libraries
 BUILDSMVLIBS &
 pid_smvlibs=$!
 
-echo building flush
-BUILD flush &
-pid_flush=$!
-
 echo building fds2fed
 BUILD fds2fed &
 pid_fds2fed=$!
@@ -85,9 +81,6 @@ BUILD smokezip &
 pid_smokezip=$!
 
 # verify smokeview apps were built
-
-wait $pid_flush
-CHECK_BUILD flush
 
 wait $pid_fds2fed
 CHECK_BUILD fds2fed
