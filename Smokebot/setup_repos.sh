@@ -12,6 +12,7 @@ echo "Options:"
 echo "-3 - clone 3rd party repos: $thirdpartyrepos"
 echo "-a - clone all repos: $allrepos"
 echo "-b - clone repos in bundle's config.sh script"
+echo "-B b - checkout branch named b"
 echo "-c - clone repos used by cfastbot: $cfastbotrepos"
 echo "-C - force clone"
 echo "-D - enable access to firemodels (ie allow git push)"
@@ -90,6 +91,7 @@ FORCECLONE=
 DISABLEPUSH=1
 FMROOT=
 WIKIWEB=
+branchname=
 if [ -e ../.gitbot ]; then
    cd ../..
    FMROOT=`pwd`
@@ -98,7 +100,7 @@ else
    exit
 fi
 
-while getopts '3abcCDefhK:sw' OPTION
+while getopts '3abB:cCDefhK:sw' OPTION
 do
 case $OPTION  in
   3)
@@ -111,6 +113,9 @@ case $OPTION  in
    repos=$configrepos
    eraserepos=1
    CONFIG_REPOS=1
+   ;;
+  B)
+   branchname="$OPTARG";
    ;;
   c)
    repos=$cfastbotrepos;
@@ -288,6 +293,9 @@ do
       echo git tag -a $TAG -m "tag for $TAG"
       git tag -a $TAG -m "tag for $TAG"
     fi
+  fi
+  if [[ "$branchname" != "" ]] && [[ "$CONFIG_REPOS" == "" ]]; then
+    git checkout -f -B $branchname
   fi
   SETUP_REMOTE $repo_dir
 done
