@@ -65,10 +65,11 @@ git clean -dxf >& /dev/null
 cd $CURDIR/../nightly/output
 git clean -dxf >& /dev/null
 
-echo ***cloning repos
+echo ***updating and configuring repos
 cd $smokebotdir
 echo "setting up repos"
-./setup_repos.sh -b -D
+./update_repos -m
+./ConfigRepos.sh
 ./update_repos.sh -w
 
 cd $smokebotdir
