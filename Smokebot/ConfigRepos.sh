@@ -7,6 +7,7 @@ BOTREPO="$( cd "$SCRIPTDIR/.." && pwd )"
 FMROOT="$( cd "$BOTREPO/.." && pwd )"
 source "$BOTREPO/Bundlebot/release/config.sh"
 
+STATUS=0
 repos="cad exp fds fig out smv"
 for repo in $repos
 do
@@ -31,15 +32,45 @@ do
     ERROR=1
   fi
   if [ "$ERROR" != "" ]; then
-    exit 1
+    STATUS=1
+    continue
   fi
-  (
-    cd "$repo_dir"
+  if (
+    cd "$repo_dir" || exit 1
     echo "----------------------------------------------"
     echo "repo: $repo"
+    # Check every configured remote, including origin and firemodels.
+    # Stop before changing the branch or tag if publication cannot be checked.
+    remotes=$(git remote) || exit 1
+    if [[ "$remotes" == "" ]]; then
+      echo "***Error: no remotes configured for $repo; cannot check tag $TAG" >&2
+      exit 1
+    fi
+    for remote in $remotes
+    do
+      if ! remote_tag=$(git ls-remote --tags "$remote" "refs/tags/$TAG"); then
+        echo "***Error: cannot check tag $TAG on remote $remote for $repo" >&2
+        exit 1
+      fi
+      if [[ "$remote_tag" != "" ]]; then
+        echo "***Error: tag $TAG is already published on remote $remote for $repo; refusing to replace it" >&2
+        exit 1
+      fi
+    done
     echo "git checkout -B release $HASH"
-    git checkout -B release "$HASH"
-    echo "git tag -a $TAG -m \"tag for $TAG\""
-    git tag -a "$TAG" -m "tag for $TAG"
-  )
+    if ! git checkout -B release "$HASH"; then
+      echo "***Error: checkout failed for $repo at $HASH" >&2
+      exit 1
+    fi
+    echo "git tag -f -a $TAG -m \"tag for $TAG\""
+    if ! git tag -f -a "$TAG" -m "tag for $TAG"; then
+      echo "***Error: creation of tag $TAG failed for $repo" >&2
+      exit 1
+    fi
+  ); then
+    :
+  else
+    STATUS=1
+  fi
 done
+exit "$STATUS"
