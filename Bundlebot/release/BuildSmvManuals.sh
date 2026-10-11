@@ -68,10 +68,9 @@ git clean -dxf >& /dev/null
 echo ***updating and configuring repos
 cd $smokebotdir
 echo "setting up repos"
-./update_repos -m
 ./ConfigRepos.sh
 ./update_repos.sh -w
 
 cd $smokebotdir
 echo ./run_smokebot.sh -f -q batch4 $MAILTO $OWNER -r test_bundles -U 
-     ./run_smokebot.sh -f -q batch4 $MAILTO $OWNER -r test_bundles -U 
+     ./run_smokebot.sh -f -q batch4 $MAILTO $OWNER -r test_bundles 
