@@ -11,7 +11,7 @@ if [[ "$MODE" != reset ]]; then
 fi
 
 STATUS=0
-repos="cad exp fds fig out smv"
+repos="cad cfast exp fds fig out smv"
 for repo in $repos
 do
   if [[ "$MODE" == reset ]]; then
@@ -48,6 +48,7 @@ do
   HASH=
   case "$repo" in
     cad) TAG=$BUNDLE_CAD_TAG; HASH=$BUNDLE_CAD_HASH ;;
+    cfast) TAG=$BUNDLE_CFAST_TAG; HASH=$BUNDLE_CFAST_HASH ;;
     exp) TAG=$BUNDLE_EXP_TAG; HASH=$BUNDLE_EXP_HASH ;;
     fds) TAG=$BUNDLE_FDS_TAG; HASH=$BUNDLE_FDS_HASH ;;
     fig) TAG=$BUNDLE_FIG_TAG; HASH=$BUNDLE_FIG_HASH ;;

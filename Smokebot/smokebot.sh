@@ -1153,11 +1153,14 @@ if [[ "$CLONE_REPO_BRANCH" != "" ]]; then
   pid_fig=$!
   ./update_repos.sh -K smv  -B $CLONE_REPO_BRANCH >  $OUTPUT_DIR/stage1_update_repos 2>&1 &
   pid_$smv=$!
+
   wait $pid_cfast
   wait $pid_fds
   wait $pid_fig
   wait $pid_smv
 fi
+echo exit early
+exit
 
 #*** make sure repos exist
 
