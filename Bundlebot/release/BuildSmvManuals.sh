@@ -1,13 +1,10 @@
 #!/bin/bash
-smokebotdir=$1
 
 CURDIR=`pwd`
-if [ "$smokebotdir" == "" ]; then
-  cd ../../Smokebot
-#  cd ../../../smv/Smokebot
-  smokebotdir=`pwd`
-  cd $CURDIR
-fi
+
+smokebotdir=../../Smokebot
+#smokebotdir=../../../smv/Smokebot
+UPLOAD="-U"
 
 MAILTO=
 if [ "$BUNDLE_EMAIL" != "" ]; then
@@ -21,7 +18,7 @@ fi
 
 #*** parse command line options
 
-while getopts 'hm:o:' OPTION
+while getopts 'hm:no:s:' OPTION
 do
 case $OPTION  in
   h)
@@ -32,12 +29,27 @@ case $OPTION  in
   m)
    MAILTO="-m $OPTARG"
    ;;
+  n)
+   UPLOAD=
+   ;;
   o)
    OWNER="-o $OPTARG"
+   ;;
+  s)
+   smokebotdir="$OPTARG"
    ;;
 esac
 done
 shift $(($OPTIND-1))
+
+if [ -d $smokebotdir ]; then
+  cd $smokebotdir
+  smokebotdir=`pwd`
+  cd $CURDIR
+else
+  echo "***error: smokebot directory $smokebotdir does not exist"
+  exit
+fi
 
 # this script runs smokebot to build smokeview manuals using revision and tags defined in config.sh
 source config.sh
@@ -72,5 +84,5 @@ echo "setting up repos"
 ./update_repos.sh -w
 
 cd $smokebotdir
-echo ./run_smokebot.sh -f -q batch4 $MAILTO $OWNER -r test_bundles -U 
-     ./run_smokebot.sh -f -q batch4 $MAILTO $OWNER -r test_bundles 
+echo ./run_smokebot.sh -f -q batch4 $MAILTO $OWNER -r test_bundles $UPLOAD
+     ./run_smokebot.sh -f -q batch4 $MAILTO $OWNER -r test_bundles $UPLOAD
