@@ -37,8 +37,8 @@ do
     cd "$repo_dir"
     echo "----------------------------------------------"
     echo "repo: $repo"
-    echo "git checkout -b release $HASH"
-    git checkout -b release "$HASH"
+    echo "git checkout -B release $HASH"
+    git checkout -B release "$HASH"
     echo "git tag -a $TAG -m \"tag for $TAG\""
     git tag -a "$TAG" -m "tag for $TAG"
   )
