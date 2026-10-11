@@ -21,12 +21,16 @@ do
     smv) TAG=$BUNDLE_SMV_TAG; HASH=$BUNDLE_SMV_HASH ;;
   esac
   repo_dir="$FMROOT/$repo"
+  ERROR=
   if [[ "$TAG" == "" ]] || [[ "$HASH" == "" ]]; then
     echo "***Error: missing release tag or revision for $repo" >&2
-    exit 1
+    ERROR=1
   fi
   if [[ ! -d "$repo_dir" ]]; then
     echo "***Error: repository directory $repo_dir does not exist" >&2
+    ERROR=1
+  fi
+  if [ "$ERROR" != "" ]; then
     exit 1
   fi
   (
