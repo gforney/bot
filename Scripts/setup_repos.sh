@@ -93,7 +93,6 @@ CURDIR=`pwd`
 configrepos="cad cfast exp fds fig out smv"
 fdsrepos="cad exp fds fig out smv test_bundles"
 thirdpartyrepos="hypre sundials freeglut"
-#thirdpartyrepos="hypre sundials ompi"
 fdssmvrepos="fds smv"
 smvonlyrepos="smv"
 fdsonlyrepos="fds"
@@ -349,7 +348,6 @@ do
       TAG=$BUNDLE_SMV_TAG
       HASH=$BUNDLE_SMV_HASH
     fi
-#    REPO="${repo^^}"
     if [[ "$TAG" != "" ]] && [[ "$HASH" != "" ]] && [[ -d $repo_out ]]; then
       cd $repo_out
       echo git checkout -b release $HASH
