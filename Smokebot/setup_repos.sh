@@ -295,7 +295,12 @@ do
     fi
   fi
   if [[ "$branchname" != "" ]] && [[ "$CONFIG_REPOS" == "" ]]; then
-    git checkout -f -B $branchname
+    if [ -d $repo ]; then
+      cd $repo
+      git checkout -f -B $branchname
+    else
+      echo "***error: $repo not cloned"
+    fi
   fi
   SETUP_REMOTE $repo_dir
 done
