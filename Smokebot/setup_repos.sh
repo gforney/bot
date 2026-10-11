@@ -9,19 +9,18 @@ function usage {
 echo "Create repos used by cfast, fds and/or smokview"
 echo ""
 echo "Options:"
-echo "-3 - setup 3rd party repos: $thirdpartyrepos"
-echo "-a - setup all available repos: $allrepos"
+echo "-3 - clone 3rd party repos: $thirdpartyrepos"
+echo "-a - clone all repos: $allrepos"
 echo "-b - clone repos in bundle's config.sh script"
-echo "-c - setup repos used by cfastbot: $cfastbotrepos"
+echo "-c - clone repos used by cfastbot: $cfastbotrepos"
 echo "-C - force clone"
 echo "-D - enable access to firemodels (ie allow git push)"
-echo "-e - erase repo before trying to clone it"
-echo "-f - setup repos used by firebot: $fdsrepos"
-echo "-G - only clone fds repo (erase first)"
+echo "-e - erase repo before cloning"
+echo "-f - clone repos used by firebot: $fdsrepos"
 echo "-h - display this message"
 echo "-K repo - clone repo named repo, erase first"
-echo "-s - setup repos used by smokebot: $smvrepos"
-echo "-w - setup wiki and webpage repos cloned from firemodels"
+echo "-s - clone repos used by smokebot: $smvrepos"
+echo "-w - clone wiki and webpage repos"
 exit
 }
 
@@ -99,7 +98,7 @@ else
    exit
 fi
 
-while getopts '3abcCDefGhK:sw' OPTION
+while getopts '3abcCDefhK:sw' OPTION
 do
 case $OPTION  in
   3)
@@ -127,10 +126,6 @@ case $OPTION  in
    ;;
   f)
    repos=$fdsrepos;
-   ;;
-  G)
-   repos=fds;
-   eraserepos=1;
    ;;
   h)
    usage;
