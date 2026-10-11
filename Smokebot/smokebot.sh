@@ -1159,8 +1159,6 @@ if [[ "$CLONE_REPO_BRANCH" != "" ]]; then
   wait $pid_fig
   wait $pid_smv
 fi
-echo exit early
-exit
 
 #*** make sure repos exist
 
