@@ -157,7 +157,7 @@ compile_cfast()
     # Build CFAST
     echo "building cfast"
     cd $cfastrepo/Build/CFAST/intel_linux
-    rm -f cfast8_linux
+    rm -f cfast8_linux cfast7_linux
     make --makefile ../makefile clean &> /dev/null
     ./make_cfast.sh >> $OUTPUT_DIR/compile_cfast.log 2>&1
 }
@@ -187,15 +187,14 @@ check_compile_cfast()
 {
    # Check for errors in CFAST compilation
    cd $cfastrepo/Build/CFAST/intel_linux
-   if [ -e "cfast8_linux" ]
-   then
-      stage2_build_cfast=true
-   else
+   if [[ ! -e "cfast8_linux" ]] && [[ ! -e cfast7_linux ]]; then
       echo "Errors from Stage 2 - build CFAST:" >> $ERROR_LOG
       echo "CFAST failed to compile"            >> $ERROR_LOG
       cat $OUTPUT_DIR/compile_cfast.log         >> $ERROR_LOG
       echo ""                                   >> $ERROR_LOG
       THIS_CFAST_FAILED=1
+   else
+      stage2_build_cfast=true
    fi
 }
 
