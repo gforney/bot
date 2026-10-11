@@ -5,12 +5,45 @@ set -e
 SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 BOTREPO="$( cd "$SCRIPTDIR/.." && pwd )"
 FMROOT="$( cd "$BOTREPO/.." && pwd )"
-source "$BOTREPO/Bundlebot/release/config.sh"
+MODE=${1:-}
+if [[ "$MODE" != reset ]]; then
+  source "$BOTREPO/Bundlebot/release/config.sh"
+fi
 
 STATUS=0
 repos="cad exp fds fig out smv"
 for repo in $repos
 do
+  if [[ "$MODE" == reset ]]; then
+    if (
+      cd "$FMROOT/$repo" || exit 1
+      echo "----------------------------------------------"
+      echo "repo: $repo"
+      echo "git checkout master"
+      if ! git checkout master; then
+        echo "***Error: checkout of master failed for $repo" >&2
+        exit 1
+      fi
+      if git show-ref --verify --quiet refs/heads/release; then
+        echo "git branch -D release"
+        if ! git branch -D release; then
+          echo "***Error: removal of release branch failed for $repo" >&2
+          exit 1
+        fi
+      else
+        result=$?
+        if [[ "$result" != 1 ]]; then
+          echo "***Error: cannot check release branch for $repo" >&2
+          exit 1
+        fi
+      fi
+    ); then
+      :
+    else
+      STATUS=1
+    fi
+    continue
+  fi
   TAG=
   HASH=
   case "$repo" in
