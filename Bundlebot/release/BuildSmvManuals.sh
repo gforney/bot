@@ -3,8 +3,8 @@ smokebotdir=$1
 
 CURDIR=`pwd`
 if [ "$smokebotdir" == "" ]; then
-#  cd ../../Smokebot
-  cd ../../../smv/Smokebot
+  cd ../../Smokebot
+#  cd ../../../smv/Smokebot
   smokebotdir=`pwd`
   cd $CURDIR
 fi
