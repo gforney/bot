@@ -78,9 +78,10 @@ cd $CURDIR/../nightly/output
 git clean -dxf >& /dev/null
 
 echo ***updating and configuring repos
-cd $smokebotdir
 echo "setting up repos"
+cd $CURDIR
 ./ConfigRepos.sh
+cd $smokebotdir
 ./update_repos.sh -w
 
 cd $smokebotdir
