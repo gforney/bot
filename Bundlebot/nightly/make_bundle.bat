@@ -140,7 +140,7 @@ CALL :COPY  %bundle_dir%\smv\fds2fed.exe    %out_smv%\fds2fed.exe
 CALL :COPY  %bundle_dir%\smv\smokezip.exe   %out_smv%\smokezip.exe 
 CALL :COPY  %bundle_dir%\smv\wind2fds.exe   %out_smv%\wind2fds.exe 
 
-CALL :COPY  %GITROOT%\smv\scripts\jp2conv.bat                %out_smv%\jp2conv.bat
+CALL :COPY  %GITROOT%\smv\Utilities\Scripts\jp2conv.bat                %out_smv%\jp2conv.bat
 
 set curdir=%CD%
 

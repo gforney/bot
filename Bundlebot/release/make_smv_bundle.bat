@@ -16,7 +16,7 @@ set reporoot=%CD%
 set CURDIR=%CD%
 
 set forbundle=%reporoot%\smv\Build\for_bundle
-set smvscripts=%reporoot%\smv\scripts
+set smvscripts=%reporoot%\smv\Utilities\Scripts
 set repoexes=%userprofile%\.bundle\BUNDLE\WINDOWS\repoexes
 set gawk=%reporoot%\bot\scripts\bin\gawk.exe
 
