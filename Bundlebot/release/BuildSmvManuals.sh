@@ -2,8 +2,12 @@
 
 CURDIR=`pwd`
 
-smokebotdir=../../Smokebot
-#smokebotdir=../../../smv/Smokebot
+#smokebotdir=../../Smokebot
+smokebotdir=../../../smv/Utilities/Smokebot
+cd $smokebotdir
+smokebotdir=`pwd`
+cd $CURDIR
+
 UPLOAD="-U"
 
 MAILTO=
@@ -42,11 +46,7 @@ esac
 done
 shift $(($OPTIND-1))
 
-if [ -d $smokebotdir ]; then
-  cd $smokebotdir
-  smokebotdir=`pwd`
-  cd $CURDIR
-else
+if [ ! -d $smokebotdir ]; then
   echo "***error: smokebot directory $smokebotdir does not exist"
   exit
 fi
