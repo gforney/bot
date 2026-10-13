@@ -3,7 +3,7 @@
 set -e
 
 SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-BOTREPO="$( cd "$SCRIPTDIR/.." && pwd )"
+BOTREPO="$( cd "$SCRIPTDIR/../.." && pwd )"
 FMROOT="$( cd "$BOTREPO/.." && pwd )"
 MODE=${1:-}
 if [[ "$MODE" != reset ]]; then
