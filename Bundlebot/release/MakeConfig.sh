@@ -14,12 +14,14 @@
 
 base_tag=
 smv_tag=
+cfast_tag=
 OS=
 
-while getopts ':b:o:s:' OPTION
+while getopts ':b:c:o:s:' OPTION
 do
   case "$OPTION" in
     b) base_tag=$OPTARG ;;
+    c) cfast_tag=$OPTARG ;;
     s) smv_tag=$OPTARG ;;
     o) OS=$OPTARG ;;
     *)
@@ -31,21 +33,24 @@ done
 shift $((OPTIND - 1))
 
 if [ -z "$base_tag" ] || [ "$#" -ne 0 ]; then
-  echo "Usage: $0 -b base_tag [-o BASH|DOS] [-s smv_tag]" >&2
+  echo "Usage: $0 -b base_tag [-o BASH|DOS] [-c cfast_tag] [-s smv_tag]" >&2
   exit 1
 fi
 
 if [ "$smv_tag" == "" ]; then
   smv_tag=$base_tag
 fi
+if [ "$cfast_tag" == "" ]; then
+  cfast_tag=$base_tag
+fi
 
 if [ "$OS" == "" ]; then
   BOTVERSION=`git describe --dirty --long`
   BOTHASH=`git rev-parse --short HEAD`
   export BOTVERSION BOTHASH
-  ./MakeConfig.sh -b "$base_tag" -s "$smv_tag" -o BASH > config.sh
+  ./MakeConfig.sh -b "$base_tag" -c "$cfast_tag" -s "$smv_tag"-o BASH > config.sh
   cp config.sh history/config_${base_tag}.sh
-  ./MakeConfig.sh -b "$base_tag" -s "$smv_tag" -o DOS  > config.bat
+  ./MakeConfig.sh -b "$base_tag" -c "$cfast_tag" -s "$smv_tag" -o DOS  > config.bat
   cp config.bat history/config_${base_tag}.bat
   exit
 fi
@@ -71,7 +76,7 @@ else
 fi
 export HEAD COMMENT EXPORT
 
-repos="bot cad exp fds fig out smv"
+repos="bot cad cfast exp fds fig out smv"
 CURDIR=`pwd`
 gitroot=$CURDIR/../../..
 cd $gitroot
@@ -100,7 +105,11 @@ REPO=$(echo "$repo" | awk '{print toupper($0)}')
 if [ "$repo" == "smv" ]; then
   TAG=$REPO-${smv_tag}
 else
-  TAG=$REPO-${base_tag}
+  if [ "$repo" == "cfast" ]; then
+    TAG=$REPO-${cfast_tag}
+  else
+    TAG=$REPO-${base_tag}
+  fi
 fi
 cat << EOF
 $COMMENT $REPOVERSION
