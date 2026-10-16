@@ -25,7 +25,7 @@ do
     s) smv_tag=$OPTARG ;;
     o) OS=$OPTARG ;;
     *)
-      echo "Usage: $0 -b base_tag [-o BASH|DOS] [-s smv_tag]" >&2
+      echo "Usage: $0 -b base_tag [-o BASH|DOS] [-c cfast_tag] [-s smv_tag]" >&2
       exit 1
       ;;
   esac
@@ -48,7 +48,7 @@ if [ "$OS" == "" ]; then
   BOTVERSION=`git describe --dirty --long`
   BOTHASH=`git rev-parse --short HEAD`
   export BOTVERSION BOTHASH
-  ./MakeConfig.sh -b "$base_tag" -c "$cfast_tag" -s "$smv_tag"-o BASH > config.sh
+  ./MakeConfig.sh -b "$base_tag" -c "$cfast_tag" -s "$smv_tag" -o BASH > config.sh
   cp config.sh history/config_${base_tag}.sh
   ./MakeConfig.sh -b "$base_tag" -c "$cfast_tag" -s "$smv_tag" -o DOS  > config.bat
   cp config.bat history/config_${base_tag}.bat
