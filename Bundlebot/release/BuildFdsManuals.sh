@@ -33,6 +33,7 @@ shift $(($OPTIND-1))
 # Get revision descriptions from the repositories beside the bot repository.
 SCRIPTDIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)" || exit 1
 FMROOT="$(cd -- "$SCRIPTDIR/../../.." && pwd)" || exit 1
+BOT_REV=$(cd -- "$FMROOT/bot" && git describe --dirty --long) || exit 1
 CAD_REV=$(cd -- "$FMROOT/cad" && git describe --dirty --long) || exit 1
 EXP_REV=$(cd -- "$FMROOT/exp" && git describe --dirty --long) || exit 1
 FDS_REV=$(cd -- "$FMROOT/fds" && git describe --dirty --long) || exit 1
@@ -48,6 +49,7 @@ else
 echo "    MAILTO: $MAILTO"
 fi
 echo "   command: $0 $OWNER $MAILTO"
+echo "  BOT repo: $BOT_REV"
 echo "  CAD repo: $CAD_REV"
 echo "  EXP repo: $EXP_REV"
 echo "  FDS repo: $FDS_REV" 
