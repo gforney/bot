@@ -50,6 +50,7 @@ process_repo() (
     done
     return 1
   }
+  echo ""
 
   branches=$(git for-each-ref --format='%(refname:strip=2)' refs/heads/) || exit 1
   current=$(git branch --show-current) || exit 1
@@ -69,6 +70,7 @@ process_repo() (
       status=1
     fi
   done <<< "$branches"
+  echo ""
 
   while IFS= read -r tag; do
     [[ -z "$tag" ]] && continue
@@ -87,5 +89,6 @@ process_repo() (
 STATUS=0
 for repo in cad cfast exp fds fig out smv; do
   process_repo "$repo" || STATUS=1
+  sleep 5
 done
 exit "$STATUS"
