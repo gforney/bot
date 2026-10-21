@@ -19,6 +19,12 @@ process_repo() (
     exit 1
   fi
 
+  echo "git remote prune origin"
+  if ! git remote prune origin; then
+    echo "***Warning: cannot prune origin in $repo; skipping this repository." >&2
+    exit 1
+  fi
+
   remotes=$(git remote) || exit 1
   if [[ -z "$remotes" ]]; then
     echo "***Error: no remotes configured for $repo; skipping repository" >&2

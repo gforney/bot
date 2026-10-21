@@ -38,6 +38,13 @@ if errorlevel 1 (
   echo ***Warning: cannot check out master in %REPO%; skipping this repository. Resolve modified files or other checkout errors and try again. >&2
   goto failed
 )
+echo git remote prune origin
+git remote prune origin
+if errorlevel 1 (
+  echo ***Warning: cannot prune origin in %REPO%; skipping this repository. >&2
+  goto failed
+)
+
 git remote > "%CHECKDIR%\remotes.txt"
 if errorlevel 1 goto failed
 set "HASREMOTE="
