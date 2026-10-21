@@ -30,9 +30,7 @@ esac
 done
 shift $(($OPTIND-1))
 
-# this script runs firebot to build fds manuals using revision and tags defined in config.sh
-source config.sh
-export DISABLEPUSH=1
+./SetRepoRevTags.sh
 
 echo FDS manuals will be built using:
 echo "     OWNER: $OWNER"
@@ -45,31 +43,11 @@ echo "   command: $0 $OWNER $MAILTO"
 echo "  FDS repo: $BUNDLE_FDS_TAG $BUNDLE_FDS_HASH"
 echo "  SMV repo: $BUNDLE_SMV_TAG $BUNDLE_SMV_HASH"
 echo ""
+echo "Make sure repos were cleaned and updated.
 echo "Press any key to continue or <CTRL> c to abort."
 echo "Type $0 -h for other options"
 read val
 
-CURDIR=`pwd`
-
-cd ../../..
-REPOROOT=`pwd`
-cd $CURDIR
-
-echo ***clean files
-cd $CURDIR/../../Firebot
-git clean -dxf >& /dev/null
-cd $CURDIR/output
-git clean -dxf >& /dev/null
-cd $CURDIR/../nightly
-git clean -dxf >& /dev/null
-
-echo ***clone repos
-cd $REPOROOT/bot/Scripts
-./setup_repos.sh -b -D
-./update_repos.sh -w
-cd $CURDIR
-
-# build manuals
-cd $REPOROOT/bot/Firebot
-echo ./run_firebot.sh -f -q batch4 $MAILTO -U -r test_bundles $OWNER
-     ./run_firebot.sh -f -q batch4 $MAILTO -U -r test_bundles $OWNER
+cd ../../../Firebot
+echo ./run_firebot.sh -f -q firebot $MAILTO -U -r test_bundles $OWNER
+     ./run_firebot.sh -f -q firebot $MAILTO -U -r test_bundles $OWNER 
