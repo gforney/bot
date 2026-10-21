@@ -30,8 +30,12 @@ esac
 done
 shift $(($OPTIND-1))
 
-# this script runs smokebot to build smokeview manuals using revision and tags defined in config.sh
-source config.sh
+# Get revision descriptions from the repositories beside the bot repository.
+SCRIPTDIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)" || exit 1
+FMROOT="$(cd -- "$SCRIPTDIR/../../.." && pwd)" || exit 1
+FDS_REV=$(cd -- "$FMROOT/fds" && git describe --dirty --long) || exit 1
+FIG_REV=$(cd -- "$FMROOT/fig" && git describe --dirty --long) || exit 1
+SMV_REV=$(cd -- "$FMROOT/smv" && git describe --dirty --long) || exit 1
 
 echo Smokeview manuals will be built using:
 echo "     OWNER: $OWNER"
@@ -41,8 +45,9 @@ else
 echo "    MAILTO: $MAILTO"
 fi
 echo "   command: $0 $OWNER $MAILTO"
-echo "  FDS repo: $BUNDLE_FDS_TAG $BUNDLE_FDS_HASH"
-echo "  SMV repo: $BUNDLE_SMV_TAG $BUNDLE_SMV_HASH"
+echo "  FDS repo: $FDS_REV" 
+echo "  FIG repo: $FIG_REV"
+echo "  SMV repo: $SMV_REV"
 echo ""
 echo "Press any key to continue or <CTRL> c to abort."
 echo "Type $0 -h for other options"
@@ -50,21 +55,8 @@ read val
 
 CURDIR=`pwd`
 
-echo ***clean files
-cd $CURDIR/../../Smokebot
-git clean -dxf >& /dev/null
-cd $CURDIR/output
-git clean -dxf >& /dev/null
-cd $CURDIR/../nightly/output
-git clean -dxf >& /dev/null
-
-echo ***cloning repos
-cd $CURDIR/../../Scripts
-echo "setting up repos"
-./setup_repos.sh -b -D
-./update_repos.sh -w
-
 cd $CURDIR/../../Smokebot
 #./run_smokebot.sh -C -c -u -J -f -q firebot $MAILTO -x $BUNDLE_FDS_HASH -X $BUNDLE_FDS_TAG -y $BUNDLE_SMV_HASH -Y $BUNDLE_SMV_TAG $OWNER -r test_bundles -U -R release
-echo ./run_smokebot.sh -f -b -q batch4 $MAILTO $OWNER -r test_bundles -U 
-     ./run_smokebot.sh -f -b -q batch4 $MAILTO $OWNER -r test_bundles -U 
+echo ./run_smokebot.sh -f -b -q firebot $MAILTO $OWNER -r test_bundles -U 
+     ./run_smokebot.sh -f -b -q firebot $MAILTO $OWNER -r test_bundles -U 
+ 
