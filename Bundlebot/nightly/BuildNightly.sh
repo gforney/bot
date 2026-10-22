@@ -164,9 +164,9 @@ if [ "${BUNDLE_MPITYPE}" == "OPENMPI" ]; then
   export OPENMPI_BIN=`dirname "$(which mpirun)"`
 fi
 
-#define BUNDLE_MAILTO in .bashrc
-if [ "$BUNDLE_MAILTO" != "" ]; then
-  MAILTO=$BUNDLE_MAILTO
+#define GH_EMAIL in .bashrc
+if [ "$GH_EMAIL" != "" ]; then
+  MAILTO=$GH_EMAIL
 fi
 
 #***get branch names

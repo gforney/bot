@@ -1,13 +1,13 @@
 #!/bin/bash
 
 MAILTO=
-if [ "$BUNDLE_EMAIL" != "" ]; then
-  MAILTO="-m $BUNDLE_EMAIL"
+if [ "$GH_EMAIL" != "" ]; then
+  MAILTO="-m $GH_EMAIL"
 fi
 
 OWNER="-o firemodels"
-if [ "$BUNDLE_OWNER" != "" ]; then
-  OWNER="-o $BUNDLE_OWNER"
+if [ "$GH_OWNER" != "" ]; then
+  OWNER="-o $GH_OWNER"
 fi
 
 #*** parse command line options

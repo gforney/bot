@@ -20,6 +20,10 @@ fi
 exit 0
 }
 
+if [ "$GH_EMAIL" != "" ]; then
+  MAILTO=$GH_EMAIL
+fi
+
 while getopts 'hm:' OPTION
 do
 case $OPTION  in
