@@ -30,9 +30,16 @@ esac
 done
 shift $(($OPTIND-1))
 
-# this script runs firebot to build fds manuals using revision and tags defined in config.sh
-source config.sh
-export DISABLEPUSH=1
+# Get revision descriptions from the repositories beside the bot repository.
+SCRIPTDIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)" || exit 1
+FMROOT="$(cd -- "$SCRIPTDIR/../../.." && pwd)" || exit 1
+BOT_REV=$(cd -- "$FMROOT/bot" && git describe --dirty --long) || exit 1
+CAD_REV=$(cd -- "$FMROOT/cad" && git describe --dirty --long) || exit 1
+EXP_REV=$(cd -- "$FMROOT/exp" && git describe --dirty --long) || exit 1
+FDS_REV=$(cd -- "$FMROOT/fds" && git describe --dirty --long) || exit 1
+FIG_REV=$(cd -- "$FMROOT/fig" && git describe --dirty --long) || exit 1
+OUT_REV=$(cd -- "$FMROOT/out" && git describe --dirty --long) || exit 1
+SMV_REV=$(cd -- "$FMROOT/smv" && git describe --dirty --long) || exit 1
 
 echo FDS manuals will be built using:
 echo "     OWNER: $OWNER"
@@ -42,34 +49,19 @@ else
 echo "    MAILTO: $MAILTO"
 fi
 echo "   command: $0 $OWNER $MAILTO"
-echo "  FDS repo: $BUNDLE_FDS_TAG $BUNDLE_FDS_HASH"
-echo "  SMV repo: $BUNDLE_SMV_TAG $BUNDLE_SMV_HASH"
+echo "  BOT repo: $BOT_REV"
+echo "  CAD repo: $CAD_REV"
+echo "  EXP repo: $EXP_REV"
+echo "  FDS repo: $FDS_REV" 
+echo "  FIG repo: $FIG_REV"
+echo "  OUT repo: $OUT_REV"
+echo "  SMV repo: $SMV_REV"
+
 echo ""
 echo "Press any key to continue or <CTRL> c to abort."
 echo "Type $0 -h for other options"
 read val
 
-CURDIR=`pwd`
-
-cd ../../..
-REPOROOT=`pwd`
-cd $CURDIR
-
-echo ***clean files
-cd $CURDIR/../../Firebot
-git clean -dxf >& /dev/null
-cd $CURDIR/output
-git clean -dxf >& /dev/null
-cd $CURDIR/../nightly
-git clean -dxf >& /dev/null
-
-echo ***clone repos
-cd $REPOROOT/bot/Scripts
-./setup_repos.sh -b -D
-./update_repos.sh -w
-cd $CURDIR
-
-# build manuals
-cd $REPOROOT/bot/Firebot
-echo ./run_firebot.sh -f -q batch4 $MAILTO -U -r test_bundles $OWNER
-     ./run_firebot.sh -f -q batch4 $MAILTO -U -r test_bundles $OWNER
+cd ../../../Firebot
+echo ./run_firebot.sh -f -q firebot $MAILTO -U -r test_bundles $OWNER
+     ./run_firebot.sh -f -q firebot $MAILTO -U -r test_bundles $OWNER 
