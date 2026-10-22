@@ -386,7 +386,7 @@ if [ "$ONLY_INSTALLER" == "" ]; then
 #*** clone 3rd party repos
 
   cd $CURDIR/../../Scripts
-  if [ "$USE_CURRENT" == "" ]; then
+  if [[ "$USE_CURRENT" == "" ]] && [[ "$BUNDLETYPE" == "nightly" ]]; then
     echo "*** cloning hypre"
     ./setup_repos.sh -K hypre > $OUTPUTDIR/clone_hypre 2&>1 
     echo "*** hypre cloned"
@@ -410,13 +410,6 @@ if [ "$ONLY_INSTALLER" == "" ]; then
       ./clone_repo.sh -S -N -r $SMV_HASH > $OUTPUTDIR/clone_smv 2&>1
       echo "*** smv cloned"
     fi
-  else
-
-#*** a release bundle - clone all repos except for bot
-
-    echo "*** cloning all repos "
-    ./clone_all_repos.sh  $OUTPUTDIR > $OUTPUTDIR/clone_all 2&>1
-    echo all repos clone complete
   fi
 
   ./make_smvapps.sh $SMVDBG 
