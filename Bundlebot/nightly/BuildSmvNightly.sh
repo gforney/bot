@@ -179,11 +179,13 @@ fi
 
 #*** cloning smv repo
 
-cd $GITROOT/bot/Bundlebot/nightly
-echo "*** cloning smv repo"
-./clone_smvrepo.sh $smv_hash $BUNDLETYPE >& $outputdir/stage2_clone
-cd $GITROOT/smv
-git tag -a $BUNDLE_SMV_TAG -m "tag for smokeview release" >> $outputdir/stage2_clone 2>&1
+if [ "$USE_CURRENT" == "" ]; then
+  cd $GITROOT/bot/Bundlebot/nightly
+  echo "*** cloning smv repo"
+  ./clone_smvrepo.sh $smv_hash $BUNDLETYPE >& $outputdir/stage2_clone
+  cd $GITROOT/smv
+  git tag -a $BUNDLE_SMV_TAG -m "tag for smokeview release" >> $outputdir/stage2_clone 2>&1
+fi
 
 #*** get branch names
 
@@ -236,7 +238,6 @@ if [ "$UPLOADBUNDLE" != "" ]; then
   done
 
   $GITROOT/bot/Bundlebot/nightly/upload_smvbundle.sh $uploaddir ${smv_revision}_${PLATFORMLABEL}.sh                $GITROOTBASE/bot/Bundlebot/nightly $GHOWNER
-  $GITROOT/bot/Bundlebot/nightly/upload_smvbundle.sh $uploaddir ${smv_revision}_${PLATFORMLABEL}_manifest.html     $GITROOTBASE/bot/Bundlebot/nightly $GHOWNER
 
   echo "*** upload complete"
 fi
