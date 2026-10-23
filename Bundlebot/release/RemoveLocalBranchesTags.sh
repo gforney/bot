@@ -89,6 +89,7 @@ process_repo() (
 STATUS=0
 for repo in cad cfast exp fds fig out smv; do
   process_repo "$repo" || STATUS=1
-  sleep 5
+  echo pausing 5 s
+  sleep 5 
 done
 exit "$STATUS"
