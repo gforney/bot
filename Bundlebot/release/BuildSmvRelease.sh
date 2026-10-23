@@ -3,4 +3,4 @@
 source config.sh
 
 cd ../nightly
-./BuildSmvNightly.sh -R -U
+./BuildSmvNightly.sh -C -R -u
