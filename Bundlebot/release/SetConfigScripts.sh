@@ -2,9 +2,9 @@
 # This script builds the configuration scripts used to build bundles
 # Usage: ./SetConfigScripts.sh -b base_tag [-o BASH|DOS] [-c cfast_tag] [-s smv_tag]
 
-base_tag=
-smv_tag=
-cfast_tag=
+base_tag=6.11.2test
+cfast_tag=8.0.0.test
+smv_tag=6.11.3.test
 OS=
 
 while getopts ':b:c:o:s:' OPTION
