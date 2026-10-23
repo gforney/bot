@@ -73,6 +73,6 @@ echo "Press any key to continue or <CTRL> c to abort."
 echo "Type $0 -h for other options"
 read val
 
-cd ../../../Firebot
+cd ../../Firebot
 echo ./run_firebot.sh -f -q firebot $MAILTO -U -r test_bundles $OWNER
      ./run_firebot.sh -f -q firebot $MAILTO -U -r test_bundles $OWNER 
