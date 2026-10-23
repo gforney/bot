@@ -3,8 +3,8 @@
 # Usage: ./SetConfigScripts.sh -b base_tag [-o BASH|DOS] [-c cfast_tag] [-s smv_tag]
 
 base_tag=6.11.2test
-cfast_tag=8.0.0.test
-smv_tag=6.11.3.test
+cfast_tag=8.0.0test
+smv_tag=6.11.3test
 OS=
 
 while getopts ':b:c:o:s:' OPTION
