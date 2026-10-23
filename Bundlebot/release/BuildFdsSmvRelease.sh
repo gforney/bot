@@ -43,6 +43,8 @@ done
 
 echo $$ > $PIDFILE
 
+source ./config.sh
+
 OWNER=`whoami`
 CURDIR=`pwd`
 
