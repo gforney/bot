@@ -26,3 +26,4 @@ if [ "$platform" == "linux" ]; then
   ./setreleasetitle.sh smv $SMV_SHORT_HASH $OWNER
 fi
 
+

@@ -6,3 +6,4 @@ tempfile=/tmp/$infile.$$
 cd $dir
 tr -d '\r' <  $infile > $tempfile
 mv $tempfile $infile
+

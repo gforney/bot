@@ -22,3 +22,4 @@ tar cvf $TODIR/openmpi.tar .
 cd $TODIR/openmpi
 tar xvf $TODIR/openmpi.tar
 rm $TODIR/openmpi.tar
+
