@@ -1,4 +1,5 @@
 #!/bin/bash
+PIDFILE=`pwd`/BuildSmvManuals.pid
 
 MAILTO=
 if [ "$GH_EMAIL" != "" ]; then
@@ -12,14 +13,25 @@ fi
 
 #*** parse command line options
 
-while getopts 'hm:o:' OPTION
+while getopts 'hkm:o:' OPTION
 do
 case $OPTION  in
   h)
-   echo Usage:
-   echo ./BuildSmvManuals.sh -o owner -m email_address
+   echo "Usage: $0 [-h] [-k] [-o owner] [-m email_address]"
+   echo "-k - kill this script and all of its child processes"
    exit
   ;;
+  k)
+   if [ -e $PIDFILE ]; then
+     PID=`head -1 $PIDFILE`
+     echo ***killing process ID $PID and all child processes
+     kill -9 -- -$PID
+     rm -f $PIDFILE
+   else
+     echo ***warning: BuildSmvManuals.sh is not running
+   fi
+   exit
+   ;;
   m)
    MAILTO="-m $OPTARG"
    ;;
@@ -29,6 +41,8 @@ case $OPTION  in
 esac
 done
 shift $(($OPTIND-1))
+
+echo $$ > $PIDFILE
 
 # Get revision descriptions from the repositories beside the bot repository.
 SCRIPTDIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)" || exit 1
@@ -68,4 +82,5 @@ CURDIR=`pwd`
 cd $CURDIR/../../Smokebot
 echo ./run_smokebot.sh -f -b -q firebot $MAILTO $OWNER -r test_bundles -U 
      ./run_smokebot.sh -f -b -q firebot $MAILTO $OWNER -r test_bundles -U 
- 
+
+rm -f $PIDFILE

@@ -1,4 +1,5 @@
 #!/bin/bash
+PIDFILE=`pwd`/BuildFdsManuals.pid
 
 MAILTO=
 if [ "$GH_EMAIL" != "" ]; then
@@ -12,12 +13,23 @@ fi
 
 #*** parse command line options
 
-while getopts 'hm:o:' OPTION
+while getopts 'hkm:o:' OPTION
 do
 case $OPTION  in
   h)
-   echo Usage:
-   echo ./BUILD_fds_manuals.sh -o owner -m email_address
+   echo "Usage: $0 [-h] [-k] [-o owner] [-m email_address]"
+   echo "-k - kill this script and all of its child processes"
+   exit
+   ;;
+  k)
+   if [ -e $PIDFILE ]; then
+     PID=`head -1 $PIDFILE`
+     echo ***killing process ID $PID and all child processes
+     kill -9 -- -$PID
+     rm -f $PIDFILE
+   else
+     echo ***warning: BuildFdsManuals.sh is not running
+   fi
    exit
    ;;
   m)
@@ -29,6 +41,8 @@ case $OPTION  in
 esac
 done
 shift $(($OPTIND-1))
+
+echo $$ > $PIDFILE
 
 # Get revision descriptions from the repositories beside the bot repository.
 SCRIPTDIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)" || exit 1
@@ -76,3 +90,5 @@ read val
 cd ../../Firebot
 echo ./run_firebot.sh -f -q firebot $MAILTO -U -r test_bundles $OWNER
      ./run_firebot.sh -f -q firebot $MAILTO -U -r test_bundles $OWNER 
+
+rm -f $PIDFILE
