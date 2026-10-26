@@ -1,6 +1,10 @@
 #!/bin/bash
+echo "*** Check out and tag the revisions defined for the release bundle in config.sh"
 # Check out and tag the revisions defined for the release bundle.
 set -e
+
+echo "*** removing local branches and tags (output in remove_localbranchestags.log)"
+./RemoveLocalBranchesTags.sh >& remove_localbranchestags.log
 
 SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 BOTREPO="$( cd "$SCRIPTDIR/../.." && pwd )"
