@@ -6,7 +6,7 @@ rem Unmerged branches are deleted too. Checked-out branches are protected.
 setlocal DisableDelayedExpansion
 for %%I in ("%~dp0..\..\..") do set "FMROOT=%%~fI"
 set "STATUS=0"
-for %%R in (bot cad cfast exp fds fig out smv) do call :REPO %%R
+for %%R in (cad cfast exp fds fig out smv) do call :REPO %%R
 exit /b %STATUS%
 
 :REPO
