@@ -75,6 +75,10 @@ echo building smokeview
 BUILD smokeview &
 pid_smokeview=$!
 
+echo building part2iso
+BUILD part2iso &
+pid_part2iso=$!
+
 # verify smokeview apps were built
 
 wait $pid_fds2fed
@@ -85,6 +89,9 @@ CHECK_BUILD pnginfo
 
 wait $pid_smokeview
 CHECK_BUILD smokeview
+
+wait $pid_part2iso
+CHECK_BUILD part2iso
 
 wait $pid_wind2fds
 CHECK_BUILD wind2fds
