@@ -15,8 +15,10 @@ set USE_CURRENT=
 
 ::*** parse command line arguments
 call :GETOPTS %*
+if defined STOPSCRIPT exit /b 1
 
 ::*** exit script if bundle being built already exists
+if "x%USE_CURRENT%" == "x-C" goto skip_test_nightly
 if "x%IS_RELEASE%" == "x1" goto skip_test_nightly
 call TestNightly.bat
 if errorlevel 1 exit /b 1
@@ -71,6 +73,7 @@ cd %BUNDLESCRIPTDIR%
 
 :: create the bundle
 
+if "x%USE_CURRENT%" == "x-C" goto else4
 if "x%IS_RELEASE%" == "x" goto else4
 :: this is a release bundle - hash and revisions obtained from config.bat (invoked in BuildRelease.bat)
   set FDS_HASH_BUNDLER=%BUNDLE_FDS_HASH%
@@ -81,7 +84,7 @@ if "x%IS_RELEASE%" == "x" goto else4
   set SMV_TAG=%BUNDLE_SMV_TAG%
   goto endif4
 :else4
-:: this is a nightly bundle - hash and revisions obtained from latest firebot pass
+:: use the current repos with -C, otherwise use the latest firebot pass
   call get_hash_revisions.bat %USE_CURRENT% || exit /b 1
   set /p FDS_HASH_BUNDLER=<output\FDS_HASH
   set /p SMV_HASH_BUNDLER=<output\SMV_HASH
@@ -128,7 +131,8 @@ echo.                                                        >> %LOGFILE%
 type %LOGFILE%
 
 if %ONLY_INSTALLER% == 1 goto skip2
-:: clone fds and smv repos 
+if "x%USE_CURRENT%" == "x-C" goto skiptag
+:: clone fds and smv repos
 call clone_repos %FDS_HASH_BUNDLER% %SMV_HASH_BUNDLER%  || exit /b 1
 if "%NIGHTLY%" == "yes" goto skiptag
   cd %REPOROOT%\fds
@@ -214,7 +218,7 @@ echo This script builds FDS and Smokeview apps and generates a bundle using eith
 echo specified fds and smv repo revisions or revisions from the latest firebot pass.
 echo.
 echo Options:
-echo -C - build apps using current revision
+echo -C - build apps using current revisions and branches without cloning
 echo -h - display this message
 echo -I - only build installer, assume repos are already cloned and apps are already built
 echo -m mailtto - send email to mailto
@@ -234,7 +238,6 @@ exit /b 0
  if "%1" EQU "-C" (
    set USE_CURRENT=-C
    set valid=1
-   shift
  )
  if "%1" EQU "-h" (
    call :USAGE
@@ -253,7 +256,6 @@ exit /b 0
  if "%1" EQU "-R" (
    set IS_RELEASE=1
    set valid=1
-   shift
  )
  if "%1" EQU "-u" (
    set UPLOAD_BUNDLE=2
