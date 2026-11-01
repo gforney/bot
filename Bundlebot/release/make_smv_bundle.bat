@@ -35,7 +35,7 @@ if exist %smvdir% echo ***error: %smvdir% was not deleted
 
 mkdir %smvdir%
 
-CALL :COPY  %reporoot%\smv\Build\set_path\intel_win\set_path_win.exe   %smvdir%\set_path.exe
+CALL :COPY  "%scriptdir%..\nightly\set_path.bat" "%smvdir%\set_path.bat"
 CALL :COPY  %reporoot%\smv\Build\smokeview\intel_win\smokeview_win.exe %smvdir%\smokeview.exe
 CALL :COPY  %smvscripts%\jp2conv.bat                                   %smvdir%\jp2conv.bat
 
@@ -55,6 +55,8 @@ echo Updating Windows Smokeview to %versionbase%          > %forbundle%\message.
 
 CALL :COPY  %forbundle%\message.txt %zipbase%\message.txt
 CALL :COPY  %forbundle%\setup.bat   %zipbase%\setup.bat
+:: Adapt the copied installer, including installers from older smv revisions.
+powershell.exe -NoLogo -NoProfile -Command "$p=Join-Path $env:zipbase 'setup.bat'; $s=[IO.File]::ReadAllText($p).Replace('set_path.exe','set_path.bat'); [IO.File]::WriteAllText($p,$s,[Text.UTF8Encoding]::new($false))"
 
 set curdir=%CD%
 

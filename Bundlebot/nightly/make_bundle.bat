@@ -188,7 +188,7 @@ CALL :COPY  "%fds_forbundle%\uninstall_fds2.bat" "%out_uninstall%\uninstall_base
 CALL :COPY  "%fds_forbundle%\uninstall.bat"      "%out_uninstall%\uninstall.bat"
 echo @echo off > "%out_uninstall%\uninstall.vbs"
 
-CALL :COPY  "%GITROOT%\smv\Build\set_path\intel_win\set_path_win.exe" "%out_uninstall%\set_path.exe"
+CALL :COPY  "%scriptdir%set_path.bat" "%out_uninstall%\set_path.bat"
 
 echo.
 echo *** copying FDS documentation
