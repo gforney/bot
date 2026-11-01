@@ -39,16 +39,14 @@ timeout /t 30 > Nul
 call :BUILDLIB
 call :BUILD     fds2fed
 call :BUILD     pnginfo
-call :BUILD     smokediff
-call :BUILD     smokezip
+call :BUILD     part2iso
 call :BUILD     wind2fds
 call :BUILDSMV
 
 :: verify smokeview apps were built
 call :CHECK_BUILD     fds2fed
 call :CHECK_BUILD     pnginfo
-call :CHECK_BUILD     smokediff
-call :CHECK_BUILD     smokezip
+call :CHECK_BUILD     part2iso
 call :CHECK_BUILD     wind2fds
 call :CHECK_BUILDSMV
 

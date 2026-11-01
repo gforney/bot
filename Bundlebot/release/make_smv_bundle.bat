@@ -44,10 +44,9 @@ copy %forbundle%\*.png %smvdir%\.>Nul
 
 CALL :COPY  %forbundle%\volrender.ssf %smvdir%\volrender.ssf
 
-CALL :COPY  %reporoot%\smv\Build\smokediff\intel_win\smokediff_win.exe   %smvdir%\smokediff.exe
 CALL :COPY  %reporoot%\smv\Build\pnginfo\intel_win\pnginfo_win.exe       %smvdir%\pnginfo.exe
+CALL :COPY  %reporoot%\smv\Build\part2iso\intel_win\part2iso_win.exe     %smvdir%\part2iso.exe
 CALL :COPY  %reporoot%\smv\Build\fds2fed\intel_win\fds2fed_win.exe       %smvdir%\fds2fed.exe
-CALL :COPY  %reporoot%\smv\Build\smokezip\intel_win\smokezip_win.exe     %smvdir%\smokezip.exe
 CALL :COPY  %reporoot%\smv\Build\wind2fds\intel_win\wind2fds_win.exe     %smvdir%\wind2fds.exe
 
 echo Unpacking Smokeview %versionbase% installation files > %forbundle%\unpack.txt

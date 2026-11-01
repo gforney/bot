@@ -53,10 +53,9 @@ call :BUILDFDS
 
 :: build smokeview libraries and apps
 call :BUILDLIB
-call :BUILD     smokediff
 call :BUILD     pnginfo
+call :BUILD     part2iso
 call :BUILD     fds2fed
-call :BUILD     smokezip
 call :BUILD     wind2fds
 call :BUILDSMV
 
@@ -67,10 +66,9 @@ call :CHECK_BUILDFDS
 call :CHECK_BUILDFDSOPENMP
 
 :: verify smokeview apps were built
-call :CHECK_BUILD     smokediff
 call :CHECK_BUILD     pnginfo
+call :CHECK_BUILD     part2iso
 call :CHECK_BUILD     fds2fed
-call :CHECK_BUILD     smokezip
 call :CHECK_BUILD     wind2fds
 call :CHECK_BUILDSMV
 
