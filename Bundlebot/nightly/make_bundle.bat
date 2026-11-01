@@ -139,8 +139,6 @@ CALL :COPY  %bundle_dir%\smv\part2iso.exe   %out_smv%\part2iso.exe
 CALL :COPY  %bundle_dir%\smv\fds2fed.exe    %out_smv%\fds2fed.exe
 CALL :COPY  %bundle_dir%\smv\wind2fds.exe   %out_smv%\wind2fds.exe 
 
-CALL :COPY  %GITROOT%\smv\Utilities\jp2conv.bat                %out_smv%\jp2conv.bat
-
 set curdir=%CD%
 
 CALL :COPY "%fds_forbundle%\fdsinit.bat"                        %out_bin%\fdsinit.bat

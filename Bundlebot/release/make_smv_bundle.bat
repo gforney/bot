@@ -16,7 +16,6 @@ set reporoot=%CD%
 set CURDIR=%CD%
 
 set forbundle=%reporoot%\smv\Build\for_bundle
-set smvscripts=%reporoot%\smv\scripts
 set repoexes=%userprofile%\.bundle\BUNDLE\WINDOWS\repoexes
 set gawk=%reporoot%\bot\scripts\bin\gawk.exe
 
@@ -37,7 +36,6 @@ mkdir %smvdir%
 
 CALL :COPY  "%scriptdir%..\nightly\set_path.bat" "%smvdir%\set_path.bat"
 CALL :COPY  %reporoot%\smv\Build\smokeview\intel_win\smokeview_win.exe %smvdir%\smokeview.exe
-CALL :COPY  %smvscripts%\jp2conv.bat                                   %smvdir%\jp2conv.bat
 
 echo copying .png files
 copy %forbundle%\*.png %smvdir%\.>Nul
