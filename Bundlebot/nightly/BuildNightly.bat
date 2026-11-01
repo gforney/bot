@@ -96,28 +96,34 @@ if "x%IS_RELEASE%" == "x" goto else4
   erase output\SMV_REVISION
 :endif4
 
+set FDS_BRANCH_BUNDLER=nightly
+set SMV_BRANCH_BUNDLER=nightly
+if "%NIGHTLY%" == "no" set FDS_BRANCH_BUNDLER=release
+if "%NIGHTLY%" == "no" set SMV_BRANCH_BUNDLER=release
+if "x%USE_CURRENT%" == "x-C" goto current_branches
+if %ONLY_INSTALLER% == 1 goto current_branches
+goto branches_ready
+:current_branches
+set FDS_BRANCH_BUNDLER=unknown
+set SMV_BRANCH_BUNDLER=unknown
+for /f "delims=" %%B in ('git -C "%REPOROOT%\fds" rev-parse --abbrev-ref HEAD') do set "FDS_BRANCH_BUNDLER=%%B"
+for /f "delims=" %%B in ('git -C "%REPOROOT%\smv" rev-parse --abbrev-ref HEAD') do set "SMV_BRANCH_BUNDLER=%%B"
+:branches_ready
+
 echo.                                                         > %LOGFILE%
 echo ***building bundle using:                               >> %LOGFILE%
 echo.                                                        >> %LOGFILE%
 if "x%FDS_REVISION_BUNDLER%" == "x" goto skip_fdsrev
-  echo             FDS revision: %FDS_REVISION_BUNDLER%      >> %LOGFILE%
+  echo             FDS revision: %FDS_REVISION_BUNDLER%-%FDS_HASH_BUNDLER%/%FDS_BRANCH_BUNDLER%      >> %LOGFILE%
 :skip_fdsrev
-
-if "x%FDS_HASH_BUNDLER%" == "x" goto skip_fdshash
-echo            FDS repo hash: %FDS_HASH_BUNDLER%            >> %LOGFILE%
-:skip_fdshash
 
 if "x%FDS_TAG%" == "x" goto skip_fdstag
 echo             FDS repo tag: %FDS_TAG%                     >> %LOGFILE%
 :skip_fdstag
 
 if "x%SMV_REVISION_BUNDLER%" == "x" goto skip_smvrev
-  echo             smv revision: %SMV_REVISION_BUNDLER%      >> %LOGFILE%
+  echo             SMV revision: %SMV_REVISION_BUNDLER%-%SMV_HASH_BUNDLER%/%SMV_BRANCH_BUNDLER%      >> %LOGFILE%
 :skip_smvrev
-
-if "x%SMV_HASH_BUNDLER%" == "x" goto skip_smvhash
-echo            SMV repo hash: %SMV_HASH_BUNDLER%            >> %LOGFILE%
-:skip_smvhash
 
 if "x%SMV_TAG%" == "x" goto skip_smvtag
 echo             SMV repo tag: %SMV_TAG%                     >> %LOGFILE%
