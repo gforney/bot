@@ -1,5 +1,5 @@
 #!/bin/bash
-# Remove local branches and current tags absent from every configured remote.
+# Remove local branches and all local tags absent from every configured remote.
 # Unmerged branches are deleted too. Checked-out branches are protected.
 
 SCRIPTDIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)" || exit 1
@@ -11,8 +11,8 @@ process_repo() (
   echo "repo: $repo"
   cd -- "$FMROOT/$repo" || exit 1
 
-  # Remember tags on the original HEAD before switching to master.
-  current_tags=$(git tag --points-at HEAD) || exit 1
+  # Collect every local tag; keep tags whose names exist on any remote.
+  local_tags=$(git tag --list) || exit 1
   echo "git checkout master"
   if ! git checkout master; then
     echo "***Warning: cannot check out master in $repo; skipping this repository. Resolve modified files or other checkout errors and try again." >&2
@@ -82,7 +82,7 @@ process_repo() (
       echo "***Error: could not delete tag \"$tag\" for $repo" >&2
       status=1
     fi
-  done <<< "$current_tags"
+  done <<< "$local_tags"
   exit "$status"
 )
 
