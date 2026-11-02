@@ -134,13 +134,10 @@ cd %scriptdir%
 call copy_oneapi_libs.bat %out_bin%
 cd %CURDIR%
 
-CALL :COPY  %bundle_dir%\smv\smokediff.exe  %out_smv%\smokediff.exe
 CALL :COPY  %bundle_dir%\smv\pnginfo.exe    %out_smv%\pnginfo.exe
+CALL :COPY  %bundle_dir%\smv\part2iso.exe   %out_smv%\part2iso.exe
 CALL :COPY  %bundle_dir%\smv\fds2fed.exe    %out_smv%\fds2fed.exe
-CALL :COPY  %bundle_dir%\smv\smokezip.exe   %out_smv%\smokezip.exe 
 CALL :COPY  %bundle_dir%\smv\wind2fds.exe   %out_smv%\wind2fds.exe 
-
-CALL :COPY  %GITROOT%\smv\scripts\jp2conv.bat                %out_smv%\jp2conv.bat
 
 set curdir=%CD%
 
@@ -188,7 +185,7 @@ CALL :COPY  "%fds_forbundle%\uninstall_fds2.bat" "%out_uninstall%\uninstall_base
 CALL :COPY  "%fds_forbundle%\uninstall.bat"      "%out_uninstall%\uninstall.bat"
 echo @echo off > "%out_uninstall%\uninstall.vbs"
 
-CALL :COPY  "%GITROOT%\smv\Build\set_path\intel_win\set_path_win.exe" "%out_uninstall%\set_path.exe"
+CALL :COPY  "%scriptdir%set_path.bat" "%out_uninstall%\set_path.bat"
 
 echo.
 echo *** copying FDS documentation

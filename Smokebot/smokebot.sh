@@ -1188,13 +1188,6 @@ email_build_status()
 
   # No errors or warnings
   else
-# upload guides to a google drive directory
-    if [ "$UPLOADRESULTS" == "1" ]; then
-      cd $smokebotdir
-      echo  "***output guides to Github"  &> output/stage_upload
-      echo  ""                            &>> output/stage_upload
-      $UploadWEB                  $smvrepo/Manuals $MAKEMOVIES &>> output/stage_upload
-    fi
 
       # Send success message with links to nightly manuals
 
@@ -1643,7 +1636,6 @@ IMAGE_DIFFS=$SMV_SUMMARY_DIR/image_differences
 
 UploadGuidesGH=$botrepo/Smokebot/smv_guides2GH.sh
 UploadSummaryGH=$botrepo/Smokebot/smv_summary2GH.sh
-UploadWEB=$botrepo/Smokebot/smv_web2GD.sh
 
 THIS_FDS_AUTHOR=
 THIS_FDS_FAILED=0

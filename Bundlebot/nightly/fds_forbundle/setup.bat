@@ -178,15 +178,15 @@ echo        copy complete
 echo *** Removing previous FDS/Smokeview entries from the system and user path.
 echo.                                                                           >> "%LOGFILE%"
 echo *** Removing previous FDS/Smokeview entries from the system and user path. >> "%LOGFILE%"
-call "%UNINSTALLDIR%\set_path.exe" -s -m -b -r "nist\fds"        >> "%LOGFILE%"
-call "%UNINSTALLDIR%\set_path.exe" -u -m -b -r "FDS\FDS5"        >> "%LOGFILE%"
-call "%UNINSTALLDIR%\set_path.exe" -s -m -b -r "FDS\FDS5"        >> "%LOGFILE%"
-call "%UNINSTALLDIR%\set_path.exe" -u -m -b -r "FDS\FDS6"        >> "%LOGFILE%"
-call "%UNINSTALLDIR%\set_path.exe" -s -m -b -r "FDS\FDS6"        >> "%LOGFILE%"
-call "%UNINSTALLDIR%\set_path.exe" -s -m -b -r "firemodels\FDS6" >> "%LOGFILE%"
-call "%UNINSTALLDIR%\set_path.exe" -s -m -b -r "firemodels\SMV6" >> "%LOGFILE%"
-call "%UNINSTALLDIR%\set_path.exe" -u -m -b -r "firemodels\FDS6" >> "%LOGFILE%"
-call "%UNINSTALLDIR%\set_path.exe" -u -m -b -r "firemodels\SMV6" >> "%LOGFILE%"
+call "%UNINSTALLDIR%\set_path.bat" -s -m -b -r "nist\fds"        >> "%LOGFILE%"
+call "%UNINSTALLDIR%\set_path.bat" -u -m -b -r "FDS\FDS5"        >> "%LOGFILE%"
+call "%UNINSTALLDIR%\set_path.bat" -s -m -b -r "FDS\FDS5"        >> "%LOGFILE%"
+call "%UNINSTALLDIR%\set_path.bat" -u -m -b -r "FDS\FDS6"        >> "%LOGFILE%"
+call "%UNINSTALLDIR%\set_path.bat" -s -m -b -r "FDS\FDS6"        >> "%LOGFILE%"
+call "%UNINSTALLDIR%\set_path.bat" -s -m -b -r "firemodels\FDS6" >> "%LOGFILE%"
+call "%UNINSTALLDIR%\set_path.bat" -s -m -b -r "firemodels\SMV6" >> "%LOGFILE%"
+call "%UNINSTALLDIR%\set_path.bat" -u -m -b -r "firemodels\FDS6" >> "%LOGFILE%"
+call "%UNINSTALLDIR%\set_path.bat" -u -m -b -r "firemodels\SMV6" >> "%LOGFILE%"
 
 :: ------------ create aliases ----------------
 
@@ -199,13 +199,13 @@ echo *** Setting up PATH variable.
 echo.                                                       >> "%LOGFILE%"
 echo *** Setting up PATH variable                           >> "%LOGFILE%"
 if NOT "%option_install%" == "1" goto skip_systempath
-  call "%UNINSTALLDIR%\set_path.exe" -s -m -f "%FDS6%\bin"  >> "%LOGFILE%"
-  call "%UNINSTALLDIR%\set_path.exe" -s -m -f "%SMV6%"      >> "%LOGFILE%"
+  call "%UNINSTALLDIR%\set_path.bat" -s -m -f "%FDS6%\bin"  >> "%LOGFILE%"
+  call "%UNINSTALLDIR%\set_path.bat" -s -m -f "%SMV6%"      >> "%LOGFILE%"
   goto after_setpath
 :skip_systempath
 
-call "%UNINSTALLDIR%\set_path.exe" -u -m -f "%FDS6%\bin" >> "%LOGFILE%"
-call "%UNINSTALLDIR%\set_path.exe" -u -m -f "%SMV6%"      >> "%LOGFILE%"
+call "%UNINSTALLDIR%\set_path.bat" -u -m -f "%FDS6%\bin" >> "%LOGFILE%"
+call "%UNINSTALLDIR%\set_path.bat" -u -m -f "%SMV6%"      >> "%LOGFILE%"
 
 :after_setpath
 
@@ -303,7 +303,7 @@ echo *** Setting up the Uninstall script.
 
 echo if "%%cfastinstalled%%" == "1" goto skip2                >> "%UNINSTALLDIR%\uninstall_base.bat"
 echo echo Removing "%SMV6%" from the System Path              >> "%UNINSTALLDIR%\uninstall_base.bat"
-echo call "%UNINSTALLDIR%\set_path.exe" -s -b -r %SMV6%       >> "%UNINSTALLDIR%\uninstall_base.bat"
+echo call "%UNINSTALLDIR%\set_path.bat" -s -b -r "%SMV6%"       >> "%UNINSTALLDIR%\uninstall_base.bat"
 echo rmdir /s /q "%SMV6%"                                     >> "%UNINSTALLDIR%\uninstall_base.bat"
 echo :skip2                                                   >> "%UNINSTALLDIR%\uninstall_base.bat"
 
@@ -314,7 +314,7 @@ echo if exist "%DESKTOPDIR11%\CMDfds.lnk" erase "%DESKTOPDIR11%\CMDfds.lnk"  >> 
 :: remove FDS path and directory
 
 echo echo Removing "%FDS6%\bin" from the System Path          >> "%UNINSTALLDIR%\uninstall_base.bat"
-echo call "%UNINSTALLDIR%\set_path.exe" -s -b -r "%FDS6%\bin" >> "%UNINSTALLDIR%\uninstall_base.bat"
+echo call "%UNINSTALLDIR%\set_path.bat" -s -b -r "%FDS6%\bin" >> "%UNINSTALLDIR%\uninstall_base.bat"
 echo echo.                                                    >> "%UNINSTALLDIR%\uninstall_base.bat"
 echo echo Removing "%FDS6%"                                   >> "%UNINSTALLDIR%\uninstall_base.bat"
 echo rmdir /s /q  "%FDS6%"                                    >> "%UNINSTALLDIR%\uninstall_base.bat"
