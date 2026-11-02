@@ -18,8 +18,8 @@ set "REPOVERSION="
 set "BRANCH="
 for /f "delims=" %%I in ('git describe --dirty --long') do set "REPOVERSION=%%I"
 for /f "delims=" %%I in ('git branch --show-current') do set "BRANCH=%%I"
-echo repo version   %REPOVERSION%/%BRANCH%
-echo config version %~3/%~2
+echo repo   %REPOVERSION%/%BRANCH%
+echo config %~3/%~2
 echo(
 popd
 exit /b

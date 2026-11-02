@@ -11,8 +11,8 @@ REPO=$(echo "$repo" | awk '{print toupper($0)}')
 REPOVERSION=`git describe --dirty --long`
 BRANCH=$(git branch --show-current)
 
-echo "repo version   $REPOVERSION/$BRANCH"
-echo "config version $CONFIGTAG/$CONFIGVERSION"
+echo "repo   $REPOVERSION/$BRANCH"
+echo "config $CONFIGTAG/$CONFIGVERSION"
 echo ""
 }
 
