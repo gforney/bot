@@ -9,12 +9,10 @@ CONFIGTAG=$3
 cd $gitroot/$repo
 REPO=$(echo "$repo" | awk '{print toupper($0)}')
 REPOVERSION=`git describe --dirty --long`
-HASH=`git rev-parse --short HEAD`
+BRANCH=$(git branch --show-current)
 
-echo "repo   $REPOVERSION"
-echo "config $CONFIGTAG"
-echo "repo   $HASH"
-echo "config $CONFIGVERSION"
+echo "repo version   $REPOVERSION/$BRANCH"
+echo "config version $CONFIGTAG/$CONFIGVERSION"
 echo ""
 }
 
@@ -24,9 +22,9 @@ cd $gitroot
 gitroot=`pwd`
 cd $CURDIR
 
-GETREV bot   $BUNDLE_CAD_HASH $BUNDLE_BOT_TAG
+GETREV bot   $BUNDLE_BOT_HASH $BUNDLE_BOT_TAG
 GETREV cad   $BUNDLE_CAD_HASH $BUNDLE_CAD_TAG
-GETREV cfast $BUNDLE_CAD_HASH $BUNDLE_CFAST_TAG
+GETREV cfast $BUNDLE_CFAST_HASH $BUNDLE_CFAST_TAG
 GETREV exp   $BUNDLE_EXP_HASH $BUNDLE_EXP_TAG
 GETREV fds   $BUNDLE_FDS_HASH $BUNDLE_FDS_TAG
 GETREV fig   $BUNDLE_FIG_HASH $BUNDLE_FIG_TAG
