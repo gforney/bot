@@ -1,6 +1,6 @@
 #!/bin/bash
 # This script builds the configuration scripts used to build bundles
-# Usage: ./SetConfigScripts.sh -b base_tag [-o BASH|DOS] [-c cfast_tag] [-s smv_tag]
+# Usage: ./UpdateConfigScripts.sh -b base_tag [-o BASH|DOS] [-c cfast_tag] [-s smv_tag]
 
 base_tag=6.11.2test
 cfast_tag=8.0.0test
@@ -38,9 +38,9 @@ if [ "$OS" == "" ]; then
   BOTVERSION=`git describe --dirty --long`
   BOTHASH=`git rev-parse --short HEAD`
   export BOTVERSION BOTHASH
-  ./SetConfigScripts.sh -b "$base_tag" -c "$cfast_tag" -s "$smv_tag" -o BASH > config.sh
+  ./UpdateConfigScripts.sh -b "$base_tag" -c "$cfast_tag" -s "$smv_tag" -o BASH > config.sh
   cp config.sh history/config_${base_tag}.sh
-  ./SetConfigScripts.sh -b "$base_tag" -c "$cfast_tag" -s "$smv_tag" -o DOS  > config.bat
+  ./UpdateConfigScripts.sh -b "$base_tag" -c "$cfast_tag" -s "$smv_tag" -o DOS  > config.bat
   cp config.bat history/config_${base_tag}.bat
   exit
 fi
