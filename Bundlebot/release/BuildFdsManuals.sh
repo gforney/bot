@@ -11,9 +11,11 @@ if [ "$GH_OWNER" != "" ]; then
   OWNER="-o $GH_OWNER"
 fi
 
+PROCEED=
+
 #*** parse command line options
 
-while getopts 'hkm:o:' OPTION
+while getopts 'hkm:o:y' OPTION
 do
 case $OPTION  in
   h)
@@ -37,6 +39,9 @@ case $OPTION  in
    ;;
   o)
    OWNER="-o $OPTARG"
+   ;;
+  y)
+   PROCEED=1
    ;;
 esac
 done
@@ -83,12 +88,35 @@ echo "  OUT repo: $OUT_REV/$OUT_BRANCH"
 echo "  SMV repo: $SMV_REV/$SMV_BRANCH"
 
 echo ""
-echo "Press any key to continue or <CTRL> c to abort."
-echo "Type $0 -h for other options"
-read val
 
-cd ../../Firebot
-echo ./run_firebot.sh -f -q firebot $MAILTO -U -r test_bundles $OWNER
-     ./run_firebot.sh -f -q firebot $MAILTO -U -r test_bundles $OWNER 
+if [ "$PROCEED" == "" ]; then
+  echo "Press any key to continue or <CTRL> c to abort."
+  echo "Type $0 -h for other options"
+  read val
+fi
 
+CURDIR=`pwd`
+
+cd ../../..
+REPOROOT=`pwd`
+cd $CURDIR
+
+echo ***clean files
+cd $CURDIR/../../Firebot
+git clean -dxf >& /dev/null
+cd $CURDIR/output
+git clean -dxf >& /dev/null
+cd $CURDIR/../nightly
+git clean -dxf >& /dev/null
+
+echo ***clone repos
+cd $REPOROOT/bot/Scripts
+./setup_repos.sh -b -D
+./update_repos.sh -w
+cd $CURDIR
+
+# build manuals
+cd $REPOROOT/bot/Firebot
+echo ./run_firebot.sh -y -f -q firebot $MAILTO -U -r test_bundles $OWNER
+     ./run_firebot.sh -y -f -q firebot $MAILTO -U -r test_bundles $OWNER
 rm -f $PIDFILE

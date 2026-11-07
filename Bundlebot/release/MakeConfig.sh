@@ -1,21 +1,28 @@
 #!/bin/bash
 # This script builds the configuration scripts used to build bundles
-# Usage: ./UpdateConfigScripts.sh -b base_tag [-o BASH|DOS] [-c cfast_tag] [-s smv_tag]
+# A positional base_tag also sets the default SMV and CFAST tags.
+# Usage: ./MakeConfig.sh [base_tag | -f base_tag | -b base_tag] [-o BASH|DOS] [-c cfast_tag] [-s smv_tag]
 
 base_tag=6.11.2test
 cfast_tag=8.0.0test
 smv_tag=6.11.3test
 OS=
 
-while getopts ':b:c:o:s:' OPTION
+if [ "$#" -gt 0 ] && [[ "$1" != -* ]]; then
+  version=$1
+  shift
+  set -- -f "$version" -s "$version" -c "$version" "$@"
+fi
+
+while getopts ':b:c:f:o:s:' OPTION
 do
   case "$OPTION" in
-    b) base_tag=$OPTARG ;;
+    b|f) base_tag=$OPTARG ;;
     c) cfast_tag=$OPTARG ;;
     s) smv_tag=$OPTARG ;;
     o) OS=$OPTARG ;;
     *)
-      echo "Usage: $0 -b base_tag [-o BASH|DOS] [-c cfast_tag] [-s smv_tag]" >&2
+      echo "Usage: $0 [base_tag | -f base_tag | -b base_tag] [-o BASH|DOS] [-c cfast_tag] [-s smv_tag]" >&2
       exit 1
       ;;
   esac
@@ -23,7 +30,7 @@ done
 shift $((OPTIND - 1))
 
 if [ -z "$base_tag" ] || [ "$#" -ne 0 ]; then
-  echo "Usage: $0 -b base_tag [-o BASH|DOS] [-c cfast_tag] [-s smv_tag]" >&2
+  echo "Usage: $0 [base_tag | -f base_tag | -b base_tag] [-o BASH|DOS] [-c cfast_tag] [-s smv_tag]" >&2
   exit 1
 fi
 
@@ -38,9 +45,9 @@ if [ "$OS" == "" ]; then
   BOTVERSION=`git describe --dirty --long`
   BOTHASH=`git rev-parse --short HEAD`
   export BOTVERSION BOTHASH
-  ./UpdateConfigScripts.sh -b "$base_tag" -c "$cfast_tag" -s "$smv_tag" -o BASH > config.sh
+  ./MakeConfig.sh -b "$base_tag" -c "$cfast_tag" -s "$smv_tag" -o BASH > config.sh
   cp config.sh history/config_${base_tag}.sh
-  ./UpdateConfigScripts.sh -b "$base_tag" -c "$cfast_tag" -s "$smv_tag" -o DOS  > config.bat
+  ./MakeConfig.sh -b "$base_tag" -c "$cfast_tag" -s "$smv_tag" -o DOS  > config.bat
   cp config.bat history/config_${base_tag}.bat
   exit
 fi

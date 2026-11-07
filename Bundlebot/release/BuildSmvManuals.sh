@@ -11,9 +11,11 @@ if [ "$GH_OWNER" != "" ]; then
   OWNER="-o $GH_OWNER"
 fi
 
+PROCEED=
+
 #*** parse command line options
 
-while getopts 'hkm:o:' OPTION
+while getopts 'hkm:o:y' OPTION
 do
 case $OPTION  in
   h)
@@ -37,6 +39,9 @@ case $OPTION  in
    ;;
   o)
    OWNER="-o $OPTARG"
+   ;;
+  y)
+   PROCEED=1
    ;;
 esac
 done
@@ -73,14 +78,34 @@ echo "  FDS repo: $FDS_REV/$FDS_BRANCH"
 echo "  FIG repo: $FIG_REV/$FIG_BRANCH"
 echo "  SMV repo: $SMV_REV/$SMV_BRANCH"
 echo ""
-echo "Press any key to continue or <CTRL> c to abort."
-echo "Type $0 -h for other options"
-read val
+if [ "$PROCEED" == "" ]; then
+  echo "Press any key to continue or <CTRL> c to abort."
+  echo "Type $0 -h for other options"
+  read val
+fi
 
 CURDIR=`pwd`
 
+cd ../../../
+export REPOROOT=`pwd`
+cd $CURDIR
+
+echo ***clean files
 cd $CURDIR/../../Smokebot
 echo ./run_smokebot.sh -f -b -q firebot $MAILTO $OWNER -r test_bundles -U 
      ./run_smokebot.sh -f -b -q firebot $MAILTO $OWNER -r test_bundles -U 
 
+git clean -dxf >& /dev/null
+cd $CURDIR/../nightly/output
+git clean -dxf >& /dev/null
+
+echo ***update bot, web and wiki repos
+cd $CURDIR/../../Scripts
+echo "update bot, web and wiki repos"
+./update_repos.sh -b
+./update_repos.sh -w
+
+cd $CURDIR/../../Smokebot
+echo ./run_smokebot.sh -f -q firebot $MAILTO $OWNER -r test_bundles -R release -U 
+     ./run_smokebot.sh -f -q firebot $MAILTO $OWNER -r test_bundles -R release -U 
 rm -f $PIDFILE
