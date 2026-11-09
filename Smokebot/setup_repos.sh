@@ -215,7 +215,7 @@ if [ "$APPENDTEST" != "" ]; then
   eraserepos=
 fi
 if [ "$CONFIG_REPOS" != "" ]; then
-  source "$SCRIPTDIR/release_config.sh" || exit 1
+  source "$BOTREPO/Bundlebot/release/config.sh" || exit 1
 fi
 
 cd -- "$BOTREPO" || exit 1
