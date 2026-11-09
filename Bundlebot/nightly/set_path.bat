@@ -1,6 +1,6 @@
 @echo off
 setlocal DisableDelayedExpansion
-rem PowerShell handles PATH strings; setx.exe performs persistent writes.
+rem PowerShell reads and writes the selected PATH registry value.
 set "SET_PATH_SELF=%~f0"
 set "SET_PATH_COUNT=0"
 :collect_args
@@ -34,9 +34,7 @@ Modify or display the User or System PATH environment variable.
 Quote entries containing spaces or shell characters. The last operation and
 scope specified take precedence. Backups are saved in the current directory
 as User_path_backup.txt or System_path_backup.txt (with numbered suffixes).
-Requires Windows PowerShell and setx.exe. Changes affect future processes.
-setx expands environment references and cannot safely write over 1024 characters;
-this wrapper refuses such writes. Use set_path.exe for longer PATH values.
+Requires Windows PowerShell. Changes affect future processes.
 '@
 }
 try {
@@ -75,7 +73,7 @@ try {
         }
     }
     if ($version) {
-        'set_path.bat 1.0 (setx.exe wrapper)'
+        'set_path.bat 1.1'
         if ($hash -ne 'none') {
             $algorithms = @($hash)
             if ($hash -eq 'all') { $algorithms = @('MD5', 'SHA1', 'SHA256') }
@@ -89,13 +87,23 @@ try {
     # Read the selected registry value without expanding %references%.
     # The process PATH combines scopes and must never be used here.
     if ($scope -eq 'User') {
-        $key = [Microsoft.Win32.Registry]::CurrentUser.OpenSubKey('Environment')
+        $hive = [Microsoft.Win32.Registry]::CurrentUser
+        $subkey = 'Environment'
     } else {
-        $key = [Microsoft.Win32.Registry]::LocalMachine.OpenSubKey('SYSTEM\CurrentControlSet\Control\Session Manager\Environment')
+        $hive = [Microsoft.Win32.Registry]::LocalMachine
+        $subkey = 'SYSTEM\CurrentControlSet\Control\Session Manager\Environment'
     }
+    $key = $hive.OpenSubKey($subkey)
     $old = ''
+    $kind = [Microsoft.Win32.RegistryValueKind]::ExpandString
     if ($null -ne $key) {
-        try { $old = [string]$key.GetValue('Path', '', [Microsoft.Win32.RegistryValueOptions]::DoNotExpandEnvironmentNames) }
+        try {
+            $stored = $key.GetValue('Path', $null, [Microsoft.Win32.RegistryValueOptions]::DoNotExpandEnvironmentNames)
+            if ($null -ne $stored) {
+                $old = [string]$stored
+                $kind = $key.GetValueKind('Path')
+            }
+        }
         finally { $key.Dispose() }
     }
     if ($display -or $test -or $operation -eq '') { "  ${scope} path:"; $old }
@@ -124,13 +132,11 @@ try {
         $answer = Read-Host 'y=yes, n=no'
         if ($answer -notmatch '^\s*[yY]') { exit 0 }
     }
-    # Check the expanded value because setx expands references when writing.
-    $value = [Environment]::ExpandEnvironmentVariables($new)
-    if ($value.Length -gt 1024) { throw 'PATH exceeds the setx limit of 1024 characters. No changes made; use set_path.exe.' }
-    if ($value -match '[%~]') { throw 'PATH contains unresolved setx environment references (% or ~). No changes made; use set_path.exe.' }
-    if ($value.Length -eq 0) { throw 'setx cannot write an empty PATH. No changes made; use set_path.exe.' }
-    $setx = Join-Path $env:SystemRoot 'System32\setx.exe'
-    if (-not (Test-Path -LiteralPath $setx)) { throw "setx.exe not found: $setx" }
+    Add-Type -Namespace SetPath -Name NativeMethods -MemberDefinition @'
+[System.Runtime.InteropServices.DllImport("user32.dll", CharSet = System.Runtime.InteropServices.CharSet.Unicode)]
+public static extern IntPtr SendMessageTimeout(IntPtr window, uint message, UIntPtr wParam,
+    string lParam, uint flags, uint timeout, out UIntPtr result);
+'@
     $backupBase = Join-Path (Get-Location).Path "${scope}_path_backup"
     $backup = "$backupBase.txt"
     $number = 0
@@ -139,24 +145,22 @@ try {
         $backup = '{0}_{1:000}.txt' -f $backupBase, $number
     }
     [IO.File]::WriteAllText($backup, "$scope Path`r`n$old`r`n", [Text.Encoding]::Unicode)
-    # Windows native argument quoting, including quotes and trailing backslashes.
-    $quoted = '"' + ([regex]::Replace($value, '(\\*)"', '$1$1\"') -replace '(\\+)$', '$1$1') + '"'
-    $start = New-Object Diagnostics.ProcessStartInfo
-    $start.FileName = $setx
-    $start.Arguments = 'Path ' + $quoted
-    if ($scope -eq 'System') { $start.Arguments += ' /M' }
-    $start.UseShellExecute = $false
-    $process = [Diagnostics.Process]::Start($start)
-    $process.WaitForExit()
-    $status = $process.ExitCode
-    $process.Dispose()
-    if ($status -ne 0) { throw "setx.exe failed (exit $status). Backup: $backup" }
+    $key = $hive.OpenSubKey($subkey, $true)
+    if ($null -eq $key -and $scope -eq 'User') { $key = $hive.CreateSubKey($subkey) }
+    if ($null -eq $key) { throw "Cannot open the $scope environment registry key for writing." }
+    try { $key.SetValue('Path', $new, $kind) }
+    finally { $key.Dispose() }
+
+    # Broadcast WM_SETTINGCHANGE so Explorer can refresh its environment.
+    $result = [UIntPtr]::Zero
+    [void][SetPath.NativeMethods]::SendMessageTimeout([IntPtr]0xffff, 0x001a, [UIntPtr]::Zero,
+        'Environment', 0x0002, 1000, [ref]$result)
     if ($summary) {
         if ($operation -eq '-r') { "  All directories containing $entry were removed from the $scope path." }
         else { "  $entry was added to the $scope path." }
         '  Open a new command window for PATH changes to take effect.'
     }
-    if ($display) { "`n  $scope path set to:"; $value }
+    if ($display) { "`n  $scope path set to:"; $new }
     exit 0
 } catch {
     [Console]::Error.WriteLine('set_path: ' + $_.Exception.Message)

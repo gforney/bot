@@ -175,39 +175,7 @@ call :is_file_copied mpiexec.exe
 
 echo        copy complete
 
-echo *** Removing previous FDS/Smokeview entries from the system and user path.
-echo.                                                                           >> "%LOGFILE%"
-echo *** Removing previous FDS/Smokeview entries from the system and user path. >> "%LOGFILE%"
-call "%UNINSTALLDIR%\set_path.bat" -s -m -b -r "nist\fds"        >> "%LOGFILE%"
-call "%UNINSTALLDIR%\set_path.bat" -u -m -b -r "FDS\FDS5"        >> "%LOGFILE%"
-call "%UNINSTALLDIR%\set_path.bat" -s -m -b -r "FDS\FDS5"        >> "%LOGFILE%"
-call "%UNINSTALLDIR%\set_path.bat" -u -m -b -r "FDS\FDS6"        >> "%LOGFILE%"
-call "%UNINSTALLDIR%\set_path.bat" -s -m -b -r "FDS\FDS6"        >> "%LOGFILE%"
-call "%UNINSTALLDIR%\set_path.bat" -s -m -b -r "firemodels\FDS6" >> "%LOGFILE%"
-call "%UNINSTALLDIR%\set_path.bat" -s -m -b -r "firemodels\SMV6" >> "%LOGFILE%"
-call "%UNINSTALLDIR%\set_path.bat" -u -m -b -r "firemodels\FDS6" >> "%LOGFILE%"
-call "%UNINSTALLDIR%\set_path.bat" -u -m -b -r "firemodels\SMV6" >> "%LOGFILE%"
-
-:: ------------ create aliases ----------------
-
 set numcoresfile="%TEMP%\numcoresfile"
-
-:: ------------ setting up path ------------
-
-echo *** Setting up PATH variable.
-
-echo.                                                       >> "%LOGFILE%"
-echo *** Setting up PATH variable                           >> "%LOGFILE%"
-if NOT "%option_install%" == "1" goto skip_systempath
-  call "%UNINSTALLDIR%\set_path.bat" -s -m -f "%FDS6%\bin"  >> "%LOGFILE%"
-  call "%UNINSTALLDIR%\set_path.bat" -s -m -f "%SMV6%"      >> "%LOGFILE%"
-  goto after_setpath
-:skip_systempath
-
-call "%UNINSTALLDIR%\set_path.bat" -u -m -f "%FDS6%\bin" >> "%LOGFILE%"
-call "%UNINSTALLDIR%\set_path.bat" -u -m -f "%SMV6%"      >> "%LOGFILE%"
-
-:after_setpath
 
 :: ------------- file association -------------
 echo *** Associating the .smv file extension with smokeview.exe
@@ -299,11 +267,9 @@ echo.                                     >> "%LOGFILE%"
 echo *** Setting up the Uninstall script. >> "%LOGFILE%"
 echo *** Setting up the Uninstall script.
 
-:: remove smokeview path and directory
+:: remove Smokeview directory
 
 echo if "%%cfastinstalled%%" == "1" goto skip2                >> "%UNINSTALLDIR%\uninstall_base.bat"
-echo echo Removing "%SMV6%" from the System Path              >> "%UNINSTALLDIR%\uninstall_base.bat"
-echo call "%UNINSTALLDIR%\set_path.bat" -s -b -r "%SMV6%"       >> "%UNINSTALLDIR%\uninstall_base.bat"
 echo rmdir /s /q "%SMV6%"                                     >> "%UNINSTALLDIR%\uninstall_base.bat"
 echo :skip2                                                   >> "%UNINSTALLDIR%\uninstall_base.bat"
 
@@ -311,10 +277,8 @@ echo echo Removing CMDfds desktop shortcut                                   >> 
 echo if exist "%DESKTOPDIR%\CMDfds.lnk"   erase "%DESKTOPDIR%\CMDfds.lnk"    >> "%UNINSTALLDIR%\uninstall_base.bat"
 echo if exist "%DESKTOPDIR11%\CMDfds.lnk" erase "%DESKTOPDIR11%\CMDfds.lnk"  >> "%UNINSTALLDIR%\uninstall_base.bat"
 
-:: remove FDS path and directory
+:: remove FDS directory
 
-echo echo Removing "%FDS6%\bin" from the System Path          >> "%UNINSTALLDIR%\uninstall_base.bat"
-echo call "%UNINSTALLDIR%\set_path.bat" -s -b -r "%FDS6%\bin" >> "%UNINSTALLDIR%\uninstall_base.bat"
 echo echo.                                                    >> "%UNINSTALLDIR%\uninstall_base.bat"
 echo echo Removing "%FDS6%"                                   >> "%UNINSTALLDIR%\uninstall_base.bat"
 echo rmdir /s /q  "%FDS6%"                                    >> "%UNINSTALLDIR%\uninstall_base.bat"
@@ -353,8 +317,8 @@ erase "%firewall_setup%"               >> "%LOGFILE%"
 erase "%FDS6%\shortcut.exe"            >> "%LOGFILE%"
 
 echo.
-echo To run fds for cases using this computer only, open the
-echo command shell CMDfds (located on the desktop) and type:
+echo Open CMDfds from the desktop or Start menu to run FDS and Smokeview.
+echo For a local MPI run, type:
 echo.
 echo fds_local casename.fds
 echo.
@@ -380,12 +344,22 @@ goto eof
 :-------------------------------------------------------------------------
 :setup_cmdfds
 :-------------------------------------------------------------------------
-set outfile=%1
+set "outfile=%~1"
 
-"%FDS6%\shortcut.exe" /F:%outfile% /T:"%COMSPEC%"   /P:"/k fdsinit" /W:"%userprofile%" /A:C > Nul
-if     exist %outfile% echo The shortcut %outfile% was created                    >> "%LOGFILE%
-if NOT exist %outfile% echo ***error: The shortcut %outfile% failed to be created >> "%LOGFILE%
-if NOT exist %outfile% echo ***error: The shortcut %outfile% failed to be created
+"%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -Command ^
+  "$ErrorActionPreference = 'Stop';" ^
+  "$shell = New-Object -ComObject WScript.Shell;" ^
+  "$link = $shell.CreateShortcut($env:outfile);" ^
+  "$link.TargetPath = $env:ComSpec;" ^
+  "$init = [IO.Path]::GetFullPath((Join-Path $env:FDS6 'bin\fdsinit.bat'));" ^
+  "$quotes = [string][char]34 * 2; $link.Arguments = '/k ' + $quotes + $init + $quotes;" ^
+  "$link.WorkingDirectory = $env:USERPROFILE; $link.Save()" >> "%LOGFILE%" 2>&1
+if errorlevel 1 (
+  echo ***error: The shortcut "%outfile%" failed to be created >> "%LOGFILE%"
+  echo ***error: The shortcut "%outfile%" failed to be created
+  exit /b 1
+)
+echo The shortcut "%outfile%" was created >> "%LOGFILE%"
 exit /b
 
 :-------------------------------------------------------------------------
