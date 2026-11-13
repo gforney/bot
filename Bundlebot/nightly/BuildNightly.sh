@@ -199,14 +199,12 @@ cd $SCRIPTDIR
 
 LOCKFILE=$HOME/.bundle/bundle_lock
 mkdir -p $HOME/.bundle
-
 MAILTO=
 if [ "$BUNDLE_EMAIL" != "" ]; then
   MAILTO=$BUNDLE_EMAIL
 fi
 
 PROCEED=
-FORCE=
 RELEASE=
 BUNDLETYPE=nightly
 FDS_TAG=
@@ -237,7 +235,7 @@ case $OPTION  in
    SMVDBG=_db
    ;;
   f)
-   FORCE="-f"
+   rm -f $LOCKFILE
    ;;
   h)
    USAGE
@@ -294,6 +292,16 @@ if [ "$BUNDLETYPE" == "nightly" ]; then
   fi
 fi
 
+# exist script if it was not called by the release bundler and another instance is already running
+if [ "$BUNDLETYPE" != "release" ]; then
+  if [[ -e $LOCKFILE ]; then
+    echo "***error: an fds/smokeview bundle script is already running."
+    echo "          remove $LOCKFILE if this is not the case"
+    exit
+  fi
+  touch $LOCKFILE
+fi
+
 echo $$ > $PIDFILE
 
 #*** define hash and revisions
@@ -345,15 +353,6 @@ if [ "$MAILTO" != "" ]; then
 fi
 echo "------------------------------------------------------------"
 echo ""
-
-if [ -e $LOCKFILE ]; then
-  if [ "$FORCE" == "" ]; then
-    echo "$0 already running."
-    echo "If this is not the case, rerun using the -f option"
-    exit
-  fi
-fi
-touch $LOCKFILE
 
 if [[ "$PROCEED" == "" ]] && [[ "$USE_CURRENT" == "" ]]; then
   echo ""
@@ -566,4 +565,8 @@ TIME_end=`GET_TIME`
 GET_DURATION $TIME_beg $TIME_end TIME
 echo Time: $TIME_DIFF
 echo Time: $TIME_DIFF > $OUTPUTDIR/time.log
+if [ "$BUNDLETYPE" != "release" ]; then
+  rm $LOCKFILE
+fi
+
 

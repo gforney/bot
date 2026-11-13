@@ -17,6 +17,14 @@ while getopts "kno:" option; do
 done
 shift "$((OPTIND - 1))"
 
+LOCKFILE=$HOME/.bundle/bundle_lock
+mkdir -p $HOME/.bundle
+if [ -e $LOCKFILE ]; then
+  echo "***error: an fds/smokeview bundle script is already running."
+  echo "          remove $LOCKFILE if this is not the case"
+fi
+touch $LOCKFILE
+
 PIDFILE="$PWD/BuildRelease.pid"
 
 if [ "$stop_release" = 1 ]; then
@@ -32,6 +40,7 @@ if [ "$stop_release" = 1 ]; then
   else
     echo "*** warning: BuildRelease.sh is not running"
   fi
+  rm -f $LOCKFILE
   exit
 fi
 
@@ -71,3 +80,4 @@ cd $CURDIR
 TITLE="Bundle Test - $BUNDLE_FDS_TAG/$BUNDLE_FDS_HASH - $BUNDLE_SMV_TAG/$BUNDLE_SMV_HASH"
 gh release edit FDS_TEST  -t "$TITLE" -R "github.com/$OWNER/test_bundles"
 rm -f "$PIDFILE"
+rm -f $LOCKFILE
