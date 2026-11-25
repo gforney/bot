@@ -170,7 +170,7 @@ MKDIR()
             then
               yn="y"
           else
-              installer_read confirm yn "Do you wish to overwrite \$DIR? (yes/no)"
+              installer_read confirm yn "Do you wish to overwrite \$DIR? (yes/no)" Overwrite
           fi
           echo \$yn >> \$INSTALL_LOG
           case \$yn in
@@ -246,7 +246,7 @@ then
   then
     while true; do
       echo "The file, \$THAT, already exists."
-      installer_read confirm yn "Do you wish to overwrite \$THAT? (yes/no)"
+      installer_read confirm yn "Do you wish to overwrite \$THAT? (yes/no)" Overwrite
       echo \$yn >> \$INSTALL_LOG
       case \$yn in
         [Yy]* ) break;;
@@ -352,7 +352,7 @@ cat << EOF >> $INSTALLER
    if [ "\$OVERRIDE" == "y" ] ; then
      yn="y"
    else
-     installer_read confirm yn "Install in \$FDS_root? (yes/no)"
+     installer_read confirm yn "Install in \$FDS_root? (yes/no)" Install
    fi
    echo \$yn >> \$INSTALL_LOG
    case \$yn in

@@ -91,7 +91,7 @@ then
   then
     while true; do
       echo "The file, \$THAT, already exists."
-      installer_read confirm yn "Do you wish to overwrite \$THAT? (yes/no)"
+      installer_read confirm yn "Do you wish to overwrite \$THAT? (yes/no)" Overwrite
       case \$yn in
         [Yy]* ) break;;
         [Nn]* ) echo "Extraction cancelled";exit;;
@@ -182,7 +182,7 @@ while true; do
     then
       yn="y"
     else
-      installer_read confirm yn "Update Smokeview in \$SMV_root? (yes/no)"
+      installer_read confirm yn "Update Smokeview in \$SMV_root? (yes/no)" Update
     fi
     case \$yn in
         [Yy]* ) break;;
