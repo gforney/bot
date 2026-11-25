@@ -2,6 +2,7 @@
 setlocal
 
 set USE_CURRENT=0
+set SMV_INSTALLER=
 set S_HASH=
 set S_REVISION=
 set S_BRANCH=
@@ -18,6 +19,19 @@ if "x%STOPSCRIPT%" == "x" goto endif
   set STOPSCRIPT=
   exit /b 1
 :endif
+
+if "%SMV_INSTALLER%" == "CPACK" (
+  where cpack.exe >nul 2>&1
+  if errorlevel 1 (
+    echo *** error: CPack was not found on PATH. Install CMake first.
+    exit /b 1
+  )
+  where makensis.exe >nul 2>&1
+  if errorlevel 1 (
+    echo *** error: makensis.exe was not found on PATH. Install NSIS and add it to PATH.
+    exit /b 1
+  )
+)
 
 if not exist %userprofile%\.bundle mkdir %userprofile%\.bundle
 
@@ -71,7 +85,11 @@ Title Building Smokeview bundle
 
 set scan_smv_bundle=1
 cd %CURDIR%\..\release
-call make_smv_bundle %BUNDLE_SMV_TAG% %scan_smv_bundle%
+call make_smv_bundle %BUNDLE_SMV_TAG% %scan_smv_bundle% %SMV_INSTALLER%
+if "%SMV_INSTALLER%" == "CPACK" if errorlevel 1 (
+  cd /d "%CURDIR%"
+  exit /b 1
+)
 
 cd %CURDIR%
 
@@ -109,6 +127,7 @@ echo BuildSmvNightly usage
 echo.
 echo Options:
 echo -C - use current smv revision
+echo -gui - build the Windows GUI installer with CPack and NSIS
 echo -h - display this message
 echo -u - upload bundle to github.com/%username%/test_bundles/releases/tag/SMOKEVIEW_TEST
 echo -U - upload bundle to github.com/firemodels/test_bundles/releases/tag/SMOKEVIEW_TEST
@@ -129,6 +148,10 @@ exit /b 0
  )
  if "%1" EQU "-C" (
    set USE_CURRENT=1
+   set valid=1
+ )
+ if /i "%1" EQU "-gui" (
+   set SMV_INSTALLER=CPACK
    set valid=1
  )
  if "%1" EQU "-u" (

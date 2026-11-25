@@ -1,0 +1,158 @@
+Unicode true
+!define INST_DIR "@CPACK_TEMPORARY_DIRECTORY@"
+RequestExecutionLevel admin
+Name "@CPACK_PACKAGE_DESCRIPTION_SUMMARY@"
+OutFile "@CPACK_TOPLEVEL_DIRECTORY@/@CPACK_OUTPUT_FILE_NAME@"
+InstallDir "$PROGRAMFILES64\firemodels"
+
+!include "MUI2.nsh"
+!include "LogicLib.nsh"
+!include "nsDialogs.nsh"
+!include "x64.nsh"
+!include "StrFunc.nsh"
+${StrStr}
+
+Var StandardInstall
+Var AllUsers
+Var CurrentUserRadio
+Var PathScope
+
+Page custom SetupType SetupTypeLeave
+!define MUI_PAGE_CUSTOMFUNCTION_PRE DirectoryPre
+!define MUI_PAGE_CUSTOMFUNCTION_LEAVE DirectoryLeave
+!define MUI_DIRECTORYPAGE_TEXT_TOP "Choose the FDS/Smokeview root directory. Smokeview will be installed in its SMV6 subdirectory."
+!insertmacro MUI_PAGE_DIRECTORY
+!insertmacro MUI_PAGE_INSTFILES
+!insertmacro MUI_PAGE_FINISH
+!insertmacro MUI_LANGUAGE "English"
+
+Function .onInit
+  ${IfNot} ${RunningX64}
+    MessageBox MB_ICONSTOP "Smokeview requires 64-bit Windows."
+    Abort
+  ${EndIf}
+  StrCpy $StandardInstall 1
+  StrCpy $AllUsers 1
+FunctionEnd
+
+Function SetupType
+  !insertmacro MUI_HEADER_TEXT "Smokeview setup" "Choose a standard or custom installation."
+  nsDialogs::Create 1018
+  Pop $0
+  ${If} $0 == error
+    Abort
+  ${EndIf}
+
+  ${NSD_CreateRadioButton} 0 8u 100% 12u "Standard installation"
+  Pop $1
+  ${NSD_CreateLabel} 12u 22u 95% 24u "Install for all users in $PROGRAMFILES64\firemodels and stop any running Smokeview instances."
+  Pop $0
+  ${NSD_CreateRadioButton} 0 52u 100% 12u "Custom installation for all users"
+  Pop $2
+  ${NSD_CreateRadioButton} 0 72u 100% 12u "Custom installation for the current user"
+  Pop $CurrentUserRadio
+
+  ${If} $StandardInstall == 1
+    ${NSD_Check} $1
+  ${ElseIf} $AllUsers == 1
+    ${NSD_Check} $2
+  ${Else}
+    ${NSD_Check} $CurrentUserRadio
+  ${EndIf}
+  ; Keep the standard radio handle available to the page's leave callback.
+  StrCpy $R0 $1
+  nsDialogs::Show
+FunctionEnd
+
+Function SetupTypeLeave
+  ${NSD_GetState} $R0 $StandardInstall
+  ${NSD_GetState} $CurrentUserRadio $0
+  ${If} $0 == ${BST_CHECKED}
+    ${If} $AllUsers == 1
+      ReadEnvStr $INSTDIR "USERPROFILE"
+      StrCpy $INSTDIR "$INSTDIR\firemodels"
+    ${EndIf}
+    StrCpy $AllUsers 0
+  ${Else}
+    ${If} $AllUsers == 0
+    ${OrIf} $StandardInstall == 1
+      StrCpy $INSTDIR "$PROGRAMFILES64\firemodels"
+    ${EndIf}
+    StrCpy $AllUsers 1
+  ${EndIf}
+FunctionEnd
+
+Function DirectoryPre
+  ${If} $StandardInstall == 1
+    Abort
+  ${EndIf}
+FunctionEnd
+
+Function DirectoryLeave
+  ${If} ${FileExists} "$INSTDIR\SMV6\*.*"
+    MessageBox MB_YESNO|MB_ICONEXCLAMATION|MB_DEFBUTTON2 "Replace the existing Smokeview installation in $INSTDIR\SMV6?" IDYES confirmed
+    Abort
+  ${EndIf}
+  confirmed:
+FunctionEnd
+
+Section "Smokeview"
+  nsExec::ExecToStack '"$SYSDIR\tasklist.exe" /FI "IMAGENAME eq smokeview.exe" /NH'
+  Pop $0
+  Pop $1
+  ${If} $0 != 0
+    MessageBox MB_ICONSTOP "Could not check for running Smokeview instances."
+    Abort
+  ${EndIf}
+  ${StrStr} $2 $1 "smokeview.exe"
+  ${If} $2 != ""
+    ${If} $StandardInstall == 0
+      MessageBox MB_YESNO|MB_ICONQUESTION "Smokeview is running. Stop it and continue?" IDYES stop_smokeview
+      Abort
+    ${EndIf}
+    stop_smokeview:
+    nsExec::Exec '"$SYSDIR\taskkill.exe" /F /IM smokeview.exe'
+    Pop $0
+    ${If} $0 != 0
+      MessageBox MB_ICONSTOP "Could not stop Smokeview. Close it and run Setup again."
+      Abort
+    ${EndIf}
+  ${EndIf}
+
+  ${If} ${FileExists} "$INSTDIR\SMV6\*.*"
+    ClearErrors
+    RMDir /r "$INSTDIR\SMV6"
+    ${If} ${Errors}
+      MessageBox MB_ICONSTOP "Could not remove the existing Smokeview installation."
+      Abort
+    ${EndIf}
+  ${EndIf}
+
+  SetOutPath "$INSTDIR"
+  @CPACK_NSIS_FULL_INSTALL@
+
+  SetOutPath "$INSTDIR\SMV6"
+  nsExec::Exec '"$SYSDIR\cmd.exe" /D /C set_path.bat -u -m -b -r "firemodels\SMV6"'
+  Pop $0
+  nsExec::Exec '"$SYSDIR\cmd.exe" /D /C set_path.bat -s -m -b -r "firemodels\SMV6"'
+  Pop $0
+  StrCpy $PathScope "-s"
+  ${If} $AllUsers == 0
+    StrCpy $PathScope "-u"
+  ${EndIf}
+  nsExec::Exec '"$SYSDIR\cmd.exe" /D /C set_path.bat $PathScope -m -f "$INSTDIR\SMV6"'
+  Pop $0
+  ${If} $0 != 0
+    MessageBox MB_ICONEXCLAMATION "Smokeview was copied, but Setup could not update PATH."
+  ${EndIf}
+
+  SetRegView 64
+  ${If} $AllUsers == 1
+    WriteRegStr HKLM "Software\Classes\.smv" "" "smvDoc"
+    WriteRegStr HKLM "Software\Classes\smvDoc\shell\open\command" "" '$"$INSTDIR\SMV6\smokeview.exe$" $"%1$"'
+  ${Else}
+    WriteRegStr HKCU "Software\Classes\.smv" "" "smvDoc"
+    WriteRegStr HKCU "Software\Classes\smvDoc\shell\open\command" "" '$"$INSTDIR\SMV6\smokeview.exe$" $"%1$"'
+  ${EndIf}
+  System::Call 'shell32::SHChangeNotify(i 0x08000000, i 0, p 0, p 0)'
+SectionEnd

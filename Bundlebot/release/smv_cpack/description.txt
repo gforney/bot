@@ -1,0 +1,1 @@
+Smokeview visualizes fire and smoke simulation results from the Fire Dynamics Simulator (FDS) and CFAST.

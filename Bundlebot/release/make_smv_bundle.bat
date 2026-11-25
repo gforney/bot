@@ -3,6 +3,7 @@ setlocal
 :: release info
 set versionbase=%1
 set scan_bundle=%2
+set "installer=%~3"
 set zipbase=%versionbase%_win
 set SMVEDITION=SMV6
 
@@ -47,6 +48,8 @@ CALL :COPY  %reporoot%\smv\Build\part2iso\intel_win\part2iso_win.exe     %smvdir
 CALL :COPY  %reporoot%\smv\Build\fds2fed\intel_win\fds2fed_win.exe       %smvdir%\fds2fed.exe
 CALL :COPY  %reporoot%\smv\Build\wind2fds\intel_win\wind2fds_win.exe     %smvdir%\wind2fds.exe
 
+if /i "%installer%" == "CPACK" goto skip_legacy_setup
+
 echo Unpacking Smokeview %versionbase% installation files > %forbundle%\unpack.txt
 echo Updating Windows Smokeview to %versionbase%          > %forbundle%\message.txt
 
@@ -55,6 +58,7 @@ CALL :COPY  %forbundle%\setup.bat   %zipbase%\setup.bat
 :: Adapt the copied installer, including installers from older smv revisions.
 powershell.exe -NoLogo -NoProfile -Command "$p=Join-Path $env:zipbase 'setup.bat'; $s=[IO.File]::ReadAllText($p).Replace('set_path.exe','set_path.bat'); [IO.File]::WriteAllText($p,$s,[Text.UTF8Encoding]::new($false))"
 
+:skip_legacy_setup
 set curdir=%CD%
 
 CALL :COPY  %forbundle%\smokeview.ini           %smvdir%\smokeview.ini
@@ -141,6 +145,8 @@ if %ERRORLEVEL% == 1 goto elsescan
 :endifscan
 
 echo.
+if /i "%installer%" == "CPACK" goto build_cpack
+
 echo --- compressing distribution directory ---
 echo.
 cd %bundles%\%zipbase%
@@ -164,6 +170,16 @@ echo.
 
 cd %CURDIR%
 GOTO EOF
+
+:build_cpack
+echo --- creating CPack installer ---
+cpack --config "%scriptdir%smv_cpack\CPackConfig.cmake" -B "%bundles%\cpack"
+if errorlevel 1 exit /b 1
+copy /y "%bundles%\cpack\%zipbase%.exe" "%bundles%\%zipbase%.exe" >nul
+if errorlevel 1 exit /b 1
+echo --- Windows Smokeview installer, %zipbase%.exe, built
+cd /d "%CURDIR%"
+exit /b 0
 
 :: -------------------------------------------------------------
 :IS_FILE_INSTALLED
