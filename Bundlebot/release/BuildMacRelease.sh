@@ -16,7 +16,7 @@ ALLOW_MANUAL_REVISION_MISMATCH=0
 usage() {
   cat <<'EOF'
 Usage: bash BuildMacRelease.sh [options]
-Build the commits in config.sh with GNU Fortran/Open MPI and create a macOS DMG.
+Build the commits in config.sh with GNU Fortran/Open MPI and create a macOS DMG and a self-extracting shell installer.
 Manuals must already be uploaded by Firebot and Smokebot at those revisions.
 Builds clean and reset the sibling fds/smv checkouts to the configured commits.
 Sibling hypre/sundials checkouts are reused; missing ones are cloned.
@@ -55,13 +55,24 @@ while (( $# )); do
   esac
 done
 
-package_dmg() {
+package_installers() {
   echo "Creating drag-to-Applications DMG"
   python3 "$SCRIPTDIR/make_macos_dmg.py" "$DIST" "$WORK/$NAME.dmg" \
     --volume-name "${BUNDLE_FDS_TAG}_${BUNDLE_SMV_TAG}"
   hdiutil verify "$WORK/$NAME.dmg"
-  cp "$WORK/$NAME.dmg" "$OUTPUT/$NAME.dmg"
+
+  echo "Creating self-extracting shell installer"
+  (
+    cd "$WORK"
+    tar -czf "$NAME.tar.gz" -- "$NAME"
+    BUNDLE_MPITYPE=OPENMPI bash "$SCRIPTDIR/../nightly/make_installer.sh" \
+      -G -i "$NAME.tar.gz" -b "$NAME" -d FDS6 \
+      -f "$BUNDLE_FDS_TAG" -s "$BUNDLE_SMV_TAG" "$NAME.sh"
+  )
+
+  cp "$WORK/$NAME.dmg" "$WORK/$NAME.sh" "$OUTPUT/"
   echo "Created: $OUTPUT/$NAME.dmg"
+  echo "Created: $OUTPUT/$NAME.sh"
   echo "No upload performed. Build files retained in $WORK"
 }
 
@@ -80,7 +91,7 @@ if (( PACKAGE_ONLY )); then
   if [[ -f $WORK/manuals/manuals_test.txt ]]; then NAME=${NAME}_manuals_test; fi
   DIST=$WORK/$NAME
   [[ -d $DIST ]] || fail "No staged bundle in $DIST; run a full build first."
-  package_dmg
+  package_installers
   exit 0
 fi
 for tool in git gh python3 mpifort mpicc ompi_info pkg-config gfortran cmake make file otool install_name_tool codesign hdiutil; do
@@ -255,4 +266,4 @@ EOF
   chmod +x "$DIST/bin/openmpi/bin/$prog"
 done
 
-package_dmg
+package_installers

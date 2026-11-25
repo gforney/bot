@@ -2,7 +2,7 @@
 
 if [ $# -lt 1 ]
 then
-  echo "Usage: make_installer.sh -i FDS_TAR.tar.gz -d installdir INSTALLER.sh"
+  echo "Usage: make_installer.sh [-G] -i FDS_TAR.tar.gz -d installdir INSTALLER.sh"
   echo ""
   echo "Creates an FDS/Smokeview installer sh script. "
   echo ""
@@ -35,9 +35,13 @@ fi
 
 FDS_VERSION=FDS
 SMV_VERSION=Smokeview
-while getopts 'b:d:f:i:s:' OPTION
+installer_gui=0
+while getopts 'Gb:d:f:i:s:' OPTION
 do
 case $OPTION in
+  G)
+  installer_gui=1
+  ;;
   b)
   CUSTOMBASE="$OPTARG"
   ;;
@@ -86,8 +90,15 @@ if [ "$ostype" == "OSX" ]; then
   PLATFORM=osx
 fi
 
-cat << EOF > $INSTALLER
+cat << EOF > "$INSTALLER"
 #!/bin/bash
+installer_gui=$installer_gui
+installer_product='FDS and Smokeview'
+installer_default_dir='$INSTALLDIR'
+installer_custom_base='$CUSTOMBASE'
+EOF
+cat "$(dirname "${BASH_SOURCE[0]}")/installer_dialogs.sh" >> "$INSTALLER" || exit 1
+cat << EOF >> "$INSTALLER"
 
 if [ "\$(uname -s)" = "Darwin" ] && [ "\$(uname -m)" = "x86_64" ]; then
   echo "Error: Fds and Smokeview were compiled on a Mac with an arm chip.  Intel Macs are not supported." >&2
@@ -159,7 +170,7 @@ MKDIR()
             then
               yn="y"
           else
-              read -p "Do you wish to overwrite it? (yes/no) " yn
+              installer_read confirm yn "Do you wish to overwrite \$DIR? (yes/no)"
           fi
           echo \$yn >> \$INSTALL_LOG
           case \$yn in
@@ -223,7 +234,7 @@ if [ "\$OVERRIDE" == "y" ]
 then
   option=""
 else
-  read  option
+  installer_read start option
 fi
 echo \$option >> \$INSTALL_LOG
 
@@ -235,7 +246,7 @@ then
   then
     while true; do
       echo "The file, \$THAT, already exists."
-      read -p "Do you wish to overwrite it? (yes/no) " yn
+      installer_read confirm yn "Do you wish to overwrite \$THAT? (yes/no)"
       echo \$yn >> \$INSTALL_LOG
       case \$yn in
         [Yy]* ) break;;
@@ -289,7 +300,7 @@ if [ "\$OVERRIDE" == "y" ]
 then
   answer="1"
 else
-  read answer
+  installer_read location answer
 fi
 echo \$answer >> \$INSTALL_LOG
 EOF
@@ -341,7 +352,7 @@ cat << EOF >> $INSTALLER
    if [ "\$OVERRIDE" == "y" ] ; then
      yn="y"
    else
-     read -p "Proceed? (yes/no) " yn
+     installer_read confirm yn "Install in \$FDS_root? (yes/no)"
    fi
    echo \$yn >> \$INSTALL_LOG
    case \$yn in

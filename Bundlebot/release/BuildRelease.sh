@@ -8,8 +8,14 @@ fi
 OWNER=`whoami`
 
 stop_release=0
-while getopts "kno:" option; do
+gui_installer=()
+while getopts "Ghkno:" option; do
   case "$option" in
+    G) gui_installer=(-G) ;;
+    h) echo "Usage: BuildRelease.sh [-G] [-k] [-n] [-o OWNER]"
+       echo "  -G  Build a GUI shell installer, plus a DMG on macOS"
+       echo "  -n  Use the macOS release builder to create both installers"
+       exit 0 ;;
     k) stop_release=1 ;;
     n) new_mac_release=1 ;;
     o) OWNER=$OPTARG ;;
@@ -35,10 +41,8 @@ if [ "$stop_release" = 1 ]; then
   exit
 fi
 
-if [ "$new_mac_release" != "" ]; then
-  if [ "$(uname -s)" = "Darwin" ]; then
-    exec bash "$(dirname "$0")/BuildMacRelease.sh" "$@"
-  fi
+if [[ $(uname -s) == Darwin ]] && [[ -n $new_mac_release || ${#gui_installer[@]} -ne 0 ]]; then
+  exec bash "$(dirname "$0")/BuildMacRelease.sh" "$@"
 fi
 
 PIDFILE=`pwd`/BuildRelease.pid
@@ -65,7 +69,7 @@ cd $CURDIR/../nightly
 git clean -dxf  >& /dev/null
 
 cd $CURDIR/../nightly
-./BuildNightly.sh -c -f -R -o "$OWNER" -r test_bundles -u
+./BuildNightly.sh -c -f -R -o "$OWNER" -r test_bundles -u "${gui_installer[@]}"
 
 cd $CURDIR
 TITLE="Bundle Test - $BUNDLE_FDS_TAG/$BUNDLE_FDS_HASH - $BUNDLE_SMV_TAG/$BUNDLE_SMV_HASH"

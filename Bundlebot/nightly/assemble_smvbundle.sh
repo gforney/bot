@@ -5,6 +5,9 @@ revision=$1
 GITROOT=~/$2
 LABEL=$3
 scan_bundle=$4
+returncode=0
+gui_installer=()
+if [ "${5:-}" = -G ]; then gui_installer=(-G); fi
 
 SCRIPTDIR="$(cd "$(dirname "$0")" && pwd)"
 
@@ -184,9 +187,9 @@ rm -f $PLATFORMDIR.tar $PLATFORMDIR.tar.gz
 echo ""
 echo "*** building installer"
 echo ""
-tar cvf $PLATFORMDIR.tar $PLATFORMDIR
-gzip $PLATFORMDIR.tar
-$MAKEINSTALLER ${platform2} $revision $PLATFORMDIR.tar.gz $PLATFORMDIR.sh FDS/$FDSEDITION
+tar cvf $PLATFORMDIR.tar $PLATFORMDIR || exit 1
+gzip $PLATFORMDIR.tar || exit 1
+"$MAKEINSTALLER" "${gui_installer[@]}" ${platform2} $revision $PLATFORMDIR.tar.gz $PLATFORMDIR.sh FDS/$FDSEDITION || exit 1
 echo "    `hostname`:$UPLOADDIR/$PLATFORMDIR.sh"
 
 if [ -e $errlog ]; then
@@ -202,4 +205,5 @@ if [ -e $errlog ]; then
   fi
   rm $errlog
 fi
+exit "$returncode"
  

@@ -44,6 +44,7 @@ echo "BuildSmvNightly.sh usage"
 echo ""
 echo "Options:"
 echo "-C - use current revision"
+echo "-G - build a GUI shell installer with text fallback"
 echo "-h - display this message"
 echo "-k - kill the BuildSmvNightly.sh process and all of its child processes"
 echo "-n - do not scan bundle"
@@ -72,11 +73,15 @@ SCAN_BUNDLE=1
 
 #*** parse parameters
 
-while getopts 'ChknuUR' OPTION
+gui_installer=
+while getopts 'CGhknuUR' OPTION
 do
 case $OPTION  in
   C)
    USE_CURRENT=1
+   ;;
+  G)
+   gui_installer=-G
    ;;
   h)
    OUTPUT_USAGE=1
@@ -108,6 +113,10 @@ esac
 done
 shift $(($OPTIND-1))
 
+if [ "$OUTPUT_USAGE" != "" ]; then
+  USAGE
+fi
+
 echo $$ > $PIDFILE
 
 cd ../../..
@@ -126,10 +135,6 @@ else
   cd $GITROOT/bot/Bundlebot/release/output
   outputdir=`pwd`
   GHOWNER=`whoami`
-fi
-if [ "$OUTPUT_USAGE" != "" ]; then
-  USAGE
-  exit
 fi
 
 #*** determine platform script is running on
@@ -218,7 +223,7 @@ cd $GITROOT/bot/Bundlebot/nightly
 #*** make bundle
 
 echo "*** bundling smokeview"
-$GITROOT/bot/Bundlebot/nightly/assemble_smvbundle.sh $smv_revision $GITROOTBASE $PLATFORMLABEL $SCAN_BUNDLE
+$GITROOT/bot/Bundlebot/nightly/assemble_smvbundle.sh $smv_revision $GITROOTBASE $PLATFORMLABEL $SCAN_BUNDLE "$gui_installer" || { rm -f "$PIDFILE"; exit 1; }
 
 uploaddir=$HOME/.bundle/bundles
 if [ ! -e $uploaddir/${smv_revision}_${PLATFORMLABEL}.sh ]; then

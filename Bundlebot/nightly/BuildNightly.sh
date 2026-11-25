@@ -53,6 +53,7 @@ echo "-d - build debug version of smokeview"
 echo "-f - force this script to run"
 echo "-h - display this message"
 echo "-I - only build installer, assume repos are already cloned and apps are already built"
+echo "-G - build a GUI shell installer with text fallback"
 echo "-k - kill BuildNightly.sh and all of its child processes"
 if [ "$MAILTO" != "" ]; then
   echo "-m mailto - email address [default: $MAILTO]"
@@ -221,7 +222,8 @@ SMVDBG=
 
 #*** parse parameters
 
-while getopts 'BcCdfhkIm:no:r:RTuU' OPTION
+gui_installer=
+while getopts 'BcCdfGhkIm:no:r:RTuU' OPTION
 do
 case $OPTION  in
   B)
@@ -238,6 +240,9 @@ case $OPTION  in
    ;;
   f)
    FORCE="-f"
+   ;;
+  G)
+   gui_installer=-G
    ;;
   h)
    USAGE
@@ -512,8 +517,12 @@ viruslog=$OUTPUTDIR/fdssmv_virus.log
 
 cd $SCRIPTDIR
 echo "*** building installer"
-./assemble_bundle.sh $FDSREV $SMVREV ${BUNDLE_PREFIX_ARG} ${SCAN_BUNDLE}
+./assemble_bundle.sh $FDSREV $SMVREV ${BUNDLE_PREFIX_ARG} ${SCAN_BUNDLE} "$gui_installer"
 assemble_bundle_status=$?
+if [[ $gui_installer == -G && $assemble_bundle_status -ne 0 ]]; then
+  rm -f "$LOCKFILE" "$PIDFILE"
+  exit "$assemble_bundle_status"
+fi
 
 echo "*** virus scan summary"
 if [ -e $viruslog ]; then
@@ -558,7 +567,7 @@ cp $REPO_ROOT/bot/Bundlebot/nightly/autoinstall.txt $BUNDLEDIR/.
 #don't remove bundle directory
 if [ "$INSTALL" != "" ]; then
   cd $BUNDLEDIR
-  cat autoinstall.txt | bash $LATESTBUNDLE >& $HOME/.bundle/bundle_lnx_nightly_install.log
+  cat autoinstall.txt | bash $LATESTBUNDLE --text >& $HOME/.bundle/bundle_lnx_nightly_install.log
 fi
 rm -f $LOCKFILE 
 rm -f $PIDFILE

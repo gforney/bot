@@ -3,6 +3,8 @@ fds_version=$1
 smv_version=$2
 NIGHTLY=$3
 scan_bundle=$4
+gui_installer=()
+if [ "${5:-}" = -G ]; then gui_installer=(-G); fi
 
 returncode=0
 SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
@@ -387,14 +389,14 @@ echo "*** building bundle"
 rm -rf $UPLOAD_DIR/$bundlebase.tar
 rm -rf $UPLOAD_DIR/$bundlebase.tar.gz
 cd $UPLOAD_DIR
-tar cf $bundlebase.tar --exclude='*.csv' $bundlebase
+tar cf $bundlebase.tar --exclude='*.csv' $bundlebase || exit 1
 echo "*** compressing bundle"
-gzip    $bundlebase.tar
+gzip    $bundlebase.tar || exit 1
 echo "*** creating installer"
 bundlepathdir=`pwd`
 bundlepath=`pwd`/$bundlebase.sh
 
-$MAKEINSTALLER -i $bundlebase.tar.gz -b $custombase -d $INSTALLDIR -f ${fds_version} -s ${smv_version} $bundlebase.sh
+"$MAKEINSTALLER" "${gui_installer[@]}" -i $bundlebase.tar.gz -b $custombase -d $INSTALLDIR -f ${fds_version} -s ${smv_version} $bundlebase.sh || exit 1
 
 if [ -e $errlog ]; then
   numerrs=`cat $errlog | wc -l `

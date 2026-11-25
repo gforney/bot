@@ -1,9 +1,14 @@
 #!/bin/bash
+installer_gui=0
+if [ "${1:-}" = -G ]; then
+  installer_gui=1
+  shift
+fi
 EXPECTED_ARGS=5
 
 if [ $# -ne $EXPECTED_ARGS ]
 then
-  echo "Usage: make_smv_installer.sh ostype SMV_TAR.tar.gz INSTALLER.sh"
+  echo "Usage: make_smv_installer.sh [-G] ostype SMV_TAR.tar.gz INSTALLER.sh"
   echo ""
   echo "Creates a Smokeview updater sh script. "
   echo ""
@@ -24,8 +29,14 @@ INSTALLDIR=$5
 SMVMODULE=SMV6
 SMVVARS=SMV6VARS.sh
 
-cat << EOF > $INSTALLER
+cat << EOF > "$INSTALLER"
 #!/bin/bash
+installer_gui=$installer_gui
+installer_product='Smokeview'
+installer_default_dir='$INSTALLDIR'
+EOF
+cat "$(dirname "${BASH_SOURCE[0]}")/installer_dialogs.sh" >> "$INSTALLER" || exit 1
+cat << EOF >> "$INSTALLER"
 
 OVERRIDE=\$1
 echo ""
@@ -70,7 +81,7 @@ if [ "\$OVERRIDE" == "y" ]
 then
   option=""
 else
-  read  option
+  installer_read start option
 fi
 if [[ "\$option" == "2" || "\$option" == "extract" ]]
 then
@@ -80,7 +91,7 @@ then
   then
     while true; do
       echo "The file, \$THAT, already exists."
-      read -p "Do you wish to overwrite it? (yes/no) " yn
+      installer_read confirm yn "Do you wish to overwrite \$THAT? (yes/no)"
       case \$yn in
         [Yy]* ) break;;
         [Nn]* ) echo "Extraction cancelled";exit;;
@@ -117,7 +128,7 @@ if [ "\$OVERRIDE" == "y" ]
 then
   answer="1"
 else
-  read answer
+  installer_read location answer
 fi
 EOF
 
@@ -145,6 +156,40 @@ cat << EOF >> $INSTALLER
 EOF
 fi
 cat << EOF >> $INSTALLER
+
+if [ ! -d \$SMV_root ]
+then
+   echo FDS/Smokeview installation directory \$SMV_root does not exist.
+   echo Install FDS and Smokeview before proceeding with update.
+   echo Update cancelled.
+   exit
+fi
+touch \$SMV_root/test_write >& /dev/null
+if [ ! -e \$SMV_root/test_write ]
+then
+   echo Unable to write to installation directory.
+   echo Update cancelled
+   exit
+fi
+rm \$SMV_root/test_write
+
+#--- do we want to proceed
+
+while true; do
+    echo ""
+    echo "Update directory: \$SMV_root"
+    if [ "\$OVERRIDE" == "y" ]
+    then
+      yn="y"
+    else
+      installer_read confirm yn "Update Smokeview in \$SMV_root? (yes/no)"
+    fi
+    case \$yn in
+        [Yy]* ) break;;
+        [Nn]* ) echo "Update cancelled";exit;;
+        * ) echo "Please answer yes or no.";;
+    esac
+done
 
 #--- create SMV6VARS.sh
 
@@ -180,40 +225,6 @@ MODULE
 cp \$SMVMODULEtmp \$SMV_root/bin/modules/$SMVMODULE
 rm \$SMVMODULEtmp
 
-if [ ! -d \$SMV_root ]
-then
-   echo FDS/Smokeview installation directory \$SMV_root does not exist.
-   echo Install FDS and Smokeview before proceeding with update.
-   echo Update cancelled.
-   exit
-fi
-touch \$SMV_root/test_write >& /dev/null
-if [ ! -e \$SMV_root/test_write ]
-then
-   echo Unable to write to installation directory.
-   echo Update cancelled
-   exit
-fi
-rm \$SMV_root/test_write
-
-#--- do we want to proceed
-
-while true; do
-    echo ""
-    echo "Update directory: \$SMV_root"
-    if [ "\$OVERRIDE" == "y" ] 
-    then
-      yn="y"
-    else
-      read -p "Do you wish to begin the update? (yes/no) " yn
-    fi
-    case \$yn in
-        [Yy]* ) break;;
-        [Nn]* ) echo "Update cancelled";exit;;
-        * ) echo "Please answer yes or no.";;
-    esac
-done
- 
 echo "Copying updated Smokeview files to"  \$SMV_root
 cd \$SMV_root
 tail -n +\$SKIP \$THISSCRIPT | tar -xz --strip-components=1
