@@ -43,7 +43,7 @@ echo ""
 echo "BuildSmvNightly.sh usage"
 echo ""
 echo "Options:"
-echo "-C - use current revision"
+echo "-C - build from the current Smokeview checkout without updating or cloning it"
 echo "-G - build a GUI shell installer with text fallback"
 echo "-h - display this message"
 echo "-k - kill the BuildSmvNightly.sh process and all of its child processes"
@@ -146,12 +146,15 @@ if [ "`uname`" == "Darwin" ] ; then
   PLATFORM="osx"
   PLATFORMLABEL="osx"
   BUNDLE_SMVCOMPILER=gnu
-  if [ "`uname -m`" == "arm64" ] ; then
-    PLATFORMLABEL="osx_arm"
-  fi
 fi
 
-if [ -d $GITROOT/smv ]; then
+if [ -n "$USE_CURRENT" ]; then
+  if ! smv_prefix=$(git -C "$GITROOT/smv" rev-parse --show-prefix 2>/dev/null) || [ -n "$smv_prefix" ]; then
+    echo "***error: -C requires an existing Smokeview checkout at $GITROOT/smv" >&2
+    rm -f "$PIDFILE"
+    exit 1
+  fi
+elif [ -d $GITROOT/smv ]; then
   cd $GITROOT/smv
   echo "*** updating smv repo"
   git remote update           > /dev/null 2>&1 
@@ -168,7 +171,7 @@ if [ "$BUNDLETYPE" == "nightly" ]; then
   smv_hash=`head -1 $outputdir/SMV_HASH`
 else
   ERROR=
-  if [ "$BUNDLE_SMV_HASH" == "" ]; then
+  if [ -z "$USE_CURRENT" ] && [ -z "$BUNDLE_SMV_HASH" ]; then
     echo "***error: environment variable BUNDLE_SMV_HASH not defined"
     ERROR=1
   fi
@@ -184,11 +187,13 @@ fi
 
 #*** cloning smv repo
 
-cd $GITROOT/bot/Bundlebot/nightly
-echo "*** cloning smv repo"
-./clone_smvrepo.sh $smv_hash $BUNDLETYPE >& $outputdir/stage2_clone
-cd $GITROOT/smv
-git tag -a $BUNDLE_SMV_TAG -m "tag for smokeview release" >> $outputdir/stage2_clone 2>&1
+if [ -z "$USE_CURRENT" ]; then
+  cd $GITROOT/bot/Bundlebot/nightly
+  echo "*** cloning smv repo"
+  ./clone_smvrepo.sh $smv_hash $BUNDLETYPE >& $outputdir/stage2_clone
+  cd $GITROOT/smv
+  git tag -a $BUNDLE_SMV_TAG -m "tag for smokeview release" >> $outputdir/stage2_clone 2>&1
+fi
 
 #*** get branch names
 
