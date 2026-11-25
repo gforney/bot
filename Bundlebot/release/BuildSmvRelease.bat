@@ -1,4 +1,30 @@
 @echo off
+set "GUI_OPTION="
+if /i "%~1" == "-gui" (
+  set "GUI_OPTION=-gui"
+  shift
+)
+if /i "%~1" == "-h" goto usage
+if not "%~1" == "" (
+  echo *** error: unexpected argument "%~1"
+  call :usage
+  exit /b 1
+)
+
+if defined GUI_OPTION (
+  where cpack.exe >nul 2>&1
+  if errorlevel 1 (
+    echo *** error: CPack was not found on PATH. Install CMake first.
+    exit /b 1
+  )
+  where makensis.exe >nul 2>&1
+  if errorlevel 1 (
+    echo *** error: makensis.exe was not found on PATH. Install NSIS and add it to PATH.
+    exit /b 1
+  )
+)
+
+
 call config
 
 :: uncomment and edit the following lines if building a test bundle.
@@ -40,7 +66,10 @@ for %%x in ( %progs% ) do (
 
 :: make bundle
 cd %CURDIR%
-call make_smv_bundle %BUNDLE_SMV_TAG% %scan_bundle%
+set "SMV_INSTALLER="
+if defined GUI_OPTION set "SMV_INSTALLER=CPACK"
+call make_smv_bundle %BUNDLE_SMV_TAG% %scan_bundle% %SMV_INSTALLER%
+if defined GUI_OPTION if errorlevel 1 exit /b 1
 
 :: upload bundles
 
@@ -48,4 +77,10 @@ echo uploading %fullfilebase%.exe
 gh release upload SMOKEVIEW_TEST %fullfilebase%.exe  -R github.com/%username%/test_bundles --clobber
 echo uploading %fullfilebase%_manifest.html
 gh release upload SMOKEVIEW_TEST %fullfilebase%_manifest.html  -R github.com/%username%/test_bundles --clobber
+exit /b
 
+:usage
+echo Usage: BuildSmvRelease.bat [-gui] [-h]
+echo -gui - build the Windows GUI installer with CPack and NSIS
+echo -h - display this message
+exit /b 0

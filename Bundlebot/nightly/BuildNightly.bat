@@ -13,10 +13,24 @@ set EMAILTO=
 set ONLY_INSTALLER=0
 set USE_CURRENT=
 set SKIP_VIRUS_SCAN=
+set GUI_INSTALLER=
 
 ::*** parse command line arguments
 call :GETOPTS %*
 if defined STOPSCRIPT exit /b 1
+
+if defined GUI_INSTALLER (
+  where cpack.exe >nul 2>&1
+  if errorlevel 1 (
+    echo *** error: CPack was not found on PATH. Install CMake first.
+    exit /b 1
+  )
+  where makensis.exe >nul 2>&1
+  if errorlevel 1 (
+    echo *** error: makensis.exe was not found on PATH. Install NSIS and add it to PATH.
+    exit /b 1
+  )
+)
 
 ::*** exit script if bundle being built already exists
 if "x%USE_CURRENT%" == "x-C" goto skip_test_nightly
@@ -181,11 +195,12 @@ call copy_pubs smokebot %DOWNLOADOWNER% || exit /b 1
 echo ***making bundle
 
 cd %BUNDLESCRIPTDIR%
-call make_bundle %FDS_REVISION_BUNDLER% %SMV_REVISION_BUNDLER% %NIGHTLY% %SKIP_VIRUS_SCAN%
+call make_bundle %FDS_REVISION_BUNDLER% %SMV_REVISION_BUNDLER% %NIGHTLY% "%SKIP_VIRUS_SCAN%" "%GUI_INSTALLER%"
 set HAVEVIRUS=%ERRORLEVEL%
 
 cd %BUNDLESCRIPTDIR%
 
+if %HAVEVIRUS% == 3 exit /b 1
 if %HAVEVIRUS% == 2 echo ***warning: a virus scanner was not bound, the bundle was not scanned
 if %HAVEVIRUS% == 1 echo ***error: a virus was found in the bundle
 if %HAVEVIRUS% == 1 echo bundle was built but not uploaded
@@ -226,6 +241,7 @@ echo specified fds and smv repo revisions or revisions from the latest firebot p
 echo.
 echo Options:
 echo -C - build apps using current revisions and branches without cloning
+echo -gui - build the Windows GUI installer with CPack and NSIS
 echo -h - display this message
 echo -I - only build installer, assume repos are already cloned and apps are already built
 echo -m mailtto - send email to mailto
@@ -247,6 +263,10 @@ exit /b 0
    set USE_CURRENT=-C
    set valid=1
  )
+ if /i "%1" EQU "-gui" (
+   set GUI_INSTALLER=1
+   set valid=1
+ )
  if "%1" EQU "-h" (
    call :USAGE
    set STOPSCRIPT=1
@@ -262,7 +282,8 @@ exit /b 0
    shift
  )
  if "%1" EQU "-N" (
-   set SKIP_VIRUS_SCAN=-N
+   set SKIP_VIRUS_SCAN=
+set GUI_INSTALLER=-N
    set valid=1
  )
  if "%1" EQU "-R" (

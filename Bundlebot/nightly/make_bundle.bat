@@ -4,6 +4,7 @@ set FDS_REVISION_ARG=%1
 set SMV_REVISION_ARG=%2
 set nightly=%3
 set "scan_option=%~4"
+set "gui_installer=%~5"
 
 set FDSMAJORVERSION=6
 set FDSEDITION=FDS6
@@ -280,6 +281,7 @@ if %ERRORLEVEL% == 1 goto elsescan
 :endifscan
 
 echo.
+if "%gui_installer%" == "1" goto build_gui
 echo ***compressing bundle
 echo.
 
@@ -311,6 +313,16 @@ echo.
 cd %CURDIR%>Nul
 
 GOTO EOF
+
+:build_gui
+echo *** creating CPack installer
+cpack --config "%scriptdir%fds_cpack\CPackConfig.cmake" -B "%bundles_dir%\cpack"
+if errorlevel 1 exit /b 3
+copy /y "%bundles_dir%\cpack\%basename%.exe" "%bundles_dir%\%basename%.exe" >nul
+if errorlevel 1 exit /b 3
+echo *** installer built: "%bundles_dir%\%basename%.exe"
+cd /d "%CURDIR%"
+exit /b %returncode%
 
 :: -------------------------------------------------------------
 :IS_FILE_INSTALLED

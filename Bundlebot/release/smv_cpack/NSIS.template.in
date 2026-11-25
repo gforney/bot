@@ -1,4 +1,13 @@
 Unicode true
+@CPACK_FDS_SETUP_DEFINE@
+!ifndef FDS_BUNDLE
+  !define PRODUCT_NAME "Smokeview"
+  !define INSTALL_SUBDIRS "the SMV6 subdirectory"
+!else
+  !define PRODUCT_NAME "FDS and Smokeview"
+  !define INSTALL_SUBDIRS "the FDS6 and SMV6 subdirectories"
+  !define MUI_FINISHPAGE_TEXT "Open CMDfds from the desktop or Start menu to run FDS and Smokeview.$\r$\n$\r$\nRestart Windows to complete the installation."
+!endif
 !define INST_DIR "@CPACK_TEMPORARY_DIRECTORY@"
 RequestExecutionLevel admin
 Name "@CPACK_PACKAGE_DESCRIPTION_SUMMARY@"
@@ -20,7 +29,7 @@ Var PathScope
 Page custom SetupType SetupTypeLeave
 !define MUI_PAGE_CUSTOMFUNCTION_PRE DirectoryPre
 !define MUI_PAGE_CUSTOMFUNCTION_LEAVE DirectoryLeave
-!define MUI_DIRECTORYPAGE_TEXT_TOP "Choose the FDS/Smokeview root directory. Smokeview will be installed in its SMV6 subdirectory."
+!define MUI_DIRECTORYPAGE_TEXT_TOP "Choose the FDS/Smokeview root directory. The installer will use ${INSTALL_SUBDIRS}."
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_INSTFILES
 !insertmacro MUI_PAGE_FINISH
@@ -28,7 +37,7 @@ Page custom SetupType SetupTypeLeave
 
 Function .onInit
   ${IfNot} ${RunningX64}
-    MessageBox MB_ICONSTOP "Smokeview requires 64-bit Windows."
+    MessageBox MB_ICONSTOP "${PRODUCT_NAME} requires 64-bit Windows."
     Abort
   ${EndIf}
   StrCpy $StandardInstall 1
@@ -36,7 +45,7 @@ Function .onInit
 FunctionEnd
 
 Function SetupType
-  !insertmacro MUI_HEADER_TEXT "Smokeview setup" "Choose a standard or custom installation."
+  !insertmacro MUI_HEADER_TEXT "${PRODUCT_NAME} setup" "Choose a standard or custom installation."
   nsDialogs::Create 1018
   Pop $0
   ${If} $0 == error
@@ -45,7 +54,7 @@ Function SetupType
 
   ${NSD_CreateRadioButton} 0 8u 100% 12u "Standard installation"
   Pop $1
-  ${NSD_CreateLabel} 12u 22u 95% 24u "Install for all users in $PROGRAMFILES64\firemodels and stop any running Smokeview instances."
+  ${NSD_CreateLabel} 12u 22u 95% 24u "Install for all users in $PROGRAMFILES64\firemodels and stop running programs that need to be replaced."
   Pop $0
   ${NSD_CreateRadioButton} 0 52u 100% 12u "Custom installation for all users"
   Pop $2
@@ -90,35 +99,68 @@ FunctionEnd
 
 Function DirectoryLeave
   ${If} ${FileExists} "$INSTDIR\SMV6\*.*"
-    MessageBox MB_YESNO|MB_ICONEXCLAMATION|MB_DEFBUTTON2 "Replace the existing Smokeview installation in $INSTDIR\SMV6?" IDYES confirmed
+!ifdef FDS_BUNDLE
+  ${OrIf} ${FileExists} "$INSTDIR\FDS6\*.*"
+!endif
+    MessageBox MB_YESNO|MB_ICONEXCLAMATION|MB_DEFBUTTON2 "Replace the existing ${PRODUCT_NAME} installation under $INSTDIR?" IDYES confirmed
     Abort
   ${EndIf}
   confirmed:
 FunctionEnd
 
-Section "Smokeview"
-  nsExec::ExecToStack '"$SYSDIR\tasklist.exe" /FI "IMAGENAME eq smokeview.exe" /NH'
+Function StopProgram
+  Pop $3
+  nsExec::ExecToStack '"$SYSDIR\tasklist.exe" /FI "IMAGENAME eq $3" /NH'
   Pop $0
   Pop $1
   ${If} $0 != 0
-    MessageBox MB_ICONSTOP "Could not check for running Smokeview instances."
+    MessageBox MB_ICONSTOP "Could not check whether $3 is running."
     Abort
   ${EndIf}
-  ${StrStr} $2 $1 "smokeview.exe"
+  ${StrStr} $2 $1 "$3"
   ${If} $2 != ""
     ${If} $StandardInstall == 0
-      MessageBox MB_YESNO|MB_ICONQUESTION "Smokeview is running. Stop it and continue?" IDYES stop_smokeview
+      MessageBox MB_YESNO|MB_ICONQUESTION "$3 is running. Stop it and continue?" IDYES stop_smokeview
       Abort
     ${EndIf}
     stop_smokeview:
-    nsExec::Exec '"$SYSDIR\taskkill.exe" /F /IM smokeview.exe'
+    nsExec::Exec '"$SYSDIR\taskkill.exe" /F /IM "$3"'
     Pop $0
     ${If} $0 != 0
-      MessageBox MB_ICONSTOP "Could not stop Smokeview. Close it and run Setup again."
+      MessageBox MB_ICONSTOP "Could not stop $3. Close it and run Setup again."
       Abort
     ${EndIf}
   ${EndIf}
+FunctionEnd
 
+Section "${PRODUCT_NAME}"
+!ifdef FDS_BUNDLE
+  Push "hydra_service.exe"
+  Call StopProgram
+  Push "mpiexec.exe"
+  Call StopProgram
+  Push "fds.exe"
+  Call StopProgram
+!endif
+  Push "smokeview.exe"
+  Call StopProgram
+
+!ifdef FDS_BUNDLE
+  InitPluginsDir
+  SetOutPath "$PLUGINSDIR"
+  @CPACK_NSIS_FULL_INSTALL@
+  System::Call 'kernel32::SetEnvironmentVariableW(w "FDS_GUI_INSTALL_DIR", w "$INSTDIR") i.r0'
+  ${If} $0 == 0
+    MessageBox MB_ICONSTOP "Could not pass the installation directory to FDS Setup."
+    Abort
+  ${EndIf}
+  nsExec::ExecToLog '"$SYSDIR\cmd.exe" /D /C firemodels\setup.bat --gui'
+  Pop $0
+  ${If} $0 != 0
+    MessageBox MB_ICONSTOP "FDS Setup failed. See the installation details for more information."
+    Abort
+  ${EndIf}
+!else
   ${If} ${FileExists} "$INSTDIR\SMV6\*.*"
     ClearErrors
     RMDir /r "$INSTDIR\SMV6"
@@ -155,4 +197,5 @@ Section "Smokeview"
     WriteRegStr HKCU "Software\Classes\smvDoc\shell\open\command" "" '$"$INSTDIR\SMV6\smokeview.exe$" $"%1$"'
   ${EndIf}
   System::Call 'shell32::SHChangeNotify(i 0x08000000, i 0, p 0, p 0)'
+!endif
 SectionEnd

@@ -17,6 +17,12 @@ if defined PROGRAMFILES(X86) (
   goto abort
 )
 
+if /i "%~1" == "--gui" (
+  if not defined FDS_GUI_INSTALL_DIR exit /b 1
+  set "INSTALLDIR=%FDS_GUI_INSTALL_DIR%"
+  goto proceed
+)
+
 :: form extraction directory
 
 set /p basename=<firemodels\basename.txt
@@ -133,6 +139,8 @@ goto begin
 
 :proceed
 
+set "SMV6=%INSTALLDIR%\SMV6"
+set "FDS6=%INSTALLDIR%\FDS6"
 set "DOCDIR=%INSTALLDIR%\FDS6\Documentation"
 set "UNINSTALLDIR=%INSTALLDIR%\FDS6\Uninstall"
  
@@ -145,6 +153,10 @@ if NOT exist "%SMV6%" goto skip_remove_smv6
 echo *** Removing %SMV6%
 rmdir /S /Q "%SMV6%"
 :skip_remove_smv6
+if /i "%~1" == "--gui" (
+  if exist "%FDS6%" exit /b 1
+  if exist "%SMV6%" exit /b 1
+)
 
 :: copy files to new installation
 
@@ -158,10 +170,12 @@ echo FDS/Smokeview installation log         > "%LOGFILE%"
 echo.                                      >> "%LOGFILE%"
 echo *** Copying fds files                     >> "%LOGFILE%"
 xcopy /E /I /H /Q firemodels\FDS6 "%FDS6%" >> "%LOGFILE%"
+if errorlevel 1 if /i "%~1" == "--gui" exit /b 1
 
 echo.                                      >> "%LOGFILE%"
 echo *** Copying smokeview files               >> "%LOGFILE%"
 xcopy /E /I /H /Q firemodels\SMV6 "%SMV6%" >> "%LOGFILE%"
+if errorlevel 1 if /i "%~1" == "--gui" exit /b 1
 
 set "filepath=%FDS6%\bin\fds.exe%"
 call :is_file_copied fds.exe
@@ -325,6 +339,7 @@ echo fds_local casename.fds
 echo.
 echo where casename is the name of your case. For more information type: helpfds.
 echo. 
+if /i "%~1" == "--gui" exit /b 0
 echo *** Press any key, then reboot to complete the installation.  ***
 pause>NUL
 goto eof
