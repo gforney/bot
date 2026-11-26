@@ -61,8 +61,6 @@ powershell.exe -NoLogo -NoProfile -Command "$p=Join-Path $env:zipbase 'setup.bat
 :skip_legacy_setup
 set curdir=%CD%
 
-CALL :COPY  %forbundle%\smokeview.ini           %smvdir%\smokeview.ini
-
 echo copying textures
 mkdir %smvdir%\textures
 copy %forbundle%\textures\*.jpg %smvdir%\textures>Nul
