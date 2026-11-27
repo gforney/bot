@@ -55,7 +55,7 @@ set DOWNLOADOWNER=firemodels
 set UPLOADOWNER=firemodels
 if "x%IS_RELEASE%" == "x1" set UPLOADOWNER=%username%
 if "x%IS_RELEASE%" == "x1" set DOWNLOADOWNER=%username%
-if "x%UPLOAD_BUNDLE%" == "x2" set UPLOADOWNER=%username%
+if "x%UPLOAD_BUNDLE%" == "x2" set "UPLOADOWNER=%USERNAME%"
 
 if "x%STOPSCRIPT%" == "x" goto endif1
   set STOPSCRIPT=
@@ -259,7 +259,7 @@ echo -I - only build installer, assume repos are already cloned and apps are alr
 echo -m mailtto - send email to mailto
 echo -N - skip virus scanning for this bundle
 echo -R - create a release bundle using settings in ..\release\config.bat
-echo -u - upload bundle to github.com/%username%/test_bundles/releases/tag/FDS_TEST
+echo -u - upload bundle to the current Windows account's GitHub test_bundles repository
 echo -U - upload bundle to github.com/firemodels/test_bundles/releases/tag/FDS_TEST
 exit /b 0
 

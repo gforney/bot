@@ -50,7 +50,7 @@ echo "-G - build a GUI shell installer with text fallback"
 echo "-h - display this message"
 echo "-k - kill the BuildSmvNightly.sh process and all of its child processes"
 echo "-n - do not scan bundle"
-echo "-u - upload bundle to github.com/gforney/test_bundles/releases/tag/SMOKEVIEW_TEST"
+echo "-u - upload bundle to github.com/$(whoami)/test_bundles/releases/tag/SMOKEVIEW_TEST"
 echo "-U - upload bundle to github.com/firemodels/test_bundles/releases/tag/SMOKEVIEW_TEST"
 exit 0
 }
@@ -98,11 +98,10 @@ case $OPTION  in
    BUNDLETYPE=release
    ;;
   u)
-   GHOWNER=`whoami`
-   UPLOADBUNDLE=1
+   UPLOADBUNDLE=user
    ;;
   U)
-   UPLOADBUNDLE=1
+   UPLOADBUNDLE=configured
    ;;
   \?)
    exit 1
@@ -134,6 +133,13 @@ else
   cd $GITROOT/bot/Bundlebot/release/output
   outputdir=`pwd`
   GHOWNER=`whoami`
+fi
+
+if [ "$UPLOADBUNDLE" = user ]; then
+  if ! GHOWNER=$(whoami) || [ -z "$GHOWNER" ]; then
+    echo "***error: could not determine the upload owner with whoami" >&2
+    exit 1
+  fi
 fi
 
 #*** determine platform script is running on

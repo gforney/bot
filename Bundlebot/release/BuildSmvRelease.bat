@@ -1,9 +1,15 @@
 @echo off
 setlocal
 set "GUI_OPTION="
+:options
+if "%~1" == "-u" (
+  shift
+  goto options
+)
 if /i "%~1" == "-gui" (
   set "GUI_OPTION=-gui"
   shift
+  goto options
 )
 if /i "%~1" == "-h" goto usage
 if not "%~1" == "" (
@@ -33,6 +39,7 @@ if defined BUNDLE_LOCK_OWNED call "%~dp0..\bundle_lock.bat" release
 exit /b %BUNDLE_BUILD_RESULT%
 
 :run_bundle
+set "UPLOADOWNER=%USERNAME%"
 call config
 
 :: uncomment and edit the following lines if building a test bundle.
@@ -82,13 +89,14 @@ if defined GUI_OPTION if errorlevel 1 exit /b 1
 :: upload bundles
 
 echo uploading %fullfilebase%.exe
-gh release upload SMOKEVIEW_TEST %fullfilebase%.exe  -R github.com/%username%/test_bundles --clobber
+gh release upload SMOKEVIEW_TEST %fullfilebase%.exe  -R github.com/%UPLOADOWNER%/test_bundles --clobber
 echo uploading %fullfilebase%_manifest.html
-gh release upload SMOKEVIEW_TEST %fullfilebase%_manifest.html  -R github.com/%username%/test_bundles --clobber
+gh release upload SMOKEVIEW_TEST %fullfilebase%_manifest.html  -R github.com/%UPLOADOWNER%/test_bundles --clobber
 exit /b
 
 :usage
-echo Usage: BuildSmvRelease.bat [-gui] [-h]
+echo Usage: BuildSmvRelease.bat [-gui] [-h] [-u]
 echo -gui - build the Windows GUI installer with CPack and NSIS
 echo -h - display this message
+echo -u - upload to the current Windows account's GitHub test_bundles repository
 exit /b 0

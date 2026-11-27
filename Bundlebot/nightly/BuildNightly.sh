@@ -75,8 +75,8 @@ echo "-o - specify GH_OWNER when building a bundle. $GH_OWNER_LABEL"
 echo "-r - specify GH_REPO when building a bundle. $GH_REPO_LABEL"
 echo "-R - clone repos naming the branch release (without -R branches"
 echo "     are named nightly)"
-echo "-u - upload bundle to github.com/`whoami`/test_bundles/releases/tag/FDS_TEST"
-echo "-U - upload bundle to github.com/firemodels/test_bundles/releases/tag/FDS_TEST"
+echo "-u - upload bundle to github.com/$(whoami)/test_bundles/releases/tag/FDS_TEST regardless of GH_OWNER"
+echo "-U - upload bundle to the configured owner (default for nightly builds: firemodels)"
 exit 0
 }
 
@@ -177,11 +177,10 @@ case $OPTION  in
    TEST_VIRUS=1
    ;;
   u)
-   GHUPLOADOWNER=`whoami`
-   UPLOADBUNDLE=1
+   UPLOADBUNDLE=user
    ;;
   U)
-   UPLOADBUNDLE=1
+   UPLOADBUNDLE=configured
    ;;
   \?)
    exit 1
@@ -412,21 +411,21 @@ cd $CURDIR
 #*** define github parameters
 
 if [ "$BUNDLETYPE" == "release" ]; then
-  releasetype="release"
-  GHOWNER=`whoami`
-  GHUPLOADOWNER=`whoami`
+  releasetype=release
+  GHOWNER=${GH_OWNER:-$(whoami)}
 else
-  releasetype="nightly"
-  GHOWNER=firemodels
-  if [ "$GHUPLOADOWNER" == "" ]; then
-    GHUPLOADOWNER=firemodels
-  fi
-fi
-if [ "$GH_OWNER" != "" ]; then
-  GHOWNER=$GH_OWNER
-  GHUPLOADOWNER=$GH_OWNER
+  releasetype=nightly
+  GHOWNER=${GH_OWNER:-firemodels}
 fi
 
+if [ "$UPLOADBUNDLE" = user ]; then
+  if ! GHUPLOADOWNER=$(whoami) || [ -z "$GHUPLOADOWNER" ]; then
+    echo "***error: could not determine the upload owner with whoami" >&2
+    exit 1
+  fi
+else
+  GHUPLOADOWNER=$GHOWNER
+fi
 
 if [ "$FDS_TAG" != "" ]; then
   FDS_REVISION=$FDS_TAG
@@ -504,7 +503,7 @@ fi
 
 #*** upload bundle
 
-if [[ "$UPLOADBUNDLE" == "1" ]]; then
+if [[ -n "$UPLOADBUNDLE" ]]; then
   if [[ $assemble_bundle_status -eq 0 ]]; then
     echo "*** uploading installer"
     
@@ -519,7 +518,7 @@ if [[ "$UPLOADBUNDLE" == "1" ]]; then
       cd $REPO_ROOT/fds
       FDS_SHORT_HASH=`git rev-parse --short HEAD`
       cd $SCRIPTDIR
-      ./setreleasetitle.sh fds $FDS_SHORT_HASH $GHOWNER
+      ./setreleasetitle.sh fds "$FDS_SHORT_HASH" "$GHUPLOADOWNER"
     fi
   else
     echo ***error: virus detected in bundle, bundle not uploaded

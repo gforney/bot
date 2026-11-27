@@ -140,7 +140,7 @@ echo Options:
 echo -C - use current smv revision
 echo -gui - build the Windows GUI installer with CPack and NSIS
 echo -h - display this message
-echo -u - upload bundle to github.com/%username%/test_bundles/releases/tag/SMOKEVIEW_TEST
+echo -u - upload bundle to the current Windows account's GitHub test_bundles repository
 echo -U - upload bundle to github.com/firemodels/test_bundles/releases/tag/SMOKEVIEW_TEST
 exit /b 0
 
@@ -167,7 +167,7 @@ exit /b 0
  )
  if "%1" EQU "-u" (
    set UPLOAD_SMVBUNDLE=1
-   set UPLOADOWNER=%username%
+   set "UPLOADOWNER=%USERNAME%"
    set valid=1
  )
  if "%1" EQU "-U" (
