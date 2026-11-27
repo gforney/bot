@@ -36,13 +36,17 @@ if not Gtk.init_check()[0]:
     sys.exit("GTK could not open the display")
 
 if kind == "folder":
-    dialog = Gtk.FileChooserDialog(title=prompt, action=Gtk.FileChooserAction.SELECT_FOLDER)
+    dialog = Gtk.FileChooserDialog(
+        title=prompt,
+        action=Gtk.FileChooserAction.SELECT_FOLDER,
+        window_position=Gtk.WindowPosition.CENTER,
+    )
     dialog.add_button("Cancel", Gtk.ResponseType.CANCEL)
     dialog.add_button("Choose Folder", Gtk.ResponseType.ACCEPT)
     response = dialog.run()
     selection = dialog.get_filename() if response == Gtk.ResponseType.ACCEPT else None
 else:
-    dialog = Gtk.Dialog(title=title)
+    dialog = Gtk.Dialog(title=title, window_position=Gtk.WindowPosition.CENTER)
     dialog.add_button("Cancel", Gtk.ResponseType.CANCEL)
     content = dialog.get_content_area()
     content.set_border_width(12)
