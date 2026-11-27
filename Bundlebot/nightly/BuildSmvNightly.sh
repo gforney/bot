@@ -1,5 +1,7 @@
 #!/bin/bash
 
+source "$(dirname "${BASH_SOURCE[0]}")/../bundle_lock.sh" || exit 1
+
 #---------------------------------------------
 #                   GET_TIME
 #---------------------------------------------
@@ -68,7 +70,6 @@ UPLOADBUNDLE=
 BUNDLETYPE=nightly
 OUTPUT_USAGE=
 USE_CURRENT=
-PIDFILE=$CURDIR/smvbundle.pid
 SCAN_BUNDLE=1
 
 #*** parse parameters
@@ -87,14 +88,8 @@ case $OPTION  in
    OUTPUT_USAGE=1
    ;;
   k)
-   if [ -e $PIDFILE ]; then
-     PID=`head -1 $PIDFILE`
-     kill -9 -- -$PID
-     rm -f $PIDFILE
-   else
-     echo ***warning pid file $PIDFILE does not exist
-   fi
-   exit
+   bundle_stop BuildSmvNightly.pid
+   exit $?
    ;;
   n)
    SCAN_BUNDLE=0
@@ -109,15 +104,19 @@ case $OPTION  in
   U)
    UPLOADBUNDLE=1
    ;;
+  \?)
+   exit 1
+   ;;
 esac
 done
 shift $(($OPTIND-1))
 
 if [ "$OUTPUT_USAGE" != "" ]; then
   USAGE
+  exit
 fi
 
-echo $$ > $PIDFILE
+bundle_lock_acquire BuildSmvNightly.pid || exit 1
 
 cd ../../..
 GITROOT=`pwd`
@@ -151,7 +150,6 @@ fi
 if [ -n "$USE_CURRENT" ]; then
   if ! smv_prefix=$(git -C "$GITROOT/smv" rev-parse --show-prefix 2>/dev/null) || [ -n "$smv_prefix" ]; then
     echo "***error: -C requires an existing Smokeview checkout at $GITROOT/smv" >&2
-    rm -f "$PIDFILE"
     exit 1
   fi
 elif [ -d $GITROOT/smv ]; then
@@ -223,12 +221,12 @@ fi
 #*** build apps
 
 cd $GITROOT/bot/Bundlebot/nightly
-./make_smvapps.sh "" "$BUNDLETYPE"
+./make_smvapps.sh "$BUNDLETYPE"
 
 #*** make bundle
 
 echo "*** bundling smokeview"
-$GITROOT/bot/Bundlebot/nightly/assemble_smvbundle.sh $smv_revision $GITROOTBASE $PLATFORMLABEL $SCAN_BUNDLE "$gui_installer" || { rm -f "$PIDFILE"; exit 1; }
+$GITROOT/bot/Bundlebot/nightly/assemble_smvbundle.sh $smv_revision $GITROOTBASE $PLATFORMLABEL $SCAN_BUNDLE "$gui_installer" || exit 1
 
 uploaddir=$HOME/.bundle/bundles
 if [ ! -e $uploaddir/${smv_revision}_${PLATFORMLABEL}.sh ]; then
@@ -250,7 +248,6 @@ if [ "$UPLOADBUNDLE" != "" ]; then
 
   echo "*** upload complete"
 fi
-rm -f $PIDFILE
 TIME_end=`GET_TIME`
 GET_DURATION $TIME_beg $TIME_end TIME
 echo Time: $TIME_DIFF

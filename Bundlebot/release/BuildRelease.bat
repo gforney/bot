@@ -1,4 +1,5 @@
 @echo off
+setlocal
 set "GUI_OPTION="
 if /i "%~1" == "-gui" (
   set "GUI_OPTION=-gui"
@@ -25,6 +26,13 @@ if defined GUI_OPTION (
 )
 
 
+call "%~dp0..\bundle_lock.bat" acquire || exit /b 1
+call :run_bundle
+set "BUNDLE_BUILD_RESULT=%ERRORLEVEL%"
+if defined BUNDLE_LOCK_OWNED call "%~dp0..\bundle_lock.bat" release
+exit /b %BUNDLE_BUILD_RESULT%
+
+:run_bundle
 set CURDIR=%CD%
 
 call config.bat
@@ -42,7 +50,7 @@ cd ..\nightly
 call BuildNightly -R %UPLOADBUNDLE% %GUI_OPTION%
 set "BUILD_RESULT=%ERRORLEVEL%"
 cd %CURDIR%
-if defined GUI_OPTION if not "%BUILD_RESULT%" == "0" exit /b %BUILD_RESULT%
+if not "%BUILD_RESULT%" == "0" exit /b %BUILD_RESULT%
 
 if "X%UPLOADBUNDLE%" == "X" goto :EOF
 set "TITLE=Bundle Test - %BUNDLE_FDS_TAG%/%BUNDLE_FDS_HASH% - %BUNDLE_SMV_TAG%/%BUNDLE_SMV_HASH%"
