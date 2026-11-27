@@ -7,10 +7,79 @@ esac
 if [ "$installer_gui" = 1 ]; then
   if [ "$(uname -s)" = Darwin ] && command -v osascript >/dev/null 2>&1; then
     installer_backend=osascript
-  elif [ -n "${DISPLAY:-}${WAYLAND_DISPLAY:-}" ] && command -v zenity >/dev/null 2>&1; then
-    installer_backend=zenity
+  elif [ "$(uname -s)" = Linux ] && [ -n "${DISPLAY:-}${WAYLAND_DISPLAY:-}" ]; then
+    if command -v zenity >/dev/null 2>&1; then
+      installer_backend=zenity
+    else
+      # Use the system Python so virtual environments do not hide desktop bindings.
+      installer_python=/usr/bin/python3
+      if [ ! -x "$installer_python" ]; then
+        installer_python=$(command -v python3)
+      fi
+      if [ -n "$installer_python" ] && "$installer_python" -I -c 'import gi; gi.require_version("Gtk", "3.0"); from gi.repository import Gtk' >/dev/null 2>&1; then
+        installer_backend=gtk
+      fi
+    fi
   fi
 fi
+
+installer_gtk_dialog() {
+  "$installer_python" -I - "$@" <<'PYTHON'
+import sys
+
+import gi
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gtk
+
+title, kind, prompt, action, *choices = sys.argv[1:]
+if not Gtk.init_check()[0]:
+    sys.exit("GTK could not open the display")
+
+if kind == "folder":
+    dialog = Gtk.FileChooserDialog(title=prompt, action=Gtk.FileChooserAction.SELECT_FOLDER)
+    dialog.add_button("Cancel", Gtk.ResponseType.CANCEL)
+    dialog.add_button("Choose Folder", Gtk.ResponseType.ACCEPT)
+    response = dialog.run()
+    selection = dialog.get_filename() if response == Gtk.ResponseType.ACCEPT else None
+else:
+    dialog = Gtk.Dialog(title=title)
+    dialog.add_button("Cancel", Gtk.ResponseType.CANCEL)
+    content = dialog.get_content_area()
+    content.set_border_width(12)
+    content.set_spacing(12)
+    label = Gtk.Label(label=prompt)
+    label.set_line_wrap(True)
+    content.add(label)
+
+    if kind == "start":
+        dialog.add_button("Extract Only", 1)
+        dialog.add_button("Install", Gtk.ResponseType.OK)
+        selection = "Install"
+    elif kind == "confirm":
+        dialog.add_button(action, Gtk.ResponseType.OK)
+        selection = action
+    elif kind == "location":
+        locations = Gtk.ComboBoxText()
+        for choice in choices:
+            locations.append_text(choice)
+        locations.set_active(0)
+        content.add(locations)
+        dialog.add_button("Continue", Gtk.ResponseType.OK)
+
+    dialog.set_default_response(Gtk.ResponseType.CANCEL)
+    dialog.show_all()
+    response = dialog.run()
+    if kind == "start" and response == 1:
+        selection = "Extract Only"
+    elif response != Gtk.ResponseType.OK:
+        selection = None
+    elif kind == "location":
+        selection = locations.get_active_text()
+
+dialog.destroy()
+print(selection if selection is not None else "__BUNDLEBOT_CANCEL__")
+PYTHON
+}
 
 installer_dialog() {
   local kind=$1 prompt=$2 action=$3 selection status index destination
@@ -37,6 +106,8 @@ installer_dialog() {
         zenity --file-selection --directory --title="$prompt"
         return "$?" ;;
     esac
+  elif [ "$installer_backend" = gtk ]; then
+    selection=$(installer_gtk_dialog "$installer_product" "$kind" "$prompt" "$action" "$@") || return "$?"
   else
     selection=$(osascript - "$installer_product" "$kind" "$prompt" "$action" "$@" <<'APPLESCRIPT'
 on run argv
