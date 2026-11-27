@@ -40,48 +40,61 @@ content = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12)
 content.set_border_width(12)
 dialog.get_content_area().pack_start(content, True, True, 0)
 
-def position_dialog(window, _event):
-    window.move(48, 48)
+def move_to_upper_left():
+    dialog.move(48, 48)
     return False
 
+def position_dialog(_window, _event):
+    # Reapply after the window manager has finished placing the new window.
+    GLib.timeout_add(150, move_to_upper_left)
+    return False
+
+move_to_upper_left()
 dialog.connect("map-event", position_dialog)
 dialog.connect("delete-event", lambda window, _event: window.response(Gtk.ResponseType.CANCEL) or True)
 pending = bytearray()
 request = []
 loop = GLib.MainLoop()
 cancel = "__BUNDLEBOT_CANCEL__"
+buttons = []
 
 def send_reply(text):
     sys.stdout.buffer.write(os.fsencode(text) + b"\0")
     sys.stdout.buffer.flush()
 
 def show_step(kind, prompt, action, *choices):
-    for box in (content, dialog.get_action_area()):
-        for child in box.get_children():
-            child.destroy()
+    for child in content.get_children():
+        child.destroy()
+    for button in buttons:
+        button.destroy()
+    buttons.clear()
+
+    def add_button(label, response):
+        buttons.append(dialog.add_button(label, response))
+
     label = Gtk.Label(label=prompt)
     label.set_line_wrap(True)
     content.add(label)
-    dialog.add_button("Cancel", Gtk.ResponseType.CANCEL)
+    add_button("Cancel", Gtk.ResponseType.CANCEL)
 
     chooser = None
     locations = None
     if kind == "start":
-        dialog.add_button("Extract Only", 1)
-        dialog.add_button("Install", Gtk.ResponseType.OK)
+        add_button("Extract Only", 1)
+        add_button("Install", Gtk.ResponseType.OK)
     elif kind == "confirm":
-        dialog.add_button(action, Gtk.ResponseType.OK)
+        add_button(action, Gtk.ResponseType.OK)
     elif kind == "location":
         locations = Gtk.ComboBoxText()
         for choice in choices:
             locations.append_text(choice)
         locations.set_active(0)
         content.add(locations)
-        dialog.add_button("Continue", Gtk.ResponseType.OK)
+        add_button("Continue", Gtk.ResponseType.OK)
     else:
         chooser = Gtk.FileChooserWidget(action=Gtk.FileChooserAction.SELECT_FOLDER)
         content.pack_start(chooser, True, True, 0)
-        dialog.add_button("Choose Folder", Gtk.ResponseType.OK)
+        add_button("Choose Folder", Gtk.ResponseType.OK)
 
     def respond(window, response):
         if response == 1 and kind == "start":
