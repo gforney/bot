@@ -24,6 +24,7 @@ set LOGFILE=%userprofile%\.bundle\logfile.txt
 set EMAILTO=
 set ONLY_INSTALLER=0
 set USE_CURRENT=
+set FORCE_BUILD=
 set SKIP_VIRUS_SCAN=
 set GUI_INSTALLER=
 
@@ -45,6 +46,7 @@ if defined GUI_INSTALLER (
 )
 
 ::*** exit script if bundle being built already exists
+if defined FORCE_BUILD goto skip_test_nightly
 if "x%USE_CURRENT%" == "x-C" goto skip_test_nightly
 if "x%IS_RELEASE%" == "x1" goto skip_test_nightly
 call TestNightly.bat
@@ -253,6 +255,7 @@ echo specified fds and smv repo revisions or revisions from the latest firebot p
 echo.
 echo Options:
 echo -C - build apps using current revisions and branches without cloning
+echo -F - build the nightly bundle even if it already exists
 echo -gui - build the Windows GUI installer with CPack and NSIS
 echo -h - display this message
 echo -I - only build installer, assume repos are already cloned and apps are already built
@@ -273,6 +276,10 @@ exit /b 0
  
  if "%1" EQU "-C" (
    set USE_CURRENT=-C
+   set valid=1
+ )
+ if "%1" EQU "-F" (
+   set FORCE_BUILD=1
    set valid=1
  )
  if /i "%1" EQU "-gui" (
