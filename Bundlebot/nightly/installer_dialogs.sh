@@ -1,7 +1,7 @@
 # Included in the self-extracting installer before the text setup code.
 installer_backend=
 case ${1:-} in
-  --text) shift; installer_gui=0 ;;
+  --shell|--text) shift; installer_gui=0 ;;
   y) installer_gui=0 ;;
 esac
 if [ "$installer_gui" = 1 ]; then

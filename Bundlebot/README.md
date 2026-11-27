@@ -40,6 +40,8 @@ Note `owner` in `-o owner` is the github owner where the manuals will be placed 
 
 ### Build Bundles
 
+Pass `--shell` to answer installer prompts in a terminal. On Linux and macOS, run `bash ./bundle.sh --shell`. For a Windows NSIS installer, run `start "" /wait "bundle.exe" --shell` from Command Prompt. Windows may still prompt for administrator elevation. For a macOS release that also ships a DMG, use its companion `.sh` installer for terminal setup.
+
 Release and nightly bundle builds share the per-user lock directory `.bundle/bundle_build.lock`. If an interrupted run leaves the lock behind, verify that all bundle processes have stopped before removing the directory. The shell FDS/Smokeview nightly build also accepts `-f` for a one-run bypass of a stale lock.
 
 #### Local macOS release DMG

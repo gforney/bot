@@ -19,12 +19,28 @@ InstallDir "$PROGRAMFILES64\firemodels"
 !include "nsDialogs.nsh"
 !include "x64.nsh"
 !include "StrFunc.nsh"
+!include "FileFunc.nsh"
+!include "TextFunc.nsh"
 ${StrStr}
 
 Var StandardInstall
 Var AllUsers
 Var CurrentUserRadio
 Var PathScope
+Var ShellMode
+Var ConsoleIn
+Var ConsoleOut
+Var ConsoleAnswer
+
+!macro SetupMessage flags message
+  ${If} $ShellMode == 1
+    Push "${message}$\r$\n"
+    Call ConsoleWrite
+  ${Else}
+    MessageBox ${flags} "${message}"
+  ${EndIf}
+!macroend
+
 
 Page custom SetupType SetupTypeLeave
 !define MUI_PAGE_CUSTOMFUNCTION_PRE DirectoryPre
@@ -36,13 +52,119 @@ Page custom SetupType SetupTypeLeave
 !insertmacro MUI_LANGUAGE "English"
 
 Function .onInit
-  ${IfNot} ${RunningX64}
-    MessageBox MB_ICONSTOP "${PRODUCT_NAME} requires 64-bit Windows."
-    Abort
-  ${EndIf}
   StrCpy $StandardInstall 1
   StrCpy $AllUsers 1
+  ${GetParameters} $0
+  ${If} $0 == "--shell"
+    StrCpy $ShellMode 1
+    SetSilent silent
+    Call OpenConsole
+  ${EndIf}
+  ${IfNot} ${RunningX64}
+    !insertmacro SetupMessage MB_ICONSTOP "${PRODUCT_NAME} requires 64-bit Windows."
+    Abort
+  ${EndIf}
+  ${If} $ShellMode == 1
+    Call ConsoleSetup
+  ${EndIf}
 FunctionEnd
+
+Function OpenConsole
+  System::Call 'kernel32::AttachConsole(i -1) i.r0'
+  System::Call 'kernel32::GetConsoleCP() i.r0'
+  ${If} $0 == 0
+    System::Call 'kernel32::AllocConsole() i.r0'
+  ${EndIf}
+  System::Call 'kernel32::CreateFileW(w "CONIN$", i 0x80000000, i 3, p 0, i 3, i 0, p 0) p.r0'
+  StrCpy $ConsoleIn $0
+  System::Call 'kernel32::CreateFileW(w "CONOUT$", i 0x40000000, i 3, p 0, i 3, i 0, p 0) p.r0'
+  StrCpy $ConsoleOut $0
+  ${If} $ConsoleIn == -1
+  ${OrIf} $ConsoleOut == -1
+    SetErrorLevel 1
+    Quit
+  ${EndIf}
+FunctionEnd
+
+Function ConsoleWrite
+  Exch $0
+  Push $1
+  StrLen $1 $0
+  System::Call 'kernel32::WriteConsoleW(p $ConsoleOut, w r0, i r1, p 0, p 0)'
+  Pop $1
+  Pop $0
+FunctionEnd
+
+Function ConsoleRead
+  Call ConsoleWrite
+  Push $0
+  Push $1
+  Push $2
+  System::Call 'kernel32::ReadConsoleW(p $ConsoleIn, w .r1, i 1000, *i .r2, p 0) i.r0'
+  ${If} $0 == 0
+    SetErrorLevel 1
+    Quit
+  ${EndIf}
+  StrCpy $1 $1 $2
+  ${TrimNewLines} "$1" $ConsoleAnswer
+  Pop $2
+  Pop $1
+  Pop $0
+FunctionEnd
+
+Function ConsoleSetup
+  Push "$\r$\n${PRODUCT_NAME} setup$\r$\n"
+  Call ConsoleWrite
+  Push "1. Standard installation for all users$\r$\n2. Custom installation for all users$\r$\n3. Custom installation for the current user$\r$\nChoose 1, 2, or 3 [1], or q to cancel: "
+  Call ConsoleRead
+  ${If} $ConsoleAnswer == "2"
+    StrCpy $StandardInstall 0
+  ${ElseIf} $ConsoleAnswer == "3"
+    StrCpy $StandardInstall 0
+    StrCpy $AllUsers 0
+    ReadEnvStr $INSTDIR "USERPROFILE"
+    StrCpy $INSTDIR "$INSTDIR\firemodels"
+  ${ElseIf} $ConsoleAnswer != ""
+  ${AndIf} $ConsoleAnswer != "1"
+    Abort
+  ${EndIf}
+  ${If} $StandardInstall == 0
+    Push "Installation directory [$INSTDIR]: "
+    Call ConsoleRead
+    ${If} $ConsoleAnswer != ""
+      StrCpy $INSTDIR $ConsoleAnswer
+    ${EndIf}
+  ${EndIf}
+  ClearErrors
+  GetFullPathName $0 "$INSTDIR"
+  ${If} ${Errors}
+  ${OrIf} $0 == ""
+    !insertmacro SetupMessage MB_ICONSTOP "Invalid installation directory."
+    Abort
+  ${EndIf}
+  StrCpy $INSTDIR $0
+  ${If} ${FileExists} "$INSTDIR\SMV6\*.*"
+!ifdef FDS_BUNDLE
+  ${OrIf} ${FileExists} "$INSTDIR\FDS6\*.*"
+!endif
+    Push "Replace the existing installation under $INSTDIR? [y/N]: "
+  ${Else}
+    Push "Install under $INSTDIR? [y/N]: "
+  ${EndIf}
+  Call ConsoleRead
+  ${If} $ConsoleAnswer != "y"
+  ${AndIf} $ConsoleAnswer != "yes"
+    Abort
+  ${EndIf}
+FunctionEnd
+
+Function .onInstSuccess
+  ${If} $ShellMode == 1
+    Push "Installation completed in $INSTDIR.$\r$\n"
+    Call ConsoleWrite
+  ${EndIf}
+FunctionEnd
+
 
 Function SetupType
   !insertmacro MUI_HEADER_TEXT "${PRODUCT_NAME} setup" "Choose a standard or custom installation."
@@ -114,20 +236,30 @@ Function StopProgram
   Pop $0
   Pop $1
   ${If} $0 != 0
-    MessageBox MB_ICONSTOP "Could not check whether $3 is running."
+    !insertmacro SetupMessage MB_ICONSTOP "Could not check whether $3 is running."
     Abort
   ${EndIf}
   ${StrStr} $2 $1 "$3"
   ${If} $2 != ""
     ${If} $StandardInstall == 0
-      MessageBox MB_YESNO|MB_ICONQUESTION "$3 is running. Stop it and continue?" IDYES stop_smokeview
-      Abort
+      ${If} $ShellMode == 1
+        Push "$3 is running. Stop it and continue? [y/N]: "
+        Call ConsoleRead
+        ${If} $ConsoleAnswer != "y"
+        ${AndIf} $ConsoleAnswer != "yes"
+          Abort
+        ${EndIf}
+      ${Else}
+        MessageBox MB_YESNO|MB_ICONQUESTION "$3 is running. Stop it and continue?" IDYES stop_smokeview
+        Abort
+      ${EndIf}
+
     ${EndIf}
     stop_smokeview:
     nsExec::Exec '"$SYSDIR\taskkill.exe" /F /IM "$3"'
     Pop $0
     ${If} $0 != 0
-      MessageBox MB_ICONSTOP "Could not stop $3. Close it and run Setup again."
+      !insertmacro SetupMessage MB_ICONSTOP "Could not stop $3. Close it and run Setup again."
       Abort
     ${EndIf}
   ${EndIf}
@@ -151,13 +283,13 @@ Section "${PRODUCT_NAME}"
   @CPACK_NSIS_FULL_INSTALL@
   System::Call 'kernel32::SetEnvironmentVariableW(w "FDS_GUI_INSTALL_DIR", w "$INSTDIR") i.r0'
   ${If} $0 == 0
-    MessageBox MB_ICONSTOP "Could not pass the installation directory to FDS Setup."
+    !insertmacro SetupMessage MB_ICONSTOP "Could not pass the installation directory to FDS Setup."
     Abort
   ${EndIf}
   nsExec::ExecToLog '"$SYSDIR\cmd.exe" /D /C firemodels\setup.bat --gui'
   Pop $0
   ${If} $0 != 0
-    MessageBox MB_ICONSTOP "FDS Setup failed. See the installation details for more information."
+    !insertmacro SetupMessage MB_ICONSTOP "FDS Setup failed. See the installation details for more information."
     Abort
   ${EndIf}
 !else
@@ -165,7 +297,7 @@ Section "${PRODUCT_NAME}"
     ClearErrors
     RMDir /r "$INSTDIR\SMV6"
     ${If} ${Errors}
-      MessageBox MB_ICONSTOP "Could not remove the existing Smokeview installation."
+      !insertmacro SetupMessage MB_ICONSTOP "Could not remove the existing Smokeview installation."
       Abort
     ${EndIf}
   ${EndIf}
@@ -185,7 +317,7 @@ Section "${PRODUCT_NAME}"
   nsExec::Exec '"$SYSDIR\cmd.exe" /D /C set_path.bat $PathScope -m -f "$INSTDIR\SMV6"'
   Pop $0
   ${If} $0 != 0
-    MessageBox MB_ICONEXCLAMATION "Smokeview was copied, but Setup could not update PATH."
+    !insertmacro SetupMessage MB_ICONEXCLAMATION "Smokeview was copied, but Setup could not update PATH."
   ${EndIf}
 
   SetRegView 64
