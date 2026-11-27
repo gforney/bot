@@ -42,9 +42,11 @@ OVERRIDE=\$1
 echo ""
 echo "Updating Smokeview to $revision for $ostype"
 echo ""
+installer_text_start() {
 echo "Options:"
 echo "  1) Press <Enter> to begin update"
 echo "  2) Press 2 or type extract to copy the update files to $SMV_TAR"
+}
 
 #--- convert a path to it absolute equivalent
 
@@ -90,7 +92,7 @@ then
   if [ -e \$THAT ]
   then
     while true; do
-      echo "The file, \$THAT, already exists."
+      if [ -z "\$installer_backend" ]; then echo "The file, \$THAT, already exists."; fi
       installer_read confirm yn "Do you wish to overwrite \$THAT? (yes/no)" Overwrite
       case \$yn in
         [Yy]* ) break;;
@@ -106,6 +108,7 @@ fi
 
 #--- get FDS root directory
 
+installer_text_location() {
 echo ""
 echo "Where would you like to put the Smokeview update?"
 EOF
@@ -123,6 +126,7 @@ EOF
   fi
 cat << EOF >> $INSTALLER
 echo "  Enter directory path to update elsewhere"
+}
 
 if [ "\$OVERRIDE" == "y" ] 
 then
@@ -177,7 +181,7 @@ rm \$SMV_root/test_write
 
 while true; do
     echo ""
-    echo "Update directory: \$SMV_root"
+    if [ -z "\$installer_backend" ]; then echo "Update directory: \$SMV_root"; fi
     if [ "\$OVERRIDE" == "y" ]
     then
       yn="y"

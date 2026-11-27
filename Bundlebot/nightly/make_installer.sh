@@ -111,10 +111,12 @@ echo "" > \$INSTALL_LOG
 echo ""
 echo "Installing $FDS_VERSION and $SMV_VERSION on $ostype2"
 echo ""
+installer_text_start() {
 echo "Options:"
 echo "  1) Press <Enter> to begin installation [default]"
 echo "  2) Press 2 or type extract to copy the installation files to:"
 echo "     $FDS_TAR"
+}
 
 BAK=_\`date +%Y%m%d_%H%M%S\`
 
@@ -165,7 +167,7 @@ MKDIR()
     if [ "\$CHECK" == "1" ] 
     then
       while true; do
-          echo "The directory, \$DIR, already exists."
+          if [ -z "\$installer_backend" ]; then echo "The directory, \$DIR, already exists."; fi
           if [ "\$OVERRIDE" == "y" ]
             then
               yn="y"
@@ -245,7 +247,7 @@ then
   if [ -e \$THAT ]
   then
     while true; do
-      echo "The file, \$THAT, already exists."
+      if [ -z "\$installer_backend" ]; then echo "The file, \$THAT, already exists."; fi
       installer_read confirm yn "Do you wish to overwrite \$THAT? (yes/no)" Overwrite
       echo \$yn >> \$INSTALL_LOG
       case \$yn in
@@ -274,6 +276,7 @@ fi
 
 #--- get FDS root directory
 
+installer_text_location() {
 echo ""
 echo "Options:"
 EOF
@@ -295,6 +298,7 @@ EOF
   fi
 cat << EOF >> $INSTALLER
 echo "  Enter a directory path to install somewhere else"
+}
 
 if [ "\$OVERRIDE" == "y" ] 
 then
@@ -346,7 +350,7 @@ eval MPIDIST_FDS=\$FDS_root/bin/openmpi
 
 while true; do
    echo ""
-   echo "Installation directory: \$FDS_root"
+   if [ -z "\$installer_backend" ]; then echo "Installation directory: \$FDS_root"; fi
 EOF
 cat << EOF >> $INSTALLER
    if [ "\$OVERRIDE" == "y" ] ; then

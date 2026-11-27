@@ -8,66 +8,69 @@ if [ "$installer_gui" = 1 ]; then
   if [ "$(uname -s)" = Darwin ] && command -v osascript >/dev/null 2>&1; then
     installer_backend=osascript
   elif [ "$(uname -s)" = Linux ] && [ -n "${DISPLAY:-}${WAYLAND_DISPLAY:-}" ]; then
-    if command -v zenity >/dev/null 2>&1; then
+    # Use the system Python so virtual environments do not hide desktop bindings.
+    installer_python=/usr/bin/python3
+    if [ ! -x "$installer_python" ]; then
+      installer_python=$(command -v python3)
+    fi
+    if [ -n "$installer_python" ] && "$installer_python" -I -c 'import gi; gi.require_version("Gtk", "3.0"); from gi.repository import Gtk' >/dev/null 2>&1; then
+      installer_backend=gtk
+    elif command -v zenity >/dev/null 2>&1; then
       installer_backend=zenity
-    else
-      # Use the system Python so virtual environments do not hide desktop bindings.
-      installer_python=/usr/bin/python3
-      if [ ! -x "$installer_python" ]; then
-        installer_python=$(command -v python3)
-      fi
-      if [ -n "$installer_python" ] && "$installer_python" -I -c 'import gi; gi.require_version("Gtk", "3.0"); from gi.repository import Gtk' >/dev/null 2>&1; then
-        installer_backend=gtk
-      fi
     fi
   fi
 fi
 
-installer_gtk_dialog() {
-  # Prefer X11 (including XWayland) so the dialog can request a screen position.
-  GDK_BACKEND="${GDK_BACKEND:-x11,wayland}" "$installer_python" -I - "$@" <<'PYTHON'
+installer_start_gtk() {
+  local gtk_code
+  gtk_code=$(cat <<'PYTHON'
+import os
 import sys
 
 import gi
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk
+from gi.repository import GLib, Gtk
 
-title, kind, prompt, action, *choices = sys.argv[1:]
 if not Gtk.init_check()[0]:
     sys.exit("GTK could not open the display")
+
+dialog = Gtk.Dialog(title=sys.argv[1])
+dialog.set_default_size(480, 240)
+content = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12)
+content.set_border_width(12)
+dialog.get_content_area().pack_start(content, True, True, 0)
 
 def position_dialog(window, _event):
     window.move(48, 48)
     return False
 
+dialog.connect("map-event", position_dialog)
+dialog.connect("delete-event", lambda window, _event: window.response(Gtk.ResponseType.CANCEL) or True)
+pending = bytearray()
+request = []
+loop = GLib.MainLoop()
+cancel = "__BUNDLEBOT_CANCEL__"
 
-if kind == "folder":
-    dialog = Gtk.FileChooserDialog(
-        title=prompt,
-        action=Gtk.FileChooserAction.SELECT_FOLDER,
-    )
-    dialog.add_button("Cancel", Gtk.ResponseType.CANCEL)
-    dialog.add_button("Choose Folder", Gtk.ResponseType.ACCEPT)
-    dialog.connect("map-event", position_dialog)
-    response = dialog.run()
-    selection = dialog.get_filename() if response == Gtk.ResponseType.ACCEPT else None
-else:
-    dialog = Gtk.Dialog(title=title)
-    dialog.add_button("Cancel", Gtk.ResponseType.CANCEL)
-    content = dialog.get_content_area()
-    content.set_border_width(12)
-    content.set_spacing(12)
+def send_reply(text):
+    sys.stdout.buffer.write(os.fsencode(text) + b"\0")
+    sys.stdout.buffer.flush()
+
+def show_step(kind, prompt, action, *choices):
+    for box in (content, dialog.get_action_area()):
+        for child in box.get_children():
+            child.destroy()
     label = Gtk.Label(label=prompt)
     label.set_line_wrap(True)
     content.add(label)
+    dialog.add_button("Cancel", Gtk.ResponseType.CANCEL)
 
+    chooser = None
+    locations = None
     if kind == "start":
         dialog.add_button("Extract Only", 1)
         dialog.add_button("Install", Gtk.ResponseType.OK)
-        selection = "Install"
     elif kind == "confirm":
         dialog.add_button(action, Gtk.ResponseType.OK)
-        selection = action
     elif kind == "location":
         locations = Gtk.ComboBoxText()
         for choice in choices:
@@ -75,21 +78,70 @@ else:
         locations.set_active(0)
         content.add(locations)
         dialog.add_button("Continue", Gtk.ResponseType.OK)
+    else:
+        chooser = Gtk.FileChooserWidget(action=Gtk.FileChooserAction.SELECT_FOLDER)
+        content.pack_start(chooser, True, True, 0)
+        dialog.add_button("Choose Folder", Gtk.ResponseType.OK)
 
+    def respond(window, response):
+        if response == 1 and kind == "start":
+            selection = "Extract Only"
+        elif response != Gtk.ResponseType.OK:
+            selection = cancel
+        elif kind == "location":
+            selection = locations.get_active_text()
+        elif kind == "folder":
+            selection = chooser.get_filename()
+            if selection is None:
+                return
+        elif kind == "start":
+            selection = "Install"
+        else:
+            selection = action
+        window.disconnect(handler)
+        window.set_sensitive(False)
+        send_reply(selection or cancel)
+
+    handler = dialog.connect("response", respond)
     dialog.set_default_response(Gtk.ResponseType.CANCEL)
-    dialog.connect("map-event", position_dialog)
+    dialog.set_sensitive(True)
     dialog.show_all()
-    response = dialog.run()
-    if kind == "start" and response == 1:
-        selection = "Extract Only"
-    elif response != Gtk.ResponseType.OK:
-        selection = None
-    elif kind == "location":
-        selection = locations.get_active_text()
 
-dialog.destroy()
-print(selection if selection is not None else "__BUNDLEBOT_CANCEL__")
+def read_request(_source, _condition):
+    data = os.read(0, 65536)
+    if not data:
+        loop.quit()
+        return False
+    pending.extend(data)
+    while b"\0" in pending:
+        field, _, rest = pending.partition(b"\0")
+        pending[:] = rest
+        request.append(os.fsdecode(bytes(field)))
+        if len(request) == int(request[0]) + 1:
+            show_step(*request[1:])
+            request.clear()
+    return True
+
+GLib.io_add_watch(0, GLib.PRIORITY_DEFAULT, GLib.IO_IN | GLib.IO_HUP, read_request)
+loop.run()
 PYTHON
+  ) || return 1
+
+  # The worker is Linux-only. Keep coproc syntax out of the macOS Bash parser.
+  # Duplicate its descriptors so dialog calls can use them in a subshell.
+  eval '
+    coproc INSTALLER_GTK {
+      GDK_BACKEND="${GDK_BACKEND:-x11,wayland}" "$installer_python" -I -c "$gtk_code" "$installer_product"
+    }
+    exec 8<&"${INSTALLER_GTK[0]}" 9>&"${INSTALLER_GTK[1]}"
+  '
+}
+
+installer_gtk_dialog() {
+  local reply
+  printf '%s\0' "$#" "$@" >&9 || return 1
+  IFS= read -r -d '' reply <&8 || return 1
+  printf '%s\n' "$reply"
 }
 
 installer_dialog() {
@@ -118,7 +170,7 @@ installer_dialog() {
         return "$?" ;;
     esac
   elif [ "$installer_backend" = gtk ]; then
-    selection=$(installer_gtk_dialog "$installer_product" "$kind" "$prompt" "$action" "$@") || return "$?"
+    selection=$(installer_gtk_dialog "$kind" "$prompt" "$action" "$@") || return "$?"
   else
     selection=$(osascript - "$installer_product" "$kind" "$prompt" "$action" "$@" <<'APPLESCRIPT'
 on run argv
@@ -181,6 +233,12 @@ installer_read() {
   local installer_kind=$1 installer_variable=$2 installer_prompt=${3:-}
   local installer_gui_prompt installer_action=${4:-} installer_reply installer_error installer_status
   local installer_choices=()
+  if [ "$installer_backend" = gtk ] && [ "$installer_kind" = start ]; then
+    if ! installer_start_gtk; then
+      echo "Graphical setup could not start. Using text setup." >&2
+      installer_backend=
+    fi
+  fi
   if [ -n "$installer_backend" ]; then
     case "$installer_kind" in
       start)
@@ -245,6 +303,10 @@ installer_read() {
     installer_backend=
   fi
 
+  case "$installer_kind" in
+    start) installer_text_start ;;
+    location) installer_text_location ;;
+  esac
   if [ -n "$installer_prompt" ] && [ "$installer_kind" = confirm ]; then
     read -p "$installer_prompt " "$installer_variable" || exit 0
   else
