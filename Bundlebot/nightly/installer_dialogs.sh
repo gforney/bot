@@ -24,7 +24,8 @@ if [ "$installer_gui" = 1 ]; then
 fi
 
 installer_gtk_dialog() {
-  "$installer_python" -I - "$@" <<'PYTHON'
+  # Prefer X11 (including XWayland) so the dialog can request a screen position.
+  GDK_BACKEND="${GDK_BACKEND:-x11,wayland}" "$installer_python" -I - "$@" <<'PYTHON'
 import sys
 
 import gi
@@ -35,18 +36,23 @@ title, kind, prompt, action, *choices = sys.argv[1:]
 if not Gtk.init_check()[0]:
     sys.exit("GTK could not open the display")
 
+def position_dialog(window, _event):
+    window.move(48, 48)
+    return False
+
+
 if kind == "folder":
     dialog = Gtk.FileChooserDialog(
         title=prompt,
         action=Gtk.FileChooserAction.SELECT_FOLDER,
-        window_position=Gtk.WindowPosition.CENTER,
     )
     dialog.add_button("Cancel", Gtk.ResponseType.CANCEL)
     dialog.add_button("Choose Folder", Gtk.ResponseType.ACCEPT)
+    dialog.connect("map-event", position_dialog)
     response = dialog.run()
     selection = dialog.get_filename() if response == Gtk.ResponseType.ACCEPT else None
 else:
-    dialog = Gtk.Dialog(title=title, window_position=Gtk.WindowPosition.CENTER)
+    dialog = Gtk.Dialog(title=title)
     dialog.add_button("Cancel", Gtk.ResponseType.CANCEL)
     content = dialog.get_content_area()
     content.set_border_width(12)
@@ -71,6 +77,7 @@ else:
         dialog.add_button("Continue", Gtk.ResponseType.OK)
 
     dialog.set_default_response(Gtk.ResponseType.CANCEL)
+    dialog.connect("map-event", position_dialog)
     dialog.show_all()
     response = dialog.run()
     if kind == "start" and response == 1:
