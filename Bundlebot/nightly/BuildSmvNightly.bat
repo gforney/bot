@@ -77,12 +77,16 @@ for %%x in ( %progs% ) do (
   call make_%%x > %OUTDIR%\stage4_%%x 2>&1
 ) 
 
+echo *** building gzip
+call "%GITROOT%\smv\Build\gzip\intel_win\make_gzip.bat" > "%OUTDIR%\stage4_gzip" 2>&1 || exit /b 1
+
 echo *** bundling smokeview
 Title Building Smokeview bundle
 
 set scan_smv_bundle=1
 cd %CURDIR%\..\release
-call make_smv_bundle %BUNDLE_SMV_TAG% %scan_smv_bundle%
+call make_smv_bundle %BUNDLE_SMV_TAG% %scan_smv_bundle% gzip
+if "%ERRORLEVEL%"=="3" exit /b 1
 
 cd %CURDIR%
 

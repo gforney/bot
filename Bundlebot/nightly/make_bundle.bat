@@ -123,6 +123,7 @@ CALL :COPY  %bundle_dir%\fds\fds2ascii.exe  %out_bin%\fds2ascii.exe
 CALL :COPY  %bundle_dir%\fds\test_mpi.exe   %out_bin%\test_mpi.exe
 
 CALL :COPY  %bundle_dir%\smv\smokeview.exe  %out_smv%\smokeview.exe
+copy /Y "%bundle_dir%\smv\gzip.exe" "%out_smv%\gzip.exe" >Nul || exit /b 3
 
 set curdir=%CD%
 

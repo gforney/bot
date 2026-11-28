@@ -36,6 +36,9 @@ mkdir %smvdir%
 
 CALL :COPY  "%scriptdir%..\nightly\set_path.bat" "%smvdir%\set_path.bat"
 CALL :COPY  %reporoot%\smv\Build\smokeview\intel_win\smokeview_win.exe %smvdir%\smokeview.exe
+if /I "%~3"=="gzip" (
+  copy /Y "%reporoot%\smv\Build\gzip\intel_win\gzip_win.exe" "%smvdir%\gzip.exe" >Nul || exit /b 3
+)
 
 echo copying .png files
 copy %forbundle%\*.png %smvdir%\.>Nul

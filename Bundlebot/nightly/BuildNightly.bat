@@ -171,6 +171,8 @@ echo ***building apps
 
 cd %BUNDLESCRIPTDIR%
 call make_apps         || exit /b 1
+echo ***building gzip
+call "%REPOROOT%\smv\Build\gzip\intel_win\make_gzip.bat" || exit /b 1
 :skip2
 
 echo ***copying fds apps
@@ -196,6 +198,7 @@ echo ***making bundle
 
 cd %BUNDLESCRIPTDIR%
 call make_bundle %FDS_REVISION_BUNDLER% %SMV_REVISION_BUNDLER% %NIGHTLY% %SKIP_VIRUS_SCAN%
+if "%ERRORLEVEL%"=="3" exit /b 1
 set HAVEVIRUS=%ERRORLEVEL%
 
 cd %BUNDLESCRIPTDIR%

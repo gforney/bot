@@ -27,6 +27,7 @@ call :copyfile %smvrepo%\Build\part2iso\intel_win   part2iso_win.exe   %BUNDLE_D
 call :copyfile %smvrepo%\Build\fds2fed\intel_win    fds2fed_win.exe    %BUNDLE_DIR%\smv fds2fed.exe
 call :copyfile %smvrepo%\Build\smokeview\intel_win  smokeview_win.exe  %BUNDLE_DIR%\smv smokeview.exe
 call :copyfile %smvrepo%\Build\wind2fds\intel_win   wind2fds_win.exe   %BUNDLE_DIR%\smv wind2fds.exe
+call :copyfile %smvrepo%\Build\gzip\intel_win        gzip_win.exe       %BUNDLE_DIR%\smv gzip.exe
 :skip_smokeview
 
 :: copy fds files
